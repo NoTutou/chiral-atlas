@@ -1,0 +1,110 @@
+/* ============ HUB · chiral network map ============ */
+.pg-hub .stage{position:absolute;left:0;top:0;width:1600px;height:800px;transform-origin:0 0}
+.pg-hub canvas{position:absolute;display:block}
+.pg-hub .net{left:0;top:0;width:1600px;height:800px;pointer-events:none}
+
+/* header */
+.pg-hub .hd{position:absolute;left:40px;top:26px;pointer-events:none}
+.pg-hub .hd .t{font-family:var(--f-cond);font-weight:300;font-size:40px;letter-spacing:9px;line-height:1}
+.pg-hub .hd .t b{font-weight:600}
+.pg-hub .hd .s{margin-top:8px;display:flex;gap:14px;align-items:center;font-size:13px;letter-spacing:4px;color:var(--ink-2)}
+.pg-hub .hd .s .ln{width:34px;height:1px;background:var(--line-3)}
+.pg-hub .hd .s .m{font-family:var(--f-mono);font-size:11px;letter-spacing:2px;color:var(--dim)}
+.pg-hub .hd .s .m b{font-weight:400;color:var(--ink)}
+.pg-hub .hd .s .m .gr{color:var(--green)}
+.pg-hub .hd .s .m .rd{color:var(--red)}
+
+/* facility common */
+.pg-hub .fac{position:absolute;cursor:pointer}
+.pg-hub .lab{position:absolute;display:flex;align-items:flex-start;gap:12px;pointer-events:none}
+.pg-hub .lab .hx{width:34px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-mono);font-size:12px;color:#05080b;background:var(--ink);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.pg-hub .lab .k{font-family:var(--f-mono);font-size:11px;letter-spacing:3px;color:var(--dim)}
+.pg-hub .lab .n{font-family:var(--f-cond);font-weight:600;font-size:30px;letter-spacing:7px;line-height:1.05}
+.pg-hub .lab .z{font-size:14px;letter-spacing:4px;color:var(--ink-2);margin-top:3px}
+.pg-hub .lab .st{display:inline-flex;align-items:center;gap:6px;margin-left:12px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;vertical-align:6px;color:var(--green)}
+.pg-hub .lab .st i{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.pg-hub .enter{position:absolute;height:30px;display:flex;align-items:center;gap:10px;padding:0 16px 0 18px;pointer-events:none;
+  font-family:var(--f-cond);font-weight:600;font-size:14px;letter-spacing:4px;background:var(--ink);color:#05080b;white-space:nowrap;
+  clip-path:polygon(0 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px));opacity:0}
+.pg-hub .enter .zh{font-family:var(--f-zh);font-size:12px;letter-spacing:2px;font-weight:400;color:#40525b}
+.pg-hub .enter.deny{background:var(--red);color:#120403}
+.pg-hub .enter.deny .zh{color:#41120a}
+
+/* 02 archive */
+.pg-hub .f2{left:40px;top:118px;width:860px;height:660px}
+.pg-hub .f2 .lab{left:0;top:0}
+.pg-hub .f2 .rack{left:40px;top:32px;width:820px;height:560px}
+.pg-hub .f2 .enter{left:660px;top:56px}
+.pg-hub .idx{position:absolute;left:0;top:446px;width:290px}
+.pg-hub .idx .h{display:flex;justify-content:space-between;height:28px;align-items:center;border-bottom:1px solid var(--line-2);
+  font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;color:var(--dim)}
+.pg-hub .idx .h b{font-weight:400;color:var(--ink)}
+.pg-hub .row{display:grid;grid-template-columns:12px 12px 1fr 56px;white-space:nowrap;align-items:center;gap:8px;height:29px;border-bottom:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-2);padding:0 4px;position:relative}
+.pg-hub .row .c{width:9px;height:10px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.pg-hub .row .l{font-family:var(--f-mono);font-size:11px;color:var(--dim)}
+.pg-hub .row .pb{height:3px;background:rgba(255,255,255,.07);position:relative}
+.pg-hub .row .pb i{position:absolute;left:0;top:0;bottom:0}
+.pg-hub .row .en{font-family:var(--f-cond);font-size:11px;letter-spacing:2px;color:var(--dim);margin-left:6px}
+.pg-hub .row.on{background:#0a4f7e;color:#fff}
+.pg-hub .row.on .l,.pg-hub .row.on .en{color:#bfe6ff}
+.pg-hub .recent{position:absolute;left:330px;top:584px;width:500px;height:66px;pointer-events:none}
+.pg-hub .recent .h{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;color:var(--dim)}
+.pg-hub .recent .h .ln{flex:1;height:1px;background:linear-gradient(90deg,var(--line-2),transparent)}
+.pg-hub .recent .h b{color:var(--gold);font-weight:400}
+.pg-hub .recent .it{position:relative;height:36px;margin-top:6px;overflow:hidden}
+.pg-hub .recent .ln2{position:absolute;left:0;right:0;display:flex;align-items:center;gap:14px;height:36px;white-space:nowrap}
+.pg-hub .recent .ln2 .id{font-family:var(--f-mono);font-size:12px;letter-spacing:2px;color:var(--cyan);width:56px}
+.pg-hub .recent .ln2 .nm{font-size:15px;letter-spacing:.5px}
+.pg-hub .recent .ln2 .dt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--dim)}
+.pg-hub .tip{position:absolute;left:0;top:0;pointer-events:none;opacity:0;width:260px;padding:9px 12px 10px;background:rgba(5,9,12,.9);border:1px solid var(--line-2)}
+.pg-hub .tip::before{content:"";position:absolute;left:-1px;top:-1px;width:40px;height:2px;background:var(--cyan)}
+.pg-hub .tip .a{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;letter-spacing:2px}
+.pg-hub .tip .b{font-size:14px;margin:5px 0 6px}
+.pg-hub .tip .c{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10px;letter-spacing:1px;color:var(--dim)}
+.pg-hub .tip .c b{color:var(--ink);font-weight:400}
+
+/* 03 inference */
+.pg-hub .f3{left:990px;top:40px;width:570px;height:410px}
+.pg-hub .f3 .lab{left:0;top:0}
+.pg-hub .f3 .graph{left:-10px;top:58px;width:500px;height:236px}
+.pg-hub .f3 .enter{right:0;top:6px}
+.pg-hub .ev{position:absolute;left:0;top:300px;width:570px;display:grid;grid-template-columns:150px 1fr;gap:22px;pointer-events:none}
+.pg-hub .ev .sc .l{font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;color:var(--dim)}
+.pg-hub .ev .sc .v{font-family:var(--f-cond);font-weight:300;font-size:54px;line-height:1;letter-spacing:1px}
+.pg-hub .ev .sc .v small{font-size:18px;color:var(--dim);margin-left:4px}
+.pg-hub .ev .chips{display:flex;gap:6px;margin-top:6px}
+.pg-hub .ev .chip{height:20px;padding:0 7px;font-size:10px}
+.pg-hub .ev .chip.r{border-color:var(--red);color:var(--red)}
+.pg-hub .dims{display:flex;flex-direction:column;gap:9px;padding-top:18px}
+.pg-hub .dim{display:grid;grid-template-columns:52px 1fr 26px;gap:10px;align-items:center;font-size:12px;color:var(--ink-2)}
+.pg-hub .dim .bar{height:3px}
+.pg-hub .dim .v{font-family:var(--f-cond);font-size:16px;text-align:right;color:var(--ink)}
+.pg-hub .log1{position:absolute;left:0;top:398px;width:570px;height:22px;display:flex;align-items:center;gap:12px;pointer-events:none;
+  font-family:var(--f-mono);font-size:11.5px;letter-spacing:.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px;white-space:nowrap;overflow:hidden}
+.pg-hub .log1 .ts{color:var(--dim)}
+.pg-hub .log1 .st{color:var(--cyan)}
+.pg-hub .log1 .cur{display:inline-block;width:7px;height:12px;background:var(--ink);vertical-align:-2px;margin-left:2px}
+
+/* 01 reserved */
+.pg-hub .f1{left:1034px;top:500px;width:530px;height:300px}
+.pg-hub .f1 .lab{left:0;top:18px}
+.pg-hub .f1 .lab .hx{background:var(--dim)}
+.pg-hub .f1 .lab .n{color:var(--ink-2)}
+.pg-hub .f1 .lab .st{color:var(--dim)}
+.pg-hub .f1 .scan{left:200px;top:-12px;width:340px;height:300px}
+.pg-hub .f1 .enter{left:0;top:250px}
+.pg-hub .unk{position:absolute;left:0;top:104px;width:200px;pointer-events:none}
+.pg-hub .unk .big{font-family:var(--f-cond);font-weight:300;font-size:26px;letter-spacing:5px;color:var(--ink-2)}
+.pg-hub .unk .zh{font-size:12.5px;letter-spacing:3px;color:var(--dim);margin-top:2px}
+.pg-hub .unk .sig{display:flex;align-items:flex-end;gap:3px;height:16px;margin:14px 0 6px}
+.pg-hub .unk .sig i{width:6px;background:rgba(255,255,255,.1)}
+.pg-hub .unk .rd{font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;color:var(--dim);line-height:1.9}
+.pg-hub .unk .rd b{font-weight:400;color:var(--ink-2)}
+.pg-hub .unk .rd .o{color:#ff8a3c}
+
+/* operator marker */
+.pg-hub .you{position:absolute;left:784px;top:92px;pointer-events:none;font-family:var(--f-mono);font-size:10.5px;letter-spacing:2px;color:var(--ink-2);line-height:1.7}
+.pg-hub .you b{color:var(--ink);font-weight:400}
