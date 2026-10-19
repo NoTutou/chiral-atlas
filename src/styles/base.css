@@ -151,3 +151,15 @@ input,textarea,button{font:inherit;color:inherit;background:none;border:0;outlin
 .sys .sfx:hover{border-color:var(--line-3);color:var(--ink)}
 @media (max-width:1500px){ .sys>span:nth-child(2){display:none} }
 @media (max-width:1360px){ .brand .sub{display:none} .tab{padding:0 10px} .tabs .k{margin:0 6px} }
+/* narrow screens (phones): compact HUD, hide footer hints — full mobile layout is future work */
+@media (max-width:900px){
+  .hud{height:52px;padding:0 12px}
+  .brand .nm{font-size:15px;letter-spacing:3px}.brand .sub{display:none}.brand svg{width:24px;height:24px}
+  .tabs{position:static;transform:none;margin-left:auto;gap:2px;height:52px}
+  .tabs .k,.tab .zh,.tab i{display:none}
+  .tab{height:30px;padding:0 8px;font-size:12px;letter-spacing:1.5px}
+  .tab.on::after{bottom:-11px}
+  .sys{margin-left:8px;gap:0}.sys>span:not(.sfx){display:none}
+  .foot{height:30px;padding:0 12px}.foot #footL,.foot .ticks{display:none}.foot .r{margin-left:0;gap:12px;font-size:9.5px}
+}
+@media (max-width:480px){ .brand .nm b{display:none} .tab{padding:0 6px;font-size:11px;letter-spacing:1px} }
