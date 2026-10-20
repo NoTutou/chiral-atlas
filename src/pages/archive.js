@@ -289,9 +289,6 @@ export default {
     rack.draw(t, (c, i) => S.hot.get(rack.KEY(c, i)) || 0);
     S.rackC.style.filter = dim > 0.01 ? `blur(${(dim * 3.5).toFixed(2)}px) brightness(${(1 - dim * 0.45).toFixed(3)})` : '';
 
-    // ambient wave sound follows rack motion energy
-    ctx.sfx.loop('wave').set(S.open ? 0 : clamp(rack.energy / 3200), rack.cam.zoom);
-
     paintTip(t);
     paintOverview(t, dim);
     drawFocus(t, E);
@@ -299,7 +296,6 @@ export default {
   },
 
   unmount() {
-    S.ctx.sfx.loop('wave').set(0);
     S.bag.dispose();
     S = null;
   },
@@ -440,8 +436,7 @@ function closeOpen() {
 }
 function finishClose() {
   const { c, i } = S.open.cell;
-  S.rack.held = null;
-  S.rack.returnRipple(c, i, S.ctx.clock.t);
+  S.rack.releaseAt(c, i, S.ctx.clock.t);
   S.rack.exclude = null;
   S.open = null;
   S.det.classList.remove('on', 'closing'); S.det.inert = false;

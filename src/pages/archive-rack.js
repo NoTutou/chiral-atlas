@@ -28,6 +28,7 @@ export function createRack(canvas) {
   let S = 1, CX = 0, CY = 0;
   const state = new Map();          // key -> {h, v}
   const ripples = [];
+  let returning = null;             // one physical origin, never a repeated record id
   let fly = null;                   // {fx,fz,tx,tz,t0,dur,zoomFrom,zoomTo}
   let introT0 = -1e9;
   let grads;
@@ -72,23 +73,26 @@ export function createRack(canvas) {
   };
 
   /* ---------- per-cell lift ---------- */
-  const breath = (c, i, t) => 3.2 * Math.sin((t / 8000) * 6.283 + i * 0.33 + c * 1.1) + 2.2 * Math.sin((t / 13000) * 6.283 + i * 0.21 - c * 0.7);
+  function returnAt(c, i, t) {
+    if (!returning) return 0;
+    const age = (t - returning.t0) / 1000;
+    if (age < 0 || age >= 3) return 0;
+    const dc = Math.abs(c - returning.c), di = Math.abs(i - returning.i);
+    // Ease the held pose all the way down. Its release drives a single front;
+    // this is independent of spring energy, pointer position and record repeats.
+    let lift = (returning.pose.get(KEY(c, i)) || 0) * (1 - ease.io(seg(age, 0, 0.75)));
+    if (dc > 3 || (dc === 0 && di === 0)) return lift;
+    const d = Math.hypot(di, dc * PITCH_Z / PITCH_X * 0.5);
+    const local = age - 0.12 - d / 22;
+    if (local < 0 || local > 0.8) return lift;
+    const across = dc === 0 ? 1 : 0.48 * Math.exp(-(dc * dc) / (2 * 1.3 ** 2));
+    return lift + 64 * across * Math.sin(Math.PI * local / 0.8) ** 2 * Math.exp(-d / 26) * (1 - ease.io(seg(age, 2.4, 3)));
+  }
   function rippleAt(c, i, t) {
     let v = 0;
     for (const rp of ripples) {
       const age = (t - rp.t0) / 1000;
       if (age < 0 || age > 3) continue;
-      if (rp.column !== undefined) {
-        const dc = Math.abs(c - rp.column), di = Math.abs(i - rp.slot);
-        // The landed case settles while a softer front travels into nearby
-        // columns. Compress shelf spacing slightly so that spread stays visible.
-        if (dc === 0 && di === 0) continue;
-        const d = Math.hypot(di, dc * PITCH_Z / PITCH_X * 0.55), local = age - d / 22;
-        if (local < 0 || local > 0.6) continue;
-        const across = dc === 0 ? 1 : 0.34 * Math.exp(-((dc * PITCH_Z) ** 2) / (2 * (PITCH_Z * 1.3) ** 2));
-        v += 42 * across * Math.sin(Math.PI * local / 0.6) ** 2 * Math.exp(-d / 22) * (1 - ease.io(seg(age, 2.2, 3)));
-        continue;
-      }
       const x = i * PITCH_X, z = c * PITCH_Z;
       const d = Math.hypot((x - rp.x) / PITCH_X, ((z - rp.z) / PITCH_X) * 0.35);
       const front = age * 16;
@@ -102,7 +106,7 @@ export function createRack(canvas) {
   }
   function liftAt(c, i, t) {
     const st = state.get(KEY(c, i));
-    let l = (st ? st.h : 0) + breath(c, i, t) + (ripples.length ? rippleAt(c, i, t) : 0);
+    let l = (st ? st.h : 0) + returnAt(c, i, t) + (ripples.length ? rippleAt(c, i, t) : 0);
     if (R.hits && R.hits.has(recordAt(c, i).id)) l += 18 + 4 * Math.sin(t / 300 + i);
     return l;
   }
@@ -152,14 +156,17 @@ export function createRack(canvas) {
     }
     S = base * cam.zoom;
     while (ripples.length && t - ripples[0].t0 > 3000) ripples.shift();
+    if (returning && (t - returning.t0 >= 3000 || (M.inside && t - returning.t0 > 750))) returning = null;
     // The lifted shape under the cursor belongs to the selected place. Keep
     // that exact spring pose while its case is out, then release it on landing.
-    if (R.frozen || R.held) { R.energy = 0; return; }
+    if (R.frozen || R.held || returning) { R.energy = 0; return; }
 
     // physics (only cells that move or are near the cursor)
-    const [mx, mz] = M.inside ? ground(M.x, M.y) : [1e9, 1e9];
+    // Picking already accounts for the raised surface. Ground-projecting that
+    // same pointer again displaces the centre and can create feedback/drift.
+    const hv = M.inside ? R.hover : null;
+    const [mx, mz] = M.inside ? (hv ? [hv.i * PITCH_X, hv.c * PITCH_Z] : ground(M.x, M.y)) : [1e9, 1e9];
     const { c0, c1, i0, i1 } = range();
-    const hv = R.hover;
     const hoverColumn = hv ? hv.c : Math.round(mz / PITCH_Z);
     const steps = Math.max(1, Math.round(dt / 8)), h = dt / 1000 / steps;
     let energy = 0;
@@ -490,8 +497,13 @@ export function createRack(canvas) {
   /* ---------- camera helpers ---------- */
   R.intro = (t) => { introT0 = t; };
   R.ripple = (x, z, t) => ripples.push({ x, z, t0: t });
-  R.returnRipple = (c, i, t) => ripples.push({ column: c, slot: i, t0: t });
+  R.releaseAt = (c, i, t) => {
+    returning = { c, i, t0: t, pose: new Map([...state].map(([k, st]) => [k, st.h])) };
+    state.clear(); ripples.length = 0;
+    R.held = null; R.frozen = false;
+  };
   R.holdAt = (c, i) => {
+    returning = null; ripples.length = 0;
     if (R.held) {
       const offset = KEY(c - R.held.c, i - R.held.i);
       const moved = [...state].map(([k, st]) => [k + offset, st]);
@@ -500,9 +512,10 @@ export function createRack(canvas) {
     }
     // Deep links and keyboard navigation may open without a preceding hover.
     if ((state.get(KEY(c, i))?.h || 0) < 12) {
-      for (let j = -10; j <= 10; j++) {
-        const k = KEY(c, i + j), st = state.get(k);
-        state.set(k, { h: Math.max(st?.h || 0, 70 * Math.exp(-((j * PITCH_X) ** 2) / (2 * 40 * 40))), v: 0 });
+      for (let dc = -3; dc <= 3; dc++) for (let j = -10; j <= 10; j++) {
+        const k = KEY(c + dc, i + j), st = state.get(k);
+        const across = dc === 0 ? 1 : 0.34 * Math.exp(-(dc * dc) / (2 * 1.3 ** 2));
+        state.set(k, { h: Math.max(st?.h || 0, 84 * across * Math.exp(-((j * PITCH_X) ** 2) / (2 * 40 * 40))), v: 0 });
       }
     }
     for (const st of state.values()) st.v = 0;

@@ -1,7 +1,6 @@
 /* =========================================================
    procedural sound effects (Web Audio, no audio files)
    usage:  sfx.play('hover')  sfx.play('lift', { pitch: 1.2, vol: .6, pan: -.3 })
-           const w = sfx.loop('wave'); w.set(level0to1)      // continuous layers
    names:  hover tick type select confirm back deny glitch whoosh reveal lift drop ripple
            disc slide scan node packet score ding like zoom boot open close error
    Browsers keep audio locked until the first user gesture; we unlock automatically.
@@ -10,7 +9,6 @@ const AC = window.AudioContext || window.webkitAudioContext;
 let ctx = null, master, comp, wet, conv, noiseBuf;
 let muted = localStorage.getItem('ca.muted') === '1';
 const lastAt = new Map();
-const loops = new Map();
 const listeners = new Set();
 let VOL = 1, PAN = 0;     // per-play() scaling, read by the primitives
 
@@ -121,29 +119,6 @@ const R = {
 };
 const GAP = { hover: 45, tick: 28, type: 30, lift: 55, packet: 70, score: 40, slide: 50, zoom: 60, node: 80, glitch: 120 };
 
-/* ---------- continuous layers ---------- */
-function makeLoop(name) {
-  if (!ctx) return { set() {} };
-  if (name === 'wave') {
-    // glassy rustle: band-passed noise + faint pitched shimmer, gain follows wave energy
-    const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 0.8;
-    const g = ctx.createGain(); g.gain.value = 0;
-    const sh = ctx.createOscillator(); sh.frequency.value = 1568; const sg = ctx.createGain(); sg.gain.value = 0;
-    src.connect(bp).connect(g); sh.connect(sg);
-    out(g, { rev: 0.4 }); out(sg, { rev: 0.8 });
-    src.start(); sh.start();
-    return {
-      set(level, pitch = 1) {
-        const t = ctx.currentTime, l = Math.max(0, Math.min(1, level));
-        g.gain.setTargetAtTime(l * 0.05, t, 0.08);
-        sg.gain.setTargetAtTime(l * 0.006, t, 0.15);
-        bp.frequency.setTargetAtTime(800 + 1400 * pitch * l, t, 0.1);
-      },
-    };
-  }
-  return { set() {} };
-}
 export const sfx = {
   play(name, o = {}) {
     if (muted || !ctx || ctx.state !== 'running' || !R[name]) return;
@@ -152,10 +127,6 @@ export const sfx = {
     lastAt.set(name, now);
     VOL = o.vol ?? 1; PAN = o.pan ?? 0;
     try { R[name](o.pitch || 1); } finally { VOL = 1; PAN = 0; }
-  },
-  loop(name) {
-    if (!loops.has(name) && ctx) loops.set(name, makeLoop(name));
-    return loops.get(name) || { set() {} };
   },
   get muted() { return muted; },
   toggle() {

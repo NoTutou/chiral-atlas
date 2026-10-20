@@ -11,7 +11,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--mode', choices=['desktop', 'mobile', 'webgl'])
+parser.add_argument('--mode', choices=['desktop', 'mobile', 'webgl', 'model'])
 args = parser.parse_args()
 SHOTS = ROOT / 'shots' / 'archive-animation'
 SHOTS.mkdir(parents=True, exist_ok=True)
@@ -32,6 +32,7 @@ for path, source in [('../core/util.js', (ROOT / 'src/core/util.js').read_text()
                      ('./archive-gl.js', (ROOT / 'src/pages/archive-gl.js').read_text())]:
     rack_module = rack_module.replace("'" + path + "'", "'" + module_url(source) + "'")
 RACK_MODULE = module_url(rack_module)
+SFX_MODULE = module_url((ROOT / 'src/core/sfx.js').read_text())
 
 # Observe the canvas and DOM without adding production debug hooks. Each advance
 # renders every frame, including frames from interrupted/long-idle transitions.
@@ -41,8 +42,16 @@ let now = performance.now(), serial = 0, queue = new Map(), face = null, spin = 
 window.requestAnimationFrame = fn => { queue.set(++serial, fn); return serial; };
 window.cancelAnimationFrame = id => queue.delete(id);
 window.__oscillators = [];
+window.__buffers = [];
 const AC = window.AudioContext || window.webkitAudioContext;
 if (AC) {
+  const createBuffer = AC.prototype.createBufferSource;
+  AC.prototype.createBufferSource = function(...args) {
+    const src = createBuffer.apply(this, args), stop = src.stop;
+    const item = {src, stopped:false}; window.__buffers.push(item);
+    src.stop = function(...args) { item.stopped = true; return stop.apply(this, args); };
+    return src;
+  };
   const create = AC.prototype.createOscillator;
   AC.prototype.createOscillator = function(...args) {
     const osc = create.apply(this, args), stop = osc.stop;
@@ -51,6 +60,29 @@ if (AC) {
     return osc;
   };
 }
+// Observe the actual per-instance geometry submitted by the production WebGL
+// renderer, so a standalone formula passing cannot hide a missing page effect.
+window.__rackCells = null;
+const GL = WebGL2RenderingContext.prototype, buffers = new WeakMap();
+const upload = GL.bufferData, draw = GL.drawElementsInstanced;
+GL.bufferData = function(target, data, usage) {
+  if (target === this.ARRAY_BUFFER && data instanceof Float32Array) {
+    buffers.set(this.getParameter(this.ARRAY_BUFFER_BINDING), data.slice());
+  }
+  return upload.apply(this, arguments);
+};
+GL.drawElementsInstanced = function(mode, count, type, offset, instances) {
+  if (this.canvas.matches('.rack')) {
+    const data = buffers.get(this.getParameter(this.ARRAY_BUFFER_BINDING));
+    if (data && count === 18) {
+      window.__rackCells = {};
+      for (let j=0;j<instances*11;j+=11) {
+        __rackCells[[Math.round(data[j]),Math.round(data[j+2])].join(',')] = data[j+1];
+      }
+    }
+  }
+  return draw.apply(this, arguments);
+};
 const getContext = HTMLCanvasElement.prototype.getContext;
 HTMLCanvasElement.prototype.getContext = function(type, ...args) {
   const ctx = getContext.call(this, type, ...args);
@@ -137,32 +169,79 @@ def assert_hold_and_return_wave(page):
         check(Math.abs(a.liftAt(c,i,12000)-b.liftAt(c,i,12000))<1e-8,
           'opening changed the original raised shape');
       }
-      a.returnRipple(0,0,12000);
-      const wave = (c,i,t) => a.liftAt(c,i,t)-b.liftAt(c,i,t);
-      check(wave(0,3,12436)>30, 'wave did not reach a near slot');
-      check(Math.abs(wave(0,12,12436))<1e-8, 'far slot moved before the front arrived');
-      check(wave(0,12,12845)>20, 'wave did not travel outward');
-      check(Math.abs(wave(0,12,12845)-wave(0,-12,12845))<1e-8, 'wave was not bidirectional');
-      const peakTime = (c,i) => 12000 + 1000*(Math.hypot(i, c*252/15*0.55)/22+0.3);
+      const height = a.liftAt(0,0,12000);
+      a.releaseAt(0,0,12000);
+      check(Math.abs(a.liftAt(0,0,12000)-height)<1e-8, 'release jumped at the handoff');
+      let previous = height;
+      for (let t=12000;t<=12750;t+=25) {
+        const current = a.liftAt(0,0,t);
+        check(current<=previous+1e-8 && current>=0, 'source must lower continuously without bouncing');
+        previous = current;
+      }
+      check(a.liftAt(0,0,12750)===0, 'source did not reach the flat plane');
+      // Empty-pose release separates the outgoing front from the lowering pose.
+      flat.releaseAt(0,0,12000);
+      const wave = (c,i,t) => flat.liftAt(c,i,t);
+      check(wave(0,3,12656)>50, 'wave did not reach a near slot');
+      check(wave(0,12,12436)===0, 'far slot moved before the front arrived');
+      check(wave(0,12,13065)>35, 'wave did not travel outward');
+      check(Math.abs(wave(0,12,13065)-wave(0,-12,13065))<1e-8, 'wave was not bidirectional');
+      const peakTime = (c,i) => 12000 + 1000*(Math.hypot(i, c*252/15*0.5)/22+0.52);
       const near = wave(1,0,peakTime(1,0)), far = wave(2,0,peakTime(2,0));
-      check(near>5 && near<10 && far>0.5 && far<near,
+      check(near>12 && near<20 && far>2 && far<near,
         'return wave should weaken across columns');
       for (const c of [-1,1]) {
         check(Math.abs(wave(c,0,12300))<1e-8, 'neighbour column moved before the front arrived');
         check(Math.abs(wave(c,0,peakTime(1,0))-near)<1e-8, 'column spread was not symmetric');
         for (const i of [-6,6]) {
-          check(wave(c,i,peakTime(c,i))>4, 'return wave failed to spread diagonally');
+          check(wave(c,i,peakTime(c,i))>10, 'return wave failed to spread diagonally');
         }
       }
       check(Math.abs(wave(0,0,12300))<1e-8, 'landed case bounced instead of settling');
       for (let c=-3;c<=3;c++) for (let i=-20;i<=20;i++) {
         check(Math.abs(wave(c,i,15000))<1e-8, 'wave failed to decay');
       }
-      a.held = null;
+      for (let t=12000;t<=15000;t+=100) {
+        for (const c of [-6,6]) for (let i=-40;i<=40;i++) {
+          check(wave(c,i,t)===0, 'effect repeated on another copy of the shelf');
+        }
+        check(wave(0,100,t)===0, 'effect repeated along the infinite rack');
+      }
       for (let t=12016;t<=20000;t+=16) a.update(t,16,off);
-      check(Math.abs(a.liftAt(0,0,20000))<6, 'source did not flatten after release');
+      for (let c=-8;c<=8;c++) for (let i=-40;i<=40;i++) {
+        check(a.liftAt(c,i,20000)===0, 'idle plane must be flat without periodic crests');
+      }
       canvases.forEach(c => c.remove());
     }''', RACK_MODULE)
+
+
+def assert_audio_silence(page):
+    result = page.evaluate('''async module => {
+      const Original = window.AudioContext;
+      let offline;
+      window.AudioContext = class extends OfflineAudioContext {
+        constructor() { super(2, 48000*7, 48000); offline = this; }
+        get state() { return 'running'; }
+        resume() { return Promise.resolve(); }
+      };
+      localStorage.setItem('ca.muted','0');
+      const {sfx} = await import(module);
+      window.dispatchEvent(new Event('pointerdown'));
+      sfx.play('open'); sfx.play('disc'); sfx.play('close');
+      const audio = await offline.startRendering();
+      let active = 0, tail = 0;
+      for (let c=0;c<2;c++) {
+        const samples = audio.getChannelData(c);
+        for (let i=0;i<samples.length;i++) {
+          if (i<48000*3) active = Math.max(active, Math.abs(samples[i]));
+          if (i>48000*5) tail = Math.max(tail, Math.abs(samples[i]));
+        }
+      }
+      window.AudioContext = Original;
+      return {active,tail};
+    }''', SFX_MODULE)
+    assert result['active'] > .01, result
+    assert result['tail'] < 1e-7, ('audio continues after interaction tails', result)
 
 
 def assert_close(page, dwell=0, mobile_scroll=False, label='close'):
@@ -195,7 +274,29 @@ def assert_close(page, dwell=0, mobile_scroll=False, label='close'):
     for face in faces:
         assert all(math.isfinite(v) for v in face.values()), face
     shot(page, label + '-landed')
-    advance(page, 3500, 50)
+    def rendered_probe():
+        return page.evaluate('''() => {
+          if (!window.__returnOrigin || !__rackCells) return null;
+          const [x,z] = __returnOrigin.split(',').map(Number);
+          return [__rackCells[[x,z]], __rackCells[[x+45,z]], __rackCells[[x,z+252]], __rackCells[[x,z+1512]]];
+        }''')
+    landed = rendered_probe()
+    advance(page, 300)
+    sinking = rendered_probe()
+    shot(page, label + '-sinking')
+    advance(page, 600)
+    wave = rendered_probe()
+    shot(page, label + '-wave')
+    if landed and label.endswith('-idle'):
+        assert landed[0] > 20, ('original rack position was not raised', landed)
+        assert 0 < sinking[0] < landed[0] * .9, ('source did not visibly lower', landed, sinking)
+        assert wave[0] == 0 and wave[2] > 10, ('no rendered wave in adjacent column', wave)
+        # A shelf six columns away can be outside the visible instance range.
+        assert all(v in (None, 0) for v in [landed[3], sinking[3], wave[3]]), 'effect repeated at shelf period'
+        print(json.dumps({'rendered_return': {'landed': landed, 'sinking': sinking, 'wave': wave}}), flush=True)
+    advance(page, 2600, 50)
+    if landed and label.endswith('-idle'):
+        assert all(v == 0 for v in rendered_probe() if v is not None), 'rack never settled'
     shot(page, label + '-settled')
 
 
@@ -213,6 +314,7 @@ with sync_playwright() as p:
         page.wait_for_selector('.pg-archive')
         assert page.evaluate('__rackMode') == ('webgl2' if label == 'webgl' else '2d')
         advance(page, 3000, 50)
+        page.evaluate('window.__beforeOpen = __rackCells && Object.keys(__rackCells)')
 
         # Open by clicking an actual case, rather than only entering a deep link.
         for x, y in [(width * .56, height * .53), (width * .65, height * .58), (width * .5, height * .55)]:
@@ -231,8 +333,12 @@ with sync_playwright() as p:
         assert page.locator('.det').evaluate('e => +e.style.opacity') == 1
         assert page.locator('.dp .blk').evaluate_all('els => els.every(e => !e.inert)')
         assert page.evaluate('''() => __oscillators.some(x => x.stopped) &&
-          !__oscillators.some(x => !x.stopped && x.osc.frequency.value < 300)'''), \
-            'interaction audio missing or a continuous low-frequency oscillator remains'
+          __oscillators.every(x => x.stopped) && __buffers.every(x => x.stopped)'''), \
+            'interaction audio missing or an endless audio source remains'
+        if label == 'webgl':
+            missing = page.evaluate('__beforeOpen.filter(k => !(k in __rackCells))')
+            assert len(missing) == 1, ('selected position should be the only excluded cell', missing)
+            page.evaluate('key => window.__returnOrigin = key', missing[0])
         shot(page, label + '-opened')
         assert_close(page, dwell=2000 if label == 'webgl' else 10000, mobile_scroll=width < 1100, label=label + '-idle')
 
@@ -270,6 +376,7 @@ with sync_playwright() as p:
     model = browser.new_page()
     model.goto((ROOT / 'dist/index.html').as_uri() + '?2d#/archive')
     assert_hold_and_return_wave(model)
+    assert_audio_silence(model)
     model.close()
     assert not errors, errors
     browser.close()
