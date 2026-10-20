@@ -153,7 +153,7 @@ export default {
     els.zh.textContent = decode('未开拓区域 · 预留板块', seg(T, 300, 1100), 5);
     els.txt.style.opacity = seg(T, 0, 500);
     els.n.textContent = (det * 0.37).toFixed(2);
-    els.txt.style.transform = `translateY(-46%) translateX(${det > 0.6 && hash(Math.floor(T / 60)) > 0.9 ? (hash(T) - 0.5) * 8 : 0}px)`;
+    els.txt.style.transform = innerWidth <= 1100 ? 'none' : `translateY(-46%) translateX(${det > 0.6 && hash(Math.floor(T / 60)) > 0.9 ? (hash(T) - 0.5) * 8 : 0}px)`;
   },
 
   unmount() { bag?.dispose(); cv = null; },

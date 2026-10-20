@@ -14,7 +14,7 @@ import { drawOdradek, drawHatch } from './reserved.js';
 const SW = 1600, SH = 800;
 const DPR = () => Math.min(devicePixelRatio || 1, 1.5);
 
-let ctx, root, bag, stage, S = 1, OX = 0, OY = 0, T = 0;
+let ctx, root, bag, stage, S = 1, OX = 0, OY = 0, T = 0, mobile = false;
 let netC, rackC, graphC, scanC, staticLayer;
 let facs, hov = 0, hp = [0, 0, 0, 0], entering = null, lastGlitch = 0;
 const els = {};
@@ -102,8 +102,10 @@ function drawCase(g, cs, lift, a, sc) {
 function updateRack(dt) {
   const { g, w, h, sc } = rackC;
   // pointer → rack-local
-  const m = ctx.mouse, sx = (m.x - OX) / S - RACK_OFF.x, sy = (m.y - OY) / S - RACK_OFF.y;
-  const inside = hov === 2 && m.inside && !entering;
+  const m = ctx.mouse, rect = mobile ? els.rack.getBoundingClientRect() : null;
+  const sx = mobile ? (m.x - rect.left) * 820 / rect.width : (m.x - OX) / S - RACK_OFF.x;
+  const sy = mobile ? (m.y - rect.top) * 560 / rect.height : (m.y - OY) / S - RACK_OFF.y;
+  const inside = hov === 2 && m.inside && !entering && !mobile;
   // pick the case under the cursor (test against each lifted top surface)
   let best = 1e9, hv = null;
   if (inside) {
@@ -520,11 +522,12 @@ function updateNet() {
    page
    ========================================================= */
 function layout() {
+  mobile = innerWidth <= 1100;
   const W = innerWidth, H = innerHeight - 64 - 38;
   S = Math.min(W / SW, H / SH);
   OX = (W - SW * S) / 2; OY = 64 + (H - SH * S) / 2;
-  stage.style.transform = `translate(${OX}px,${OY}px) scale(${S})`;
-  const fit = (c, w, h) => { const sc = S * DPR(); c.width = Math.round(w * sc); c.height = Math.round(h * sc); return { c, g: c.getContext('2d'), w, h, sc }; };
+  stage.style.transform = mobile ? 'none' : `translate(${OX}px,${OY}px) scale(${S})`;
+  const fit = (c, w, h) => { const sc = (mobile ? c.getBoundingClientRect().width / w : S) * DPR(); c.width = Math.max(1, Math.round(w * sc)); c.height = Math.max(1, Math.round(h * sc)); return { c, g: c.getContext('2d'), w, h, sc }; };
   netC = fit(els.net, SW, SH); rackC = fit(els.rack, 820, 560); graphC = fit(els.graph, 500, 236); scanC = fit(els.scan, 340, 300);
   grads = [0, 1].map((hot) => {
     const gr = rackC.g.createLinearGradient(0, 0, 0, RK.HY);
@@ -536,7 +539,8 @@ function layout() {
 
 function enter(k, hashPath, sx, sy, cs) {
   if (entering) return;
-  entering = { k, t: T, hash: hashPath, x: OX + sx * S, y: OY + sy * S, cs };
+  const rect = mobile ? facs[k].getBoundingClientRect() : null;
+  entering = { k, t: T, hash: hashPath, x: mobile ? rect.left + rect.width / 2 : OX + sx * S, y: mobile ? clamp(rect.top + rect.height / 2, 70, innerHeight - 70) : OY + sy * S, cs };
   ctx.sfx.play('confirm');
   if (k === 1) ctx.sfx.play('deny', { vol: 0.6 });
 }
@@ -613,6 +617,9 @@ export default {
     // hover / click per facility
     for (const k of [1, 2, 3]) {
       const el = facs[k];
+      el.setAttribute('role', 'link'); el.tabIndex = 0;
+      el.setAttribute('aria-label', { 1: '进入预留板块', 2: '进入知识档案库', 3: '进入推理评估' }[k]);
+      bag.on(el, 'keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); enter(k, ROUTE[k], 0, 0); } });
       bag.on(el, 'pointerenter', () => {
         if (entering) return;
         hov = k; ctx.sfx.play('hover');
@@ -622,7 +629,7 @@ export default {
       bag.on(el, 'pointerleave', () => { if (hov === k) hov = 0; });
       bag.on(el, 'click', (e) => {
         const sx = (e.clientX - OX) / S, sy = (e.clientY - OY) / S;
-        if (k === 2 && rkHover) {
+        if (k === 2 && rkHover && !mobile) {
           const a = rp(rkHover.x, rkHover.h, rkHover.z);
           enter(2, '#/archive/' + encodeURIComponent(rkHover.rec.id), RACK_OFF.x + a[0], RACK_OFF.y + a[1], rkHover);
         } else enter(k, ROUTE[k], sx, sy);
@@ -642,11 +649,11 @@ export default {
     // intro + dimming of the non-hovered facilities
     const intro = { 2: ease.out(seg(T, 150, 800)), 3: ease.out(seg(T, 350, 1000)), 1: ease.out(seg(T, 550, 1200)) };
     for (const k of [1, 2, 3]) {
-      const dim = hov && hov !== k ? 0.42 : 1;
+      const dim = !mobile && hov && hov !== k ? 0.42 : 1;
       els.fa[k] = damp(els.fa[k], dim, 8, dt);
       facs[k].style.opacity = (intro[k] * (0.35 + 0.65 * els.fa[k])).toFixed(3);
       if (k !== 1 || hov !== 1) facs[k].style.transform = `translateY(${(1 - intro[k]) * 14}px)`;
-      const ep = hp[k];
+      const ep = mobile ? 1 : hp[k];
       els.enter[k].style.opacity = ep.toFixed(3);
       els.enter[k].style.clipPath = `polygon(0 0,${ep * 100}% 0,${ep * 100}% 100%,12px 100%,0 calc(100% - 12px))`;
     }
@@ -663,7 +670,7 @@ export default {
     updateRack(dt);
     updateGraph(dt);
     updateScan(dt);
-    updateNet();
+    if (!mobile) updateNet();
 
     if (entering && T - entering.t > 430) {
       const e = entering; entering = { ...e, t: Infinity };   // keep the lock until the wipe covers

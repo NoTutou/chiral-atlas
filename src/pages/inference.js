@@ -198,6 +198,7 @@ function startRun() {
   S.root.classList.add('running');
   buildResultDOM();
   S.ctx.sfx.play('confirm');
+  if (innerWidth <= 700) S.el.C.scrollIntoView({ block: 'start', behavior: 'smooth' });
 }
 function clearAll() {
   if (S.phase === 'running') return;
@@ -313,6 +314,7 @@ function openPeek(fname, line, anchor) {
   const w = Math.min(560, C.width - 32);
   p.style.width = w + 'px';
   p.style.display = 'block';
+  if (innerWidth <= 1100) { S.peekT = S.t; S.ctx.sfx.play('slide'); return; }
   const ph = p.offsetHeight;
   let x = clamp(r.left - C.left - 40, 16, C.width - w - 16);
   let y = r.bottom - C.top + 6;
@@ -815,6 +817,7 @@ export default {
   mount(root, ctx) {
     const bag = new Bag();
     root.innerHTML = `
+    <nav class="inf-jumps" aria-label="推演步骤"><button data-jump="L">01 装载资料</button><button data-jump="C">02 推理过程</button><button data-jump="R1">03 评估结果</button></nav>
     <div class="inf">
       <section class="col panel" id="L"><div class="brk"></div>
         <div class="ph"><span class="sq"></span><span class="t">INPUT</span><span class="zh">原始信息</span><span class="r lbl" id="cargoN">CARGO 0/${MAXC}</span></div>
@@ -834,7 +837,7 @@ export default {
         <div class="sec lbl">MANIFEST<span class="zh">货单</span></div>
         <div class="slots scroll" id="slots"></div>
         <div class="sec lbl">OBJECTIVE<span class="zh">评估目标</span></div>
-        <div class="goal"><span class="k">GOAL ▸</span><textarea id="goal" spellcheck="false"></textarea></div>
+        <div class="goal"><span class="k">GOAL ▸</span><textarea id="goal" aria-label="评估目标" spellcheck="false"></textarea></div>
         <div class="gchips">${GOALS.map((g, i) => `<span class="chip" data-goal="${i}" data-h>${g[0]}</span>`).join('')}</div>
         <div class="tok">TOKENS <b id="tok">0</b> / 128K<div class="bar"><i id="tokbar" style="width:0"></i></div></div>
         <div class="comp" id="comp"></div>
@@ -892,8 +895,8 @@ export default {
     <input type="file" id="file" multiple hidden>
     <div class="paste" id="paste"><div class="box"><div class="brk"></div>
       <div class="ph"><span class="sq"></span><span class="t">PASTE CARGO</span><span class="zh">粘贴文本为货物</span></div>
-      <div class="row"><input id="pName" placeholder="文件名，例如 snippet.py" spellcheck="false"></div>
-      <textarea id="pText" placeholder="在此粘贴文档、代码或 diff…" spellcheck="false"></textarea>
+      <div class="row"><input id="pName" aria-label="文件名" placeholder="文件名，例如 snippet.py" spellcheck="false"></div>
+      <textarea id="pText" aria-label="货物文本" placeholder="在此粘贴文档、代码或 diff…" spellcheck="false"></textarea>
       <div class="row" style="justify-content:flex-end"><span class="btn ghost" id="pCancel" data-h>取消</span><span class="btn" id="pOk" data-h>装载 LOAD</span></div>
     </div></div>`;
 
@@ -914,6 +917,7 @@ export default {
 
     /* ---- events ---- */
     const sfx = ctx.sfx;
+    bag.on(root.querySelector('.inf-jumps'), 'click', (e) => { const b = e.target.closest('[data-jump]'); if (b) el[b.dataset.jump].scrollIntoView({ block: 'start', behavior: 'smooth' }); });
     bag.on(root, 'pointerover', (e) => { const h = e.target.closest('[data-h]'); if (h && !h.contains(e.relatedTarget)) sfx.play('hover'); });
     bag.on(el.drop, 'click', () => { if (S.phase !== 'running') el.file.click(); });
     bag.on(el.file, 'change', () => { readFiles(el.file.files); el.file.value = ''; });

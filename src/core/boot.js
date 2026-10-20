@@ -29,6 +29,24 @@ const CSS = `
 #boot .cn .n{font-family:var(--f-cond);font-weight:300;font-size:64px;line-height:1;color:var(--ink);letter-spacing:2px}
 #boot .skip{position:absolute;right:40px;top:28px;font-family:var(--f-mono);font-size:10px;letter-spacing:2px;color:var(--dim)}
 #boot .skip kbd{font-family:var(--f-mono);border:1px solid var(--line-3);padding:1px 6px;margin-right:6px;color:var(--ink-2)}
+@media(max-width:1100px){
+  #boot .lg,#boot .rings{top:32%}
+  #boot .ttl{top:calc(32% + 155px);padding:0 16px}
+  #boot .ttl .a{font-size:clamp(28px,7.8vw,46px);letter-spacing:5px!important;padding-left:5px;min-height:36px}
+  #boot .ttl .b{font-size:11px;letter-spacing:2px;line-height:1.8;margin-top:10px;padding:0}
+  #boot .ttl .c{width:100%;max-width:360px;margin-top:16px;font-size:9px;letter-spacing:1px}
+  #boot .log{left:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));font-size:8px;letter-spacing:0;line-height:17px;max-width:calc(100% - 32px);overflow:hidden}
+  #boot .cn{display:none}
+  #boot .skip{right:16px;top:calc(20px + env(safe-area-inset-top,0px));font-size:10px;letter-spacing:1px;min-height:44px;display:flex;align-items:center}
+  #boot .skip kbd{display:none}
+}
+@media(max-width:1100px) and (max-height:520px){
+  #boot .lg,#boot .rings{top:38%;left:24%}
+  #boot .rings{scale:.65}
+  #boot .ttl{top:32%;left:43%;right:16px;padding:0}
+  #boot .ttl .a{font-size:28px;letter-spacing:3px!important}
+  #boot .log{font-size:7px;line-height:12px;bottom:12px}
+}
 `;
 
 const LOG = [
@@ -112,7 +130,8 @@ export function runBoot(ctx) {
       if (B >= END) { finish(); return; }
 
       const { g, w: W, h: H } = cv;
-      const CX = W / 2, CY = H * 0.42;
+      const brandRect = ctx.hud.el.querySelector('.brand svg').getBoundingClientRect();
+      const CX = lg.offsetLeft + lg.offsetWidth / 2, CY = lg.offsetTop + lg.offsetHeight / 2;
       g.clearRect(0, 0, W, H);
       // overlay background: black -> transparent (map shows) -> stays transparent; HUD appears after
       bk.style.opacity = 1 - ease.io(seg(B, 500, 2300)) * 0.85;
@@ -158,7 +177,7 @@ export function runBoot(ctx) {
       r4.setAttribute('transform', `rotate(${B * 0.012} 150 150)`);
       // fly into the HUD brand slot (logo svg centre ≈ 43,32 at 30px)
       const mv = ease.io(seg(B, 2650, 3300));
-      lg.style.transform = `translate(${lerp(0, 43 - CX, mv)}px,${lerp(0, 32 - CY, mv)}px) scale(${lerp(1, 30 / 156, mv)})`;
+      lg.style.transform = `translate(${lerp(0, brandRect.left + brandRect.width / 2 - CX, mv)}px,${lerp(0, brandRect.top + brandRect.height / 2 - CY, mv)}px) scale(${lerp(1, brandRect.width / 156, mv)})`;
       // title
       const tp = seg(B, 1500, 2300);
       tA.innerHTML = decode('CHIRAL', tp, 1) + (tp > 0.35 ? '<b> ' + decode('ATLAS', seg(tp, 0.35, 1), 4) + '</b>' : '');

@@ -27,3 +27,19 @@
 .pg-reserved .read{position:absolute;right:40px;bottom:58px;text-align:right;font-family:var(--f-mono);font-size:10.5px;line-height:1.9;letter-spacing:2px;color:var(--dim)}
 .pg-reserved .read b{font-weight:400;color:var(--ink-2)}
 .pg-reserved .read .n{font-family:var(--f-cond);font-weight:300;font-size:56px;line-height:1;color:var(--ink);letter-spacing:2px}
+@media (max-width:1100px){
+  .pg-reserved{top:var(--hud-h);bottom:var(--foot-h);overflow-y:auto;overscroll-behavior-y:contain;padding:0 max(20px,env(safe-area-inset-left,0px)) 28px}
+  .pg-reserved canvas.rz{height:250px;pointer-events:none}
+  .pg-reserved .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 130px,rgba(4,7,10,.65) 250px)}
+  .pg-reserved .warn{top:18px;right:20px;left:20px;width:max-content;max-width:calc(100% - 40px);font-size:10px;letter-spacing:1px;height:32px;padding:0 10px}
+  .pg-reserved .txt{position:relative;left:auto;top:auto;transform:none;width:100%;max-width:640px;margin:248px auto 0}
+  .pg-reserved .k{font-size:9px;letter-spacing:1px;gap:10px}.pg-reserved .k .ln{width:22px}
+  .pg-reserved .big{font-size:clamp(48px,13vw,80px);letter-spacing:.08em;margin-top:16px}
+  .pg-reserved .zh{font-size:16px;letter-spacing:2px;line-height:1.6;margin-top:8px}
+  .pg-reserved p{font-size:14px;line-height:2;margin:22px 0;max-width:none;user-select:text}
+  .pg-reserved .st div{min-height:48px;padding:12px 10px 12px 0;gap:6px}.pg-reserved .st div:nth-child(2n){padding-left:10px;padding-right:0}
+  .pg-reserved .st .l{font-size:9px;letter-spacing:1px}.pg-reserved .st .v{font-size:11px}
+  .pg-reserved .acts{flex-direction:column;gap:12px;margin-top:24px}.pg-reserved .btn{min-height:48px;justify-content:center;font-size:14px;letter-spacing:2px}
+  .pg-reserved .read{right:auto;left:20px;top:120px;bottom:auto;text-align:left;font-size:8px;letter-spacing:1px;line-height:2}
+  .pg-reserved .read .n{font-size:40px}
+}

@@ -60,8 +60,9 @@ export function createRack(canvas) {
     W = r.width; H = r.height;
     dpr = dprCap;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-    base = Math.min(W / 1600, H / 900) * 1.08;
-    CX = W * 0.56; CY = H * 0.53;
+    const mobile = W <= 1100;
+    base = mobile ? Math.max(0.52, Math.min(W / 760, H / 800)) : Math.min(W / 1600, H / 900) * 1.08;
+    CX = W * (mobile ? 0.5 : 0.56); CY = H * (mobile ? 0.6 : 0.53);
     S = base * cam.zoom;
     if (glr) glr.resize(W, H, dpr); else mkGrads();
   };

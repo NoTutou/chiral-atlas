@@ -16,9 +16,9 @@ export const TABS = [
 export function createHud(root, navigate) {
   root.insertAdjacentHTML('beforeend', `
   <div class="hud" id="hud">
-    <div class="brand" data-go="">${LOGO()}<div><div class="nm">CHIRAL<b> ATLAS</b></div><div class="sub">KNOWLEDGE · INFERENCE NETWORK</div></div></div>
-    <div class="tabs"><span class="k">Q</span>${TABS.map((x) => `<div class="tab ${x.lock ? 'lock' : ''}" data-go="${x.route}"><i>${x.no}</i>${x.en}<span class="zh">${x.zh}</span></div>`).join('')}<span class="k">E</span></div>
-    <div class="sys"><span class="sfx" id="sfxBtn" title="音效开关 (M)">SFX <b>ON</b></span><span><span class="led"></span>CHIRAL LINK <b class="ok">STABLE</b></span><span><b id="hudDate">—</b> <span id="hudTime">—</span></span></div>
+    <button class="brand" data-go="" aria-label="返回网络首页">${LOGO()}<div><div class="nm">CHIRAL<b> ATLAS</b></div><div class="sub">KNOWLEDGE · INFERENCE NETWORK</div></div></button>
+    <nav class="tabs" aria-label="板块导航"><span class="k">Q</span><button class="tab tab-home" data-go=""><span class="en">NETWORK</span><span class="zh">网络首页</span></button>${TABS.map((x) => `<button class="tab ${x.lock ? 'lock' : ''}" data-go="${x.route}"><i>${x.no}</i><span class="en">${x.en}</span><span class="zh">${x.zh}</span></button>`).join('')}<span class="k">E</span></nav>
+    <div class="sys"><button class="sfx" id="sfxBtn" title="音效开关 (M)" aria-label="切换音效">SFX <b>ON</b></button><span><span class="led"></span>CHIRAL LINK <b class="ok">STABLE</b></span><span><b id="hudDate">—</b> <span id="hudTime">—</span></span></div>
   </div>
   <div class="foot" id="foot"><span id="footL" style="display:flex;gap:26px"></span><span class="ticks"></span><span class="r" id="footR"></span></div>`);
   const hud = root.querySelector('#hud'), footL = root.querySelector('#footL'), footR = root.querySelector('#footR');
@@ -33,14 +33,14 @@ export function createHud(root, navigate) {
   };
   tick(); setInterval(tick, 1000);
   const sfxBtn = root.querySelector('#sfxBtn');
-  const paintSfx = (m) => { sfxBtn.innerHTML = `SFX <b class="${m ? '' : 'ok'}">${m ? 'OFF' : 'ON'}</b>`; };
+  const paintSfx = (m) => { sfxBtn.innerHTML = `SFX <b class="${m ? '' : 'ok'}">${m ? 'OFF' : 'ON'}</b>`; sfxBtn.setAttribute('aria-pressed', String(!m)); };
   paintSfx(sfx.muted); sfx.onChange(paintSfx);
   sfxBtn.addEventListener('click', (e) => { e.stopPropagation(); sfx.toggle(); sfx.play('select'); });
   hud.addEventListener('pointerover', (e) => { if (e.target.closest('[data-go],#sfxBtn') && !e.target.closest('[data-go],#sfxBtn').contains(e.relatedTarget)) sfx.play('hover'); });
 
   return {
     el: hud,
-    setActive(route) { hud.querySelectorAll('.tab').forEach((t) => t.classList.toggle('on', t.dataset.go === route)); },
+    setActive(route) { hud.querySelectorAll('.tab').forEach((t) => { const on = t.dataset.go === route; t.classList.toggle('on', on); if (on) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); }); },
     /** hints: [['●','选择'], ['ESC','返回','sq'] ...]  right: ['SECTOR 02 / ARCHIVE', ...] */
     setHints(hints = [], right = []) {
       footL.innerHTML = hints.map(([k, t, c]) => `<span class="hint"><kbd class="${c || ''}">${k}</kbd>${t}</span>`).join('');

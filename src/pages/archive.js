@@ -24,7 +24,7 @@ const TPL = `
   <div class="shelf"><div class="lbl">SHELF / 当前档案列</div><div class="n" data-r="shn">03<small>/ 06</small></div><div class="nm" data-r="shnm"></div></div>
   <div class="srch hit">
     <div class="sbox"><svg width="13" height="13" viewBox="0 0 13 13"><circle cx="5.5" cy="5.5" r="4.5" fill="none" stroke="#a3b6bf"/><path d="M9 9l3.5 3.5" stroke="#a3b6bf"/></svg>
-      <input data-r="q" placeholder="检索档案 / SEARCH ARCHIVE" spellcheck="false"><span class="k">/</span>
+      <input data-r="q" type="search" aria-label="检索档案" placeholder="检索档案 / SEARCH ARCHIVE" spellcheck="false"><span class="k">/</span>
       <div class="res scroll" data-r="res"></div></div>
     <div class="saved" data-r="savedBtn">★ SAVED <b data-r="savedN">00</b></div>
   </div>
@@ -34,6 +34,7 @@ const TPL = `
     <div class="row"><span class="lbl" data-r="drawn">RENDER —</span><span class="home" data-r="home">⌂ RECENTER 归位</span></div>
   </div>
   <div class="help"><b>拖拽</b> 平移　·　<b>滚轮</b> 缩放　·　<b>点击</b> 读取档案　·　<b>WASD</b> 移动　·　<b>/</b> 检索</div>
+  <div class="touch-help">单指拖动浏览 · 双指缩放 · 轻点 CD 读取</div>
 </div>
 <div class="tip"><div class="ln"></div><div class="card">
   <div class="id"><span data-r="tipId"></span><span data-r="tipCat"></span></div>
@@ -80,7 +81,7 @@ export default {
       ctx, root, r, bag, rack, rackC, focus: fitCanvas(root.querySelector('canvas.focus'), 1.5),
       tip: root.querySelector('.tip'), det: root.querySelector('.det'), ovw: root.querySelector('.ovw'),
       masks: [...root.querySelectorAll('.det .mask')],
-      hover: null, hoverSince: 0, hot: new Map(), over: false, open: null, drag: null, keys: new Set(),
+      hover: null, hoverSince: 0, hot: new Map(), over: false, open: null, drag: null, pointers: new Map(), pinch: null, keys: new Set(),
       tab: 0, track: 0, savedMode: false, sel: 0, matches: [], curShelf: -1, L: null, t0: ctx.clock.t,
     };
     rack.cam.x = 7 * PITCH_X; rack.cam.z = 2 * PITCH_Z;
@@ -92,6 +93,14 @@ export default {
 
     /* ---- pointer on the rack ---- */
     bag.on(rackC, 'pointermove', (e) => {
+      if (S.pointers.has(e.pointerId)) S.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (S.pointers.size > 1) {
+        const [a, b] = [...S.pointers.values()];
+        const distance = Math.hypot(a.x - b.x, a.y - b.y);
+        if (S.pinch) rack.zoomBy(distance / S.pinch, (a.x + b.x) / 2, (a.y + b.y) / 2);
+        S.pinch = Math.max(1, distance); S.drag = null;
+        return;
+      }
       S.over = true;
       const d = S.drag;
       if (d) {
@@ -110,16 +119,28 @@ export default {
     bag.on(rackC, 'pointerdown', (e) => {
       if (S.open || e.button !== 0) return;
       rackC.setPointerCapture(e.pointerId);
+      S.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      rack.cam.vx = rack.cam.vz = 0;
+      if (S.pointers.size > 1) {
+        const [a, b] = [...S.pointers.values()];
+        S.pinch = Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)); S.drag = null;
+        return;
+      }
       S.drag = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, lt: e.timeStamp, moved: false, vx: 0, vz: 0 };
       r.q.blur();
     });
     bag.on(rackC, 'pointerup', (e) => {
+      S.pointers.delete(e.pointerId);
+      if (S.pinch !== null) { if (!S.pointers.size) S.pinch = null; S.drag = null; rackC.classList.remove('grab'); return; }
       const d = S.drag; S.drag = null; rackC.classList.remove('grab');
       if (!d) return;
       if (d.moved) { rack.cam.vx = clamp(d.vx, -3, 3); rack.cam.vz = clamp(d.vz, -3, 3); return; }
       const hv = rack.pick(e.clientX, e.clientY, ctx.clock.t);
       if (hv) openCell(hv, ctx.clock.t);
     });
+    const cancelPointer = (e) => { S.pointers.delete(e.pointerId); S.drag = null; if (!S.pointers.size) S.pinch = null; rackC.classList.remove('grab'); };
+    bag.on(rackC, 'pointercancel', cancelPointer);
+    bag.on(rackC, 'lostpointercapture', cancelPointer);
     bag.on(rackC, 'wheel', (e) => {
       e.preventDefault();
       if (S.open) return;
@@ -355,6 +376,7 @@ function openCell(cell, t) {
   rack.exclude = rack.KEY(cell.c, cell.i);
   rack.ripple(cell.x, cell.z, t);
   S.tab = 0; S.track = 0;
+  S.det.scrollTop = 0;
   fillDetail(cell.rec);
   layoutDetail();
   S.det.classList.add('on');
@@ -370,6 +392,7 @@ function swapTo(cell) {
   rack.exclude = rack.KEY(cell.c, cell.i);
   rack.cam.x = cell.x; rack.cam.z = cell.z; S.unfreeze = true;
   S.tab = 0; S.track = 0;
+  S.det.scrollTop = 0;
   fillDetail(cell.rec);
   ctx.sfx.play('slide', { pitch: 1.2 });
   history.replaceState(null, '', '#/archive/' + cell.rec.id);
@@ -391,12 +414,23 @@ function finishClose() {
 /* ---------- detail DOM ---------- */
 function layoutDetail() {
   const W = innerWidth, H = innerHeight;
+  if (W <= 1100) {
+    const top = parseFloat(getComputedStyle(S.ctx.hud.el).height);
+    const FW = Math.min(W * 0.38, 200), FH = FW * HY / LZ;
+    S.L = { FX: 24, FY: top + 76, FW, FH };
+    const no = S.root.querySelector('.det .no'), dp = S.root.querySelector('.det .dp');
+    Object.assign(S.r.back.style, { left: '', top: '' });
+    Object.assign(no.style, { left: '', top: '', marginLeft: (FW + 28) + 'px', minHeight: (FH + 58) + 'px' });
+    Object.assign(dp.style, { left: '', right: '', top: '', bottom: '' });
+    return;
+  }
   const FW = Math.min(W * 0.36, ((H - 400) * LZ) / HY, 600), FH = (FW * HY) / LZ;
   const FX = Math.max(52, W * 0.06), FY = Math.max(150, 64 + (H - 64 - 40 - FH) / 2 - 40);
   S.L = { FX, FY, FW, FH };
   const { r } = S;
   r.back.style.left = FX + 'px';
   const no = S.root.querySelector('.det .no');
+  no.style.marginLeft = ''; no.style.minHeight = '';
   no.style.left = FX + 'px'; no.style.top = FY + FH + 62 + 'px';
   const dp = S.root.querySelector('.det .dp');
   const left = FX + FW + Math.max(50, W * 0.05);
@@ -522,7 +556,8 @@ function drawFocus(t, E) {
   if (!o) return;
   const { rack, ctx } = S;
   const cs = o.cell, rec = o.rec, sh = shelfAt(cs.c);
-  const { FX, FY, FW, FH } = S.L;
+  const { FX, FW, FH } = S.L;
+  const FY = S.L.FY - (innerWidth <= 1100 ? S.det.scrollTop : 0);
   const lift = o.lift0 + 130 * ease.out(seg(E, 0, 380));
   const m = ease.io(seg(E, 280, 1050));
   const xL = cs.x - TX / 2, xR = cs.x + TX / 2, zN = cs.z - LZ / 2, zF = cs.z + LZ / 2;
