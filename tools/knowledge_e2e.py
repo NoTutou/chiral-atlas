@@ -125,6 +125,8 @@ with sync_playwright() as p:
     expect(page.locator('[data-r="res"]')).not_to_have_class('res scroll on')
     expect(page.locator('.cat.sv')).to_have_class('cat sv on')
     page.locator('[data-r="q"]').fill('BST')
+    page.wait_for_timeout(200)  # a previous blur must not hide a newly focused search
+    expect(page.locator('[data-r="res"]')).to_have_class('res scroll on')
     expect(page.locator('.cat.sv')).not_to_have_class('cat sv on')
     page.locator('.res .it').first.click()
     ready(page)

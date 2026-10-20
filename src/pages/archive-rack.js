@@ -14,8 +14,8 @@ export const PITCH_X = 15, TX = 9, LZ = 210, HY = 175, PITCH_Z = 252;
 const NSH = SHELVES.length, PER = 16; // visual floor-marker period; record counts vary by shelf
 const YAW = (34 * Math.PI) / 180, PITCH = (38 * Math.PI) / 180;
 const cp = Math.cos(YAW), sp = Math.sin(YAW), cq = Math.cos(PITCH), sq = Math.sin(PITCH);
-const GAPV = ((PITCH_X - TX) * Math.tan(PITCH)) / sp + 1;          // side face visible through the slot gap
-const GAPE = ((PITCH_Z - LZ) * Math.tan(PITCH)) / cp + 2;          // end face visible through the shelf gap
+export const GAPV = ((PITCH_X - TX) * Math.tan(PITCH)) / sp + 1;   // side face visible through the slot gap
+export const GAPE = ((PITCH_Z - LZ) * Math.tan(PITCH)) / cp + 2;   // end face visible through the shelf gap
 const KEY = (c, i) => c * 4194304 + i;
 
 export const recordAt = (c, i) => shelfAt(c).records[mod(i, shelfAt(c).records.length)];
@@ -96,6 +96,11 @@ export function createRack(canvas) {
     return l;
   }
   R.liftAt = liftAt;
+  R.introAt = (c, i, t) => {
+    const q = P(i * PITCH_X, 0, c * PITCH_Z);
+    return t - introT0 < 2600 ? introAt(q[0], q[1], t) : 0;
+  };
+  R.caseLiftAt = (c, i, t) => liftAt(c, i, t) - R.introAt(c, i, t) * 260;
 
   /* ---------- visible lattice range ---------- */
   function range() {
@@ -192,9 +197,9 @@ export function createRack(canvas) {
         const k = KEY(c, i);
         if (k === R.exclude) continue;
         const x = i * PITCH_X, z = c * PITCH_Z;
-        const lf = liftAt(c, i, t);
-        const vis = clamp(lf - liftAt(c, i - 1, t) + GAPV, 0, HY);
-        const visE = clamp(lf - liftAt(c - 1, i, t) + GAPE, 0, HY);
+        const lf = R.caseLiftAt(c, i, t);
+        const vis = clamp(lf - R.caseLiftAt(c, i - 1, t) + GAPV, 0, HY);
+        const visE = clamp(lf - R.caseLiftAt(c - 1, i, t) + GAPE, 0, HY);
         const xL = x - TX / 2, xR = x + TX / 2, zN = z - LZ / 2, zF = z + LZ / 2;
         const top = [P(xL, lf, zN), P(xR, lf, zN), P(xR, lf, zF), P(xL, lf, zF)];
         const side = [P(xL, lf, zF), P(xL, lf, zN), P(xL, lf - vis, zN), P(xL, lf - vis, zF)];
@@ -468,6 +473,7 @@ export function createRack(canvas) {
   /* ---------- camera helpers ---------- */
   R.intro = (t) => { introT0 = t; };
   R.ripple = (x, z, t) => ripples.push({ x, z, t0: t });
+  R.stop = () => { fly = null; cam.vx = cam.vz = 0; cam.zoomT = cam.zoom; };
   R.pan = (dxs, dys) => {
     // move the camera so the ground follows the pointer
     const [ax, az] = ground(0, 0), [bx, bz] = ground(dxs, dys);

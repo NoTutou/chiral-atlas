@@ -6,9 +6,10 @@
 import './archive.css';
 import { clamp, lerp, seg, ease, decode, pad, mod, esc, Bag, download, fitCanvas, hash } from '../core/util.js';
 import { SHELVES, RECORDS, BY_ID, TOTAL, GROUP_TOTAL, VERIFIED_AT, RATING_POLICY, ratingText, recordToMarkdown } from '../data/archive.js';
-import { createRack, drawDisc, recordAt, shelfAt, PITCH_X, PITCH_Z, TX, LZ, HY } from './archive-rack.js';
+import { createRack, drawDisc, recordAt, shelfAt, PITCH_X, PITCH_Z, TX, LZ, HY, GAPV, GAPE } from './archive-rack.js';
 
 let S = null;
+const OPEN_END = 2100;
 
 const TPL = `
 <canvas class="rack"></canvas>
@@ -159,9 +160,11 @@ export default {
     bag.on(r.zo, 'click', () => { rack.zoomBy(0.8, rack.W * 0.56, rack.H * 0.53); ctx.sfx.play('zoom', { pitch: 0.8 }); });
     bag.on(r.home, 'click', () => { rack.flyTo({ x: 7 * PITCH_X, z: 2 * PITCH_Z }, ctx.clock.t, { zoom: 1 }); rack.filter = -1; buildCats(); ctx.sfx.play('whoosh', { vol: 0.5 }); });
     bag.on(r.savedBtn, 'click', () => toggleSavedMode());
+    let searchBlurTimer;
+    bag.add(() => clearTimeout(searchBlurTimer));
     bag.on(r.q, 'input', () => doSearch(r.q.value));
-    bag.on(r.q, 'focus', () => { if (r.q.value) doSearch(r.q.value); });
-    bag.on(r.q, 'blur', () => setTimeout(() => r.res.classList.remove('on'), 150));
+    bag.on(r.q, 'focus', () => { clearTimeout(searchBlurTimer); if (r.q.value) doSearch(r.q.value); });
+    bag.on(r.q, 'blur', () => { clearTimeout(searchBlurTimer); searchBlurTimer = setTimeout(() => r.res.classList.remove('on'), 150); });
     bag.on(r.q, 'keydown', (e) => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); S.sel = mod(S.sel + (e.key === 'ArrowDown' ? 1 : -1), Math.max(1, S.matches.length)); paintResults(); r.res.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); }
       if (e.key === 'Enter' && S.matches[S.sel]) { r.q.blur(); openId(S.matches[S.sel].id); }
@@ -213,7 +216,7 @@ export default {
   onRoute(params) {
     const id = params[0];
     if (id && BY_ID.has(id)) { if (!S.open || S.open.rec.id !== id) S.open ? swapTo(S.rack.cellOf(id)) : openId(id); }
-    else if (S.open && !S.open.tc) closeOpen();
+    else if (S.open && S.open.tc === null) closeOpen();
   },
 
   onKey(e) {
@@ -266,12 +269,22 @@ export default {
     let E = 0;
     const o = S.open;
     if (o) {
-      E = t - o.t0;
-      if (o.tc) { E = Math.max(0, Math.min(2200, o.Ec) - (t - o.tc) * 2.2); if (E <= 0) finishClose(); }
+      const closing = o.tc !== null;
+      E = closing ? o.Ec * (1 - ease.io(seg(t - o.tc, 0, o.closeDur))) : clamp(t - o.t0, 0, OPEN_END);
+      o.E = E;
+      // Reverse the actual rendered reveal, regardless of how long the reader stayed.
+      o.domE = closing ? Math.max(0, o.Dc - (o.Ec - E)) : clamp(t - o.domT0, 0, OPEN_END);
+      o.spin += dt / 1000 * (0.6 + ease.io(seg(E, 1350, OPEN_END)) * 1.8);
+      if (closing) {
+        S.det.scrollTop = o.scroll0 * (1 - ease.io(seg(t - o.tc, 0, Math.min(300, o.closeDur * 0.35))));
+        if (E <= 0) finishClose();
+      } else if (o.pendingCell && E >= 1050) {
+        const cell = o.pendingCell; o.pendingCell = null; swapTo(cell);
+      }
     }
     const dim = S.open ? ease.io(seg(E, 150, 800)) : 0;
     rack.dim = dim;
-    rack.frozen = !!S.open && !S.open.tc && E > 1200 && !S.unfreeze;
+    rack.frozen = !!S.open && S.open.tc === null && E >= OPEN_END && !S.unfreeze;
     S.unfreeze = false;
     rack.draw(t, (c, i) => S.hot.get(rack.KEY(c, i)) || 0);
     S.rackC.style.filter = dim > 0.01 ? `blur(${(dim * 3.5).toFixed(2)}px) brightness(${(1 - dim * 0.45).toFixed(3)})` : '';
@@ -377,13 +390,19 @@ function openId(id) {
 function openCell(cell, t) {
   if (S.open) return;
   const { rack, ctx } = S;
-  S.open = { cell, rec: cell.rec, t0: t, domT0: t, lift0: rack.liftAt(cell.c, cell.i, t), fired: new Set() };
+  rack.stop();
+  S.pendingOpen = null;
+  S.open = { cell, rec: cell.rec, t0: t, domT0: t, tc: null, E: 0, domE: 0, spin: 0,
+    lift0: rack.caseLiftAt(cell.c, cell.i, t), hot0: S.hot.get(rack.KEY(cell.c, cell.i)) || 0, fired: new Set() };
   rack.exclude = rack.KEY(cell.c, cell.i);
   rack.ripple(cell.x, cell.z, t);
   S.tab = 0; S.track = 0;
   S.det.scrollTop = 0;
   fillDetail(cell.rec);
   layoutDetail();
+  S.det.style.opacity = '0';
+  S.r.back.inert = true;
+  S.masks.forEach((mk) => { mk.style.opacity = '1'; mk.style.transform = 'scaleX(1)'; mk.parentElement.inert = true; });
   S.det.classList.add('on');
   ctx.sfx.play('open');
   history.replaceState(null, '', '#/archive/' + cell.rec.id);
@@ -392,10 +411,13 @@ function openCell(cell, t) {
 function swapTo(cell) {
   if (!cell || !S.open) return;
   const { rack, ctx } = S;
+  if (S.open.tc !== null) { S.nextId = cell.rec.id; return; }
+  if (S.open.E < 1050) { S.open.pendingCell = cell; return; }
   S.open.cell = cell; S.open.rec = cell.rec;
-  S.open.domT0 = ctx.clock.t - 850; S.open.fired = new Set(['open', 'disc']);
+  S.open.domT0 = ctx.clock.t - 850; S.open.domE = 850; S.open.fired = new Set(['open', 'disc']);
   rack.exclude = rack.KEY(cell.c, cell.i);
   rack.cam.x = cell.x; rack.cam.z = cell.z; S.unfreeze = true;
+  S.open.lift0 = rack.caseLiftAt(cell.c, cell.i, ctx.clock.t);
   S.tab = 0; S.track = 0;
   S.det.scrollTop = 0;
   fillDetail(cell.rec);
@@ -405,16 +427,21 @@ function swapTo(cell) {
 
 function closeOpen() {
   const o = S.open;
-  if (!o || o.tc) return;
-  o.tc = S.ctx.clock.t; o.Ec = o.tc - o.t0;
+  if (!o || o.tc !== null) return;
+  o.tc = S.ctx.clock.t; o.Ec = o.E; o.Dc = o.domE;
+  o.closeDur = clamp(o.Ec * 0.6, 360, 1250);
+  o.scroll0 = S.det.scrollTop;
+  o.pendingCell = null;
+  S.det.classList.add('closing'); S.det.inert = true;
   S.ctx.sfx.play('close');
 }
 function finishClose() {
   S.rack.exclude = null;
   S.open = null;
-  S.det.classList.remove('on');
+  S.det.classList.remove('on', 'closing'); S.det.inert = false;
   history.replaceState(null, '', '#/archive');
   if (S.pendingQuery) { S.r.q.value = S.pendingQuery; S.pendingQuery = null; doSearch(S.r.q.value); S.r.q.focus(); }
+  if (S.nextId) { const id = S.nextId; S.nextId = null; openId(id); }
 }
 
 /* ---------- detail DOM ---------- */
@@ -574,8 +601,19 @@ function drawFocus(t, E) {
   const cs = o.cell, rec = o.rec, sh = shelfAt(cs.c);
   const { FX, FW, FH } = S.L;
   const FY = S.L.FY - (innerWidth <= 1100 ? S.det.scrollTop : 0);
-  const lift = o.lift0 + 130 * ease.out(seg(E, 0, 380));
+  const closing = o.tc !== null;
+  const lifted = ease.out(seg(E, 0, 380));
+  // At the handoff, match the rack's current spring/breathing position.
+  const restLift = closing ? lerp(rack.caseLiftAt(cs.c, cs.i, t), o.lift0, lifted) : o.lift0;
+  const lift = restLift + 130 * lifted;
   const m = ease.io(seg(E, 280, 1050));
+  const vis = lerp(clamp(lift - rack.caseLiftAt(cs.c, cs.i - 1, t) + GAPV, 0, HY), HY, m);
+  const visE = lerp(clamp(lift - rack.caseLiftAt(cs.c - 1, cs.i, t) + GAPE, 0, HY), HY, m);
+  const hot = lerp(closing ? (S.hot.get(rack.KEY(cs.c, cs.i)) || 0) : o.hot0, 1, lifted);
+  const sy = rack.P(cs.x, 0, cs.z)[1];
+  const fog = lerp(clamp(0.32 + 0.75 * (sy + 120) / (rack.H + 120), 0.2, 1) *
+    (1 - rack.introAt(cs.c, cs.i, t)) *
+    (rack.filter >= 0 && mod(cs.c, SHELVES.length) !== rack.filter ? 0.32 : 1), 1, lifted);
   const xL = cs.x - TX / 2, xR = cs.x + TX / 2, zN = cs.z - LZ / 2, zF = cs.z + LZ / 2;
   const O0 = rack.P(xL, lift, zF), U0 = rack.P(xL, lift, zN), V0 = rack.P(xL, lift - HY, zF);
   const O = [lerp(O0[0], FX, m), lerp(O0[1], FY, m)], U = [lerp(U0[0], FX + FW, m), lerp(U0[1], FY, m)], V = [lerp(V0[0], FX, m), lerp(V0[1], FY + FH, m)];
@@ -583,26 +621,29 @@ function drawFocus(t, E) {
 
   // thickness faces fade while the case turns to face the camera
   if (m < 0.98) {
-    g.globalAlpha = 1 - m;
+    g.globalAlpha = (1 - m) * fog;
+    const edge = rack.P(xR, lift, zF);
+    const dx = (edge[0] - O0[0]) * (1 - m), dy = (edge[1] - O0[1]) * (1 - m);
+    const end = [U[0] + (V[0] - O[0]) * visE / HY, U[1] + (V[1] - O[1]) * visE / HY];
     const q = (pts, fill) => { g.beginPath(); pts.forEach((p, k) => (k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fillStyle = fill; g.fill(); };
-    q([rack.P(xL, lift, zN), rack.P(xR, lift, zN), rack.P(xR, lift - HY, zN), rack.P(xL, lift - HY, zN)], 'rgba(62,94,112,1)');
-    q([rack.P(xL, lift, zN), rack.P(xR, lift, zN), rack.P(xR, lift, zF), rack.P(xL, lift, zF)], 'rgba(190,220,235,1)');
+    q([U, [U[0] + dx, U[1] + dy], [end[0] + dx, end[1] + dy], end], `rgb(${22 + hot * 40 | 0},${34 + hot * 60 | 0},${42 + hot * 70 | 0})`);
+    q([U, [U[0] + dx, U[1] + dy], [O[0] + dx, O[1] + dy], O], `rgba(${40 + hot * 150 | 0},${60 + hot * 160 | 0},${72 + hot * 165 | 0},${0.78 + hot * 0.2})`);
     g.globalAlpha = 1;
   }
   if (m > 0) {
     g.save(); g.globalAlpha = Math.pow(m, 6) * 0.6; g.shadowColor = 'rgba(43,181,238,.55)'; g.shadowBlur = 60;
-    g.fillStyle = '#05090c'; g.fillRect(FX, FY, FW, FH); g.restore();
+    g.fillStyle = '#05090c'; g.beginPath(); g.moveTo(...O); g.lineTo(...U);
+    g.lineTo(U[0] + V[0] - O[0], U[1] + V[1] - O[1]); g.lineTo(...V); g.closePath(); g.fill(); g.restore();
   }
   aff(O, U, V);
-  rack.faceArt(g, rec, sh, 1, 1, HY, 200, true, fGrads);
+  rack.faceArt(g, rec, sh, hot, fog, vis, lift, m > 0, fGrads);
   g.globalAlpha = 1;
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   fire(o, 'disc', E, 1350, () => ctx.sfx.play('disc'));
   if (m > 0.6) {
     const clr = ease.io(seg(E, 950, 1500));
-    const slide = ease.io(seg(E, 1350, 2100));
-    const spin = ((t - o.t0) / 1000) * (0.6 + slide * 1.8);
+    const slide = ease.io(seg(E, 1350, OPEN_END));
     const r = FH * 0.41;
     const dcx = FX + FW * 0.47 + slide * FW * 0.27, dcy = FY + FH * 0.56;
     g.save(); g.globalAlpha = clr;
@@ -610,9 +651,10 @@ function drawFocus(t, E) {
     g.strokeStyle = 'rgba(227,162,58,.9)'; g.lineWidth = rr * 0.27; g.beginPath(); g.arc(FX + FW - FW * 0.125, FY + FH * 0.17, rr, 0, 7); g.stroke();
     g.strokeStyle = 'rgba(255,210,126,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(FX + FW - FW * 0.125, FY + FH * 0.17, rr * 1.35, 0, 7); g.stroke();
     g.restore();
-    drawDisc(g, dcx, dcy, r, spin, clr, `CHIRAL ATLAS · ARCHIVE ${rec.id} · ${rec.en} · ${rec.severity} · `);
+    drawDisc(g, dcx, dcy, r, o.spin, clr, `CHIRAL ATLAS · ARCHIVE ${rec.id} · ${rec.en} · ${rec.severity} · `);
     const yc = FY + FH * clr;
-    g.save(); g.beginPath(); g.rect(FX, yc, FW, FY + FH - yc); g.clip();
+    g.save(); g.globalAlpha = ease.io(seg(E, 950, 1150));
+    g.beginPath(); g.rect(FX, yc, FW, FY + FH - yc); g.clip();
     g.fillStyle = 'rgba(120,160,175,.20)'; g.fillRect(FX, FY, FW, FH);
     for (let k = 0; k < FH; k += 3) { g.fillStyle = `rgba(200,230,240,${0.02 + hash(k) * 0.03})`; g.fillRect(FX, FY + k, FW, 1); }
     g.restore();
@@ -620,11 +662,13 @@ function drawFocus(t, E) {
       g.fillStyle = 'rgba(134,227,255,.9)'; g.fillRect(FX - 10, yc, FW + 20, 1.5);
       g.fillStyle = 'rgba(134,227,255,.18)'; g.fillRect(FX, yc - 26, FW, 26);
     }
+    g.save(); g.globalAlpha = clr;
     aff(O, U, V);
     g.fillStyle = 'rgba(233,241,244,.96)'; g.fillRect(10, 12, 74, 27);
     g.fillStyle = '#05080b'; g.font = '600 4px "Barlow Condensed"'; g.fillText('CHIRAL ATLAS · ARCHIVE', 14, 19);
     g.font = '700 11.5px "Barlow Condensed"'; g.fillText(rec.id, 14, 33, 64);
     g.fillStyle = sh.col; g.fillRect(70, 15, 10, 3);
+    g.restore();
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.strokeStyle = `rgba(233,241,244,${clr})`; g.lineWidth = 1.2;
     const bk = (x, y, sx, sy) => { g.beginPath(); g.moveTo(x + sx * 18, y); g.lineTo(x, y); g.lineTo(x, y + sy * 18); g.stroke(); };
@@ -635,12 +679,15 @@ function drawFocus(t, E) {
   }
 
   // DOM reveal (mask bars slide away, staggered)
-  const D = t - o.domT0 - (o.tc ? (t - o.tc) * 3.2 : 0);
+  const D = o.domE;
+  const scrollFade = closing && o.scroll0 > 0 ? 1 - ease.io(seg(t - o.tc, 0, 220)) : 1;
+  S.det.style.opacity = ease.io(seg(D, 600, 900)) * scrollFade;
   const base = 900;
   S.masks.forEach((mk, k) => {
     const p = ease.io(seg(D, base + k * 110, base + k * 110 + 520));
     mk.style.transform = `scaleX(${1 - p})`;
     mk.style.opacity = p >= 1 ? 0 : 1;
+    mk.parentElement.inert = closing || p < 1;
     fire(o, 'm' + k, D, base + k * 110 + 60, () => ctx.sfx.play('slide', { pitch: 0.9 + k * 0.08 }));
   });
   S.r.rule.style.transform = `scaleX(${ease.io(seg(D, base + 150, base + 900))})`;
@@ -648,5 +695,6 @@ function drawFocus(t, E) {
   S.r.dNo.textContent = decode(rec.id, seg(D, base, base + 600), 2);
   if (D > base + 100 && D < base + 900) ctx.sfx.play('tick', { vol: 0.8 });
   S.r.back.style.opacity = ease.out(seg(D, 900, 1300));
+  S.r.back.inert = closing || D < 1300;
   S.root.querySelectorAll('.tr.on .w i').forEach((el, j) => { el.style.height = 3 + Math.abs(Math.sin(t / 180 + j * 0.7)) * 11 + 'px'; });
 }

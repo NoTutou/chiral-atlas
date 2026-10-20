@@ -29,6 +29,7 @@
 - 档案库支持单指拖动、双指缩放，分类索引可横向滑动；详情可滚动阅读，支持收藏、导出和送入推演。
 - 推演页按「装载资料 → 推理过程 → 评估结果」排列，顶部步骤按钮可快速定位；支持选择文件和粘贴文本。
 - `npm run build` 后运行 `python tools/mobile_e2e.py`，检查 320–1440px 布局及触摸、检索、导出、推演流程（需要 Python Playwright 和 Chrome）。也可传入开发服务器地址。
+- 碟片动画回归：`python3 tools/archive_animation_e2e.py`，逐帧检查展开、停留后收起、中途关闭、切换档案及滚动归位；可加 `--mode desktop`、`--mode mobile` 或 `--mode webgl` 单独检查。
 
 ## 目录
 
