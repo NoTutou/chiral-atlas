@@ -1,0 +1,119 @@
+{
+  "ghsa_id": "GHSA-qpw7-65ww-wj82",
+  "cve_id": "CVE-2023-47625",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-qpw7-65ww-wj82",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-qpw7-65ww-wj82",
+  "summary": "[Bug Report] Vulnerable Bug Found in CrsfParser_TryParseCrsfPacket which can trigger Global Buffer Overflow",
+  "description": "### Summary\r\n\r\n---\r\n\r\nWe identified a global buffer overflow vulnerability in the CrsfParser_TryParseCrsfPacket function in /src/drivers/rc/crsf_rc/CrsfParser.cpp:298 due to the invalid size check. \r\n\r\nWe investigated by the following process\r\n\r\n1. Enable the crsf_rc driver\r\n2. Write the data (i.e., packet) to _rcs_buf used in the crsf_rc driver on a device \r\n3. Global buffer overflow vulnerability in the *CrsfParser_TryParseCrsfPacket* function will be triggered when the *CrsfParser_TryParseCrsfPacket* function parses this data.\r\n\r\nThe following packet can trigger the vulnerability as mentioned above.\r\n\r\n```c\r\npacket[0] = 0xc8; // MAGIC NUMBER which informs rc packet start\r\npacket[1] = 62; // size of the packet\r\npacket[2] = 100; // packet type ( random, not the 0x16, 0x14 )\r\n```\r\n\r\n### Detailed Root Cause\r\n\r\n---\r\n\r\nWe first assumed that we can write the arbitrary data into _rcs_buf using the following code.\r\n\r\n- /src/drivers/rc/crsf_rc/CrsfRc.cpp #190 line\r\n\r\n```c\r\nint new_bytes = ::read(_rc_fd, &_rcs_buf[0], RC_MAX_BUFFER_SIZE);\r\n```\r\n\r\nAfter that, CrsfParser_TryParseCrsfPacket will be called and parse the information of the rc packet in _rcs_buf.\r\n\r\n- The CrsfParser_TryParseCrsfPacket function checks the following conditions\r\n1. The first byte of the packet is same with CRSF_HEADER (0xc8). ([CrsfParser.cpp:256](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/CrsfParser.cpp#L256C2-L256C2))\r\n\r\n```c\r\ncase PARSER_STATE_HEADER:\r\n\t\t\tif (QueueBuffer_Get(&rx_queue, &working_byte)) {\r\n\t\t\t\tif (working_byte == CRSF_HEADER) {\r\n\t//...omitted...\r\n```\r\n\r\n1. Whether the type of the packet is known or not.\r\n    - If the packet’s type is not 0x16 or 0x14, then the working_segment_size sets `packet_size(our input) + PACKET_SIZE_TYPE(2);`\r\n2. The working_segment_size should be less or equal than CRSF_MAX_PACKET_LEN which is 64. (if condition in [CrsfParser.cpp:298](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/CrsfParser.cpp#L298))\r\n    - In that case, if we send the packet which sets size as 62, then working_segment_size will be 64, and this corresponds to the if condition (`working_segment_size <= CRSF_MAX_PACKET_LEN`). Because the previous condition added 2 with the size of the packet.\r\n    - It makes to pass this if condition, and working_index will set as 2 consequently.\r\n\r\n```c\r\ncase PARSER_STATE_SIZE_TYPE:\r\n\t\t\t//PX4_INFO(\"PARSER_STATE_SIZE_TYPE\\n\");\r\n\t\t\tQueueBuffer_Peek(&rx_queue, working_index++, &packet_size); //working_index = 1\r\n\t\t\tQueueBuffer_Peek(&rx_queue, working_index++, &packet_type); //working_index = 2\r\n\r\n\t\t\tworking_descriptor = FindCrsfDescriptor((enum CRSF_PACKET_TYPE)packet_type);\r\n\r\n\t\t\t// If we know what this packet is...\r\n\t\t\tif (working_descriptor != NULL) {\r\n\t\t\t\t//.. the packet's type was 0x16 or 0x14\r\n\t\t\t\t//..omitted\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\t// We don't know what this packet is, so we'll let the parser continue\r\n\t\t\t\t// just so that we can dequeue it in one shot\r\n\t\t\t\tworking_segment_size = packet_size + PACKET_SIZE_TYPE_SIZE; //PACKET_SIZE_TYPE_SIZE : 2\r\n\r\n\t\t\t\tif (working_segment_size > CRSF_MAX_PACKET_LEN) {\r\n\t\t\t\t\tparser_statistics->invalid_unknown_packet_sizes++;\r\n\t\t\t\t\tparser_state = PARSER_STATE_HEADER;\r\n\t\t\t\t\tworking_segment_size = HEADER_SIZE;\r\n\t\t\t\t\tworking_index = 0;\r\n\t\t\t\t\tbuffer_count = QueueBuffer_Count(&rx_queue);\r\n\t\t\t\t\tcontinue;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\tparser_state = PARSER_STATE_PAYLOAD;\r\n\t\t\tbreak;\r\n```\r\n\r\n- Next, in the PARSER_STATE_HEADER part, `working_index += working_segment_size` is conducted. For our case, working_index is 2 because of the previous parsing part, working_idex will be 2 + 64 = 66.\r\n\r\n```c\r\ncase PARSER_STATE_PAYLOAD:\r\n\t\t\tworking_index += working_segment_size;\r\n\t\t\tworking_segment_size = CRC_SIZE;\r\n\t\t\tparser_state = PARSER_STATE_CRC;\r\n\t\t\tbreak;\r\n```\r\n\r\n- The *QueueBuffer_PeekBuffer* function will be called with the 4th parameter represents size as 67 (because CRC_SIZE is 1)\r\n\r\n```c\r\ncase PARSER_STATE_CRC:\r\n\t\t\t// Fetch the suspected packet as a contingous block of memory\r\n\t\t\tQueueBuffer_PeekBuffer(&rx_queue, 0, process_buffer, working_index + CRC_SIZE);\r\n```\r\n\r\n```c\r\nbool QueueBuffer_PeekBuffer(const QueueBuffer_t *q, const uint32_t index, uint8_t *buffer, const uint32_t size)\r\n{\r\n\tuint32_t copy_start;\r\n\r\n\t//...omitted\r\n\r\n\t// Check if we can do this in a single shot\r\n\tif (copy_start + size <= q->buffer_size) {\r\n\t\tmemcpy((void *)buffer, (void *)(q->buffer + copy_start), size); //this will be called\r\n\r\n\t} \r\n```\r\n\r\n- Eventually, the data is copied to process_buffer like this (Our case for [QueueBuffer.cpp:153](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/QueueBuffer.cpp#L153))\r\n\r\n```jsx\r\nmemcpy(process_buffer, data, 67);\r\n```\r\n\r\n- But the initialized size of process_buffer is 64\r\n    \r\n    ```c\r\n    #define CRSF_MAX_PACKET_LEN 64\r\n    static uint8_t process_buffer[CRSF_MAX_PACKET_LEN];\r\n    ```\r\n    \r\n\r\nTherefore, the Global buffer overflow will be triggered.\r\n\r\n### PoC ( Reproduce Method )\r\n\r\n---\r\n\r\nWe want to reproduce this crash using the actual rc packet, but we just triggered this crash in sitl because we don’t have the actual device yet. So, we’ve tested under the situation we can write the arbitrary data in the device using the crsf_rc driver to receive packets.\r\n\r\nSo, we suggest the following process to reproduce this packet.\r\n\r\n1. We set the csrf_rc driver in sitl by modifying the configure of default.px4board.\r\n    \r\n    ```c\r\n    CONFIG_DRIVERS_RC_CRSF_RC=y\r\n    ```\r\n    \r\n2. We set the _rcs_buf buffer (in drivers/crsf_rc/CrsfRc.cpp line 190) as below\r\n    - Assuming that the buffer gets the data.\r\n    \r\n    ```c\r\n    int new_bytes = ::read(_rc_fd, &_rcs_buf[0], RC_MAX_BUFFER_SIZE);\r\n    _rcs_buf[0] = 0xc8; // MAGIC NUMBER which informs rc packet start\r\n    _rcs_buf[1] = 62; // size of the packet ( which is vulnerable )\r\n    _rcs_buf[2] = 100; // packet type ( random, not the 0x16, 0x14 )\r\n    new_bytes = 60 // informs the packet is received\r\n    ```\r\n    \r\n3. We run the crsf_rc driver like this\r\n    \r\n    ```c\r\n    pxh> crsf_rc start -d <device>\r\n    ```\r\n    \r\n    - For example,\r\n    \r\n    ```c\r\n    pxh> crsf_rc start -d /dev/ttyS3\r\n    ```\r\n    \r\n\r\n### Address Sanitizer Log\r\n\r\n---\r\n![Untitled](https://user-images.githubusercontent.com/77731571/268289994-70bda713-6bc3-41d2-aa46-849428489d4f.png)\r\n\r\n```bash\r\n=================================================================\r\n==5090==ERROR: AddressSanitizer: global-buffer-overflow on address 0x563750d9c500 at pc 0x7f15a823a2c3 bp 0x7f15a4606220 sp 0x7f15a46059c8\r\nWRITE of size 67 at 0x563750d9c500 thread T140\r\nERROR [simulator_mavlink] poll timeout 0, 22\r\n    #0 0x7f15a823a2c2 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827\r\n    #1 0x56375022476a in memcpy /usr/include/x86_64-linux-gnu/bits/string_fortified.h:29\r\n    #2 0x56375022476a in QueueBuffer_PeekBuffer(QueueBuffer_t const*, unsigned int, unsigned char*, unsigned int) /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/QueueBuffer.cpp:156\r\n    #3 0x563750223952 in CrsfParser_TryParseCrsfPacket(CrsfPacket_t*, CrsfParserStatistics_t*) /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:330\r\n    #4 0x56375022126d in CrsfRc::Run() /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfRc.cpp:211\r\n    #5 0x563750a44b00 in px4::WorkQueue::Run() /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueue.cpp:188\r\n    #6 0x563750a459bc in WorkQueueRunner /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:238\r\n    #7 0x7f15a7294b42 in start_thread nptl/pthread_create.c:442\r\n    #8 0x7f15a73269ff  (/lib/x86_64-linux-gnu/libc.so.6+0x1269ff)\r\n\r\n0x563750d9c500 is located 32 bytes to the left of global variable 'rx_queue_buffer' defined in '/home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:138:16' (0x563750d9c520) of size 200\r\n0x563750d9c500 is located 0 bytes to the right of global variable 'process_buffer' defined in '/home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:139:16' (0x563750d9c4c0) of size 64\r\nSUMMARY: AddressSanitizer: global-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy\r\nShadow bytes around the buggy address:\r\n  0x0ac76a1ab850: f9 f9 f9 f9 00 00 00 00 02 f9 f9 f9 f9 f9 f9 f9\r\n  0x0ac76a1ab860: 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab870: 00 f9 f9 f9 f9 f9 f9 f9 01 f9 f9 f9 f9 f9 f9 f9\r\n  0x0ac76a1ab880: 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab890: 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00 00 00 00 00\r\n=>0x0ac76a1ab8a0:[f9]f9 f9 f9 00 00 00 00 00 00 00 00 00 00 00 00\r\n  0x0ac76a1ab8b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 f9 f9 f9\r\n  0x0ac76a1ab8c0: f9 f9 f9 f9 00 00 00 f9 f9 f9 f9 f9 04 f9 f9 f9\r\n  0x0ac76a1ab8d0: f9 f9 f9 f9 04 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab8e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\r\n  0x0ac76a1ab8f0: 00 00 00 00 00 00 00 00 00 00 00 00 f9 f9 f9 f9\r\nShadow byte legend (one shadow byte represents 8 application bytes):\r\n  Addressable:           00\r\n  Partially addressable: 01 02 03 04 05 06 07 \r\n  Heap left redzone:       fa\r\n  Freed heap region:       fd\r\n  Stack left redzone:      f1\r\n  Stack mid redzone:       f2\r\n  Stack right redzone:     f3\r\n  Stack after return:      f5\r\n  Stack use after scope:   f8\r\n  Global redzone:          f9\r\n  Global init order:       f6\r\n  Poisoned by user:        f7\r\n  Container overflow:      fc\r\n  Array cookie:            ac\r\n  Intra object redzone:    bb\r\n  ASan internal:           fe\r\n  Left alloca redzone:     ca\r\n  Right alloca redzone:    cb\r\n  Shadow gap:              cc\r\nThread T140 created by T5 here:\r\n    #0 0x7f15a8258685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x563750a4608a in WorkQueueManagerRun /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:324\r\n\r\nThread T5 created by T0 here:\r\n    #0 0x7f15a8258685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x563750a40aab in px4_task_spawn_cmd /home/ubuntu/drone/PX4-Autopilot/platforms/posix/src/px4/common/tasks.cpp:252\r\n\r\n==5090==ABORTING\r\n```\r\n\r\n### Recommend Patch\r\n\r\n---\r\n\r\nAfter the line of CrsfParser.cpp:319, the additional limitations of the size will prevent the bug as mentioned before.\r\n\r\n```c\r\ncase PARSER_STATE_CRC:\r\n\t\t\t// Fetch the suspected packet as a contingous block of memory\r\n\t\t\tif(working_index+CRC_SIZE > CRSF_MAX_PACKET_LEN){\r\n\t\t\t\t  parser_statistics->invalid_unknown_packet_sizes++;\r\n\t\t\t\t\tparser_state = PARSER_STATE_HEADER;\r\n\t\t\t\t\tworking_segment_size = HEADER_SIZE;\r\n\t\t\t\t\tworking_index=0;\r\n\t\t\t\t\tbuffer_count = QueueBuffer_Count(&rx_queue);\r\n\t\t\t\t\tcontinue;\r\n\t\t\t}\r\n\t\t\tQueueBuffer_PeekBuffer(&rx_queue, 0, process_buffer, working_index + CRC_SIZE);\r\n\r\n```\r\n\r\n### Impact\r\n\r\n---\r\n\r\nIf we can create the RC packet remotely and that packet goes into the device where the _rcs_buf reads, the global buffer overflow vulnerability will be triggered so that the drone can behave unexpectedly.",
+  "severity": "low",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-qpw7-65ww-wj82",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2023-47625",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2023-11-13T19:58:06Z",
+  "published_at": "2023-11-13T18:08:06Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "px4-autopilot",
+        "name": ""
+      },
+      "vulnerable_version_range": "1.14.0-rc2",
+      "patched_versions": "1.14.0",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+      "score": 2.9
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-120",
+      "name": "Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-120"
+  ],
+  "credits": [
+    {
+      "login": "Pwn9uin",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "Pwn9uin",
+        "id": 77731571,
+        "node_id": "MDQ6VXNlcjc3NzMxNTcx",
+        "avatar_url": "https://avatars.githubusercontent.com/u/77731571?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Pwn9uin",
+        "html_url": "https://github.com/Pwn9uin",
+        "followers_url": "https://api.github.com/users/Pwn9uin/followers",
+        "following_url": "https://api.github.com/users/Pwn9uin/following{/other_user}",
+        "gists_url": "https://api.github.com/users/Pwn9uin/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/Pwn9uin/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/Pwn9uin/subscriptions",
+        "organizations_url": "https://api.github.com/users/Pwn9uin/orgs",
+        "repos_url": "https://api.github.com/users/Pwn9uin/repos",
+        "events_url": "https://api.github.com/users/Pwn9uin/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/Pwn9uin/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 9,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+    "score": 2.9
+  }
+}

@@ -1,6 +1,6 @@
 # CHIRAL ATLAS · 知识档案与信息推演网络
 
-纯前端可交互网站（无后端，示例数据由代码生成）。死亡搁浅 UI 语言 × 莱茵生命档案交互，全部音效由 Web Audio 实时合成。
+纯前端可交互网站（无后端）。知识库使用联网核验的公开漏洞档案；推理评估保留现有浏览器规则引擎。死亡搁浅 UI 语言 × 莱茵生命档案交互，全部音效由 Web Audio 实时合成。
 
 ## 打开方式
 
@@ -35,7 +35,8 @@
 ```
 src/main.js            路由 / 页面生命周期 / 转场
 src/core/              时钟、HUD、六边形转场、等高线背景、音效合成(sfx.js)、启动动画、共享状态
-src/data/archive.js    档案示例数据（6 架 × 16 份，可自行替换）
+src/data/archive.js    真实漏洞目录的前端适配与 Markdown 导出
+knowledge-base/       原始输入、证据快照、人工整理、生成目录及核验报告
 src/data/inference.js  推演样例货物
 src/pages/             hub / reserved / archive(+archive-rack, archive-gl) / inference
 tools/shot.py          开发用：驱动 dev server 截图、测帧率
@@ -46,3 +47,15 @@ tools/e2e.py           开发用：对 dist 单文件做全路由冒烟测试
 
 - 推理评估为浏览器端规则引擎（正则 + 启发式），按真实内容给出带行号的证据与评分；后续可替换为大模型 API。
 - 档案库在不支持 WebGL2 的环境自动回退到 Canvas 2D（URL 加 `?2d` 可强制回退）。
+
+## 漏洞资料维护
+
+知识库共 32 份档案，保留 BUGS.md 原有 30 条，补充 2 条官方公告；同一问题的 CVE、公告及 PoC 档案归为 29 个问题组。分类、检索、关联、收藏、导出和送入推演使用同一套数据。无限 CD 阵列会循环显示这些档案，阵列格子数不代表独立漏洞数。
+
+资料目录和核验口径见 [knowledge-base/README.md](knowledge-base/README.md)，逐条覆盖见 [核验表](knowledge-base/VERIFICATION.md)。
+
+- 离线重建目录：`python3 tools/build_knowledge_base.py`
+- 数据与证据检查：`python3 tools/check_knowledge_base.py`
+- 联网更新证据：`python3 tools/collect_vulnerabilities.py --refresh`，随后人工复核 `curation.json` 并重新构建。
+- 构建网页：`npm run build`；运行方式不变，生成的 `dist/index.html` 可离线打开，外部来源链接需联网。
+- 专项浏览器验收：`python3 tools/knowledge_e2e.py`。测试需要 Python Playwright；可用 `CHROME_BIN` 指定浏览器。

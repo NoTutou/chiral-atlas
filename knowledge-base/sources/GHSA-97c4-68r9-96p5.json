@@ -1,0 +1,119 @@
+{
+  "ghsa_id": "GHSA-97c4-68r9-96p5",
+  "cve_id": "CVE-2026-32743",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-97c4-68r9-96p5",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-97c4-68r9-96p5",
+  "summary": "MavlinkLogHandler sscanf stack buffer overflow via MAVLink log request",
+  "description": "## Summary\r\n\r\nStack buffer overflow in `MavlinkLogHandler` triggered via MAVLink log request. The `LogEntry.filepath` buffer is 60 bytes, but `sscanf` parses paths from the log list file with no width specifier, allowing a path longer than 60 characters to overflow the buffer.\r\n\r\n### Details\r\n\r\nIn `mavlink_log_handler.cpp`, the log list file is parsed with:\r\n\r\n  ```cpp\r\n  sscanf(line, \"%\" PRIu32 \" %\" PRIu32 \" %s\",\r\n         &entry.time_utc, &entry.size_bytes, entry.filepath);\r\n\r\n  entry.filepath is only 60 bytes. A log directory structure producing paths longer than 60 characters causes a stack buffer overflow when a GCS requests the log list via MAV_CMD_LOG_REQUEST_LIST.\r\n  ```\r\n\r\nAn attacker with MAVLink link access can trigger this by first creating deeply nested directories via MAVLink FTP, then requesting the log list.\r\n\r\n### Impact\r\n\r\nDenial of service. The flight controller MAVLink task crashes, losing telemetry and command capability.\r\n\r\n### Fix\r\n- Size `LogEntry.filepath` to `PX4_MAX_FILEPATH` (256 bytes)\r\n- Add `sscanf` width specifiers to prevent overflow\r\n- Add `static_assert` to enforce buffer size at compile time\r\n\r\n## Original Report Below\r\n```\r\n=================================================================\r\n==66954==ERROR: AddressSanitizer: stack-overflow on address 0x7fc2b854ffd0 (pc 0x7fc2bbe447d9 bp 0x7fc2b8550820 sp 0x7fc2b854ffc0 T121)\r\n    #0 0x7fc2bbe447d8 in __sanitizer::StackTrace::StackTrace(unsigned long const*, unsigned int) ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:50\r\n    #1 0x7fc2bbe447d8 in __sanitizer::BufferedStackTrace::BufferedStackTrace() ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:95\r\n    #2 0x7fc2bbe447d8 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144\r\n    #3 0x7fc2bb8a1f18 in __alloc_dir ../sysdeps/posix/opendir.c:118\r\n    #4 0x7fc2bb8a1f18 in opendir_tail ../sysdeps/posix/opendir.c:69\r\n    #5 0x7fc2bb8a1f18 in __opendir ../sysdeps/posix/opendir.c:92\r\n    #6 0x7fc2bbd86342 in __interceptor_opendir ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:3101\r\n    #7 0x560bb775d487 in MavlinkLogHandler::write_entries_to_file(_IO_FILE*, char const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:429\r\n    #8 0x560bb775dadc in MavlinkLogHandler::create_log_list_file() ../../src/modules/mavlink/mavlink_log_handler.cpp:410\r\n    #9 0x560bb775dcf1 in MavlinkLogHandler::handle_log_request_list(__mavlink_message const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:262\r\n    #10 0x560bb77636c0 in MavlinkLogHandler::handle_message(__mavlink_message const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:98\r\n    #11 0x560bb7714cd1 in MavlinkReceiver::handle_message(__mavlink_message*) ../../src/modules/mavlink/mavlink_receiver.cpp:408\r\n    #12 0x560bb771644a in MavlinkReceiver::run() ../../src/modules/mavlink/mavlink_receiver.cpp:3293\r\n    #13 0x560bb771c11e in MavlinkReceiver::start_trampoline(void*) ../../src/modules/mavlink/mavlink_receiver.cpp:3575\r\n    #14 0x7fc2bbd12608 in start_thread /build/glibc-LcI20x/glibc-2.31/nptl/pthread_create.c:477\r\n    #15 0x7fc2bb8e3352 in __clone (/lib/x86_64-linux-gnu/libc.so.6+0x11f352)\r\n\r\nSUMMARY: AddressSanitizer: stack-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:50 in __sanitizer::StackTrace::StackTrace(unsigned long const*, unsigned int)\r\nThread T121 (mavlink_rcv_if0) created by T120 (mavlink_if0) here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7710915 in MavlinkReceiver::start() ../../src/modules/mavlink/mavlink_receiver.cpp:3560\r\n\r\nThread T120 (mavlink_if0) created by T119 here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7ca4e8f in px4_task_spawn_cmd ../../platforms/posix/src/px4/common/tasks.cpp:246\r\n\r\nThread T119 created by T1 here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7cbe7bc in px4_daemon::Server::_server_main() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:185\r\n\r\nThread T1 created by T0 (px4) here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7cba53c in px4_daemon::Server::start() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:106\r\n    #2 0x7fc2bb9d26cf  (<unknown module>)\r\n\r\n==66954==ABORTING\r\n```\r\n\r\n### PoC\r\n1、Use the following command to start px4\r\nsudo make px4_sitl jmavsim PX4_ASAN=1\r\n2、Use the python code to send the mavlink message to the px4\r\n\r\n### Impact\r\nIf we can create a MAVLINK message remotely and send it to PX4, a global buffer overflow vulnerability will be triggered, causing the drone to behave unexpectedly.\r\n\r\nError report\r\n![QQ图片20241223112515](https://github.com/user-attachments/assets/b47c4987-8c9c-467f-82ef-f0a80b19f839)\r\n\r\n\r\n",
+  "severity": "medium",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-97c4-68r9-96p5",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32743",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-03-16T17:34:01Z",
+  "published_at": "2026-03-14T01:08:39Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "main",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+      "score": 6.5
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-121",
+      "name": "Stack-based Buffer Overflow"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-121"
+  ],
+  "credits": [
+    {
+      "login": "zhangteng0526",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "zhangteng0526",
+        "id": 49060609,
+        "node_id": "MDQ6VXNlcjQ5MDYwNjA5",
+        "avatar_url": "https://avatars.githubusercontent.com/u/49060609?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/zhangteng0526",
+        "html_url": "https://github.com/zhangteng0526",
+        "followers_url": "https://api.github.com/users/zhangteng0526/followers",
+        "following_url": "https://api.github.com/users/zhangteng0526/following{/other_user}",
+        "gists_url": "https://api.github.com/users/zhangteng0526/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/zhangteng0526/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/zhangteng0526/subscriptions",
+        "organizations_url": "https://api.github.com/users/zhangteng0526/orgs",
+        "repos_url": "https://api.github.com/users/zhangteng0526/repos",
+        "events_url": "https://api.github.com/users/zhangteng0526/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/zhangteng0526/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 3,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+    "score": 6.5
+  }
+}

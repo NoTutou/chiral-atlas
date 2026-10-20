@@ -1,0 +1,115 @@
+{
+  "ghsa_id": "GHSA-x57h-c282-63hg",
+  "cve_id": null,
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-x57h-c282-63hg",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-x57h-c282-63hg",
+  "summary": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/navigator_main.cpp which cause drone can not PAUSE",
+  "description": "### Summary\r\nDue to the lack of synchronization mechanism for vehicle_status variable,we identified a Race Condition  vulnerability in the navigator_main.cpp and commander.cpp.This will result in the drone not being able to PAUSE when it executes a mission.\r\n\r\n### Details\r\nWhen the drone is executing a mission and the user clicks PAUSE, the ground control station will send **command::VEHICLE_CMD_DO_REPOSITION** to the drone.\r\n1. In commander.cpp, the drone state is modified to **NAVIGATION_STATE_AUTO_LOITER** based on the received commands and the state is published.\r\nAs stated in the code comment, it is designed not to require the navigator and command to receive/process data at the **exact same** time.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/commander/Commander.cpp#L726-L731\r\n\r\n2. In navigator_main.cpp, it will subscribe to the drone status and execute **status->run()**\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L881\r\n\r\n3. Some of the parameters needed in **status->run()** are also calculated in navigator_main.cpp, but the conditions that trigger the execution of these calculated functions are not based on the drone status but on the received commander.Here calculate the break point to pause the mission.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L345-L351\r\nMulti-Threaded Race Condition occurs here.When navigator_main.cpp receives the command from the GCS and calculates the braking point, commander.cpp hasn't yet modified the UAV's status according to the received command, so **status->run()**,doesn't publish the braking point as expected\r\n\r\n   By the time commander.cpp finishes modifying the drone's status, navigator_main.cpp has executed to the next round and overwritten the brake point it just calculated, causing **status->run()** (status==loiter) to PUBLISH the wrong data\r\n\r\n4. Here overwrite the brake point.Because the Pause command is a compound command.\r\nPause command==reposition to break point+change altitude\r\nI analyzed the QGC code, and when the user presses the PAUSE button, QGC sends twice the REPOSITION CMD to the drone.The second REPOSITION CMD triggers here and cause overwrite.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/f38fe24a98e05e5ecada347c32e108a12afb03aa/src/modules/navigator/navigator_main.cpp#L331-L334\r\n\r\n### Verification\r\nI added some debug output to watch the drone's state change.\r\n\r\n```\r\n// Navigator.cpp\r\n\r\nWHILE true DO\r\n    IF vehicle_command_s EQUALS VEHICLE_CMD_DO_reposition THEN\r\n        PX4_INFO(\"VEHICLE_CMD_DO_REPOSITION\")\r\n        IF user_intent EQUALS pause THEN\r\n            PX4_INFO(\"calculate_breaking_stop point\")\r\n            calculate_breaking_stop(rep.current.lat, rep.current.lon, rep.current.yaw)\r\n        END IF\r\n    END IF\r\n\r\n    PX4_INFO(\"Now vehicle_status=missison/loiter\") //output drone status\r\n    vehicle_status_s.Run() // If status EQUALS loiter, publish the break point\r\nEND WHILE\r\n\r\n\r\n```\r\nWhen the drone is executing a mission and the user clicks PAUSE,the console will output the following content:\r\n\r\n```\r\n...\r\nINFO  [navigator] Now  vehicle_status=missison    //The drone is on a mission.\r\nINFO  [navigator] Now  vehicle_status=missison\r\nINFO  [navigator] Now  vehicle_status=missison\r\nINFO  [navigator] VEHICLE_CMD_DO_REPOSITION     //Navigator_main.cpp accept CMD from GCS\r\nINFO  [navigator] calculate_breaking_stop point             \r\nINFO  [navigator] Now  vehicle_status=missison   //!!!!!!Beacuse of Race Condition,Drone is still in the previous status\r\nINFO  [navigator] VEHICLE_CMD_DO_REPOSITION   //Pause command==reposition to break point+change altitude,so here's the VEHICLE_CMD_DO_REPOSITION twice\r\nINFO  [navigator] Now vehicle_status=loiter  //Commander.cpp has modified status according to CMD\r\nINFO  [navigator] Now vehicle_status=loiter\r\nINFO  [navigator] Now vehicle_status=loiter\r\n...\r\n```\r\n### Temporary Patch\r\n\r\n\r\n```\r\nvehicle_command_s cmd{};\r\n_vehicle_command_sub.copy(&cmd);\r\nif(cmd.command == vehicle_command_s::VEHICLE_CMD_DO_REPOSITION){\r\n_navigation_mode=&_loiter;\r\n}\r\n```\r\nAdd code before this line,assure the status is consistent with CMD before executing status->run()\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L881\r\n\r\n\r\n### Impact\r\n- Due to multiple threads accessing the 'vehicle_status' variable, one thread may experience simultaneous modifications by another thread, leading to a data race bug.\r\n- Drones are unable to PAUSE during missions, which can lead to collision crashes in the event of a hazardous encounter or incorrect mission settings.#22492\r\n\r\nhttps://user-images.githubusercontent.com/151698793/291232214-40734dab-363a-43ec-aa02-6f8bf177f3b4.mp4\r\n\r\n\r\n- After pause,the drone still keep move, but also in hold mode.So the user can not manually enter the hold to stop the aircraft, user need to switch to other modes then manually hold.\r\n- An attacker could use the vulnerability to keep the drone from executing certain commands.\r\n\r\n\r\n\r\n",
+  "severity": "high",
+  "author": null,
+  "publisher": {
+    "login": "bkueng",
+    "id": 281593,
+    "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/bkueng",
+    "html_url": "https://github.com/bkueng",
+    "followers_url": "https://api.github.com/users/bkueng/followers",
+    "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+    "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+    "organizations_url": "https://api.github.com/users/bkueng/orgs",
+    "repos_url": "https://api.github.com/users/bkueng/repos",
+    "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/bkueng/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-x57h-c282-63hg",
+      "type": "GHSA"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2024-01-25T07:27:47Z",
+  "published_at": "2024-01-25T07:27:47Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "pixhawk ",
+        "name": "PX4-Autopilot"
+      },
+      "vulnerable_version_range": "1.14.0",
+      "patched_versions": "",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H",
+      "score": 8.2
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-362",
+      "name": "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-362"
+  ],
+  "credits": [
+    {
+      "login": "Drone-Lab",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "Drone-Lab",
+        "id": 151698793,
+        "node_id": "U_kgDOCQq9aQ",
+        "avatar_url": "https://avatars.githubusercontent.com/u/151698793?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Drone-Lab",
+        "html_url": "https://github.com/Drone-Lab",
+        "followers_url": "https://api.github.com/users/Drone-Lab/followers",
+        "following_url": "https://api.github.com/users/Drone-Lab/following{/other_user}",
+        "gists_url": "https://api.github.com/users/Drone-Lab/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/Drone-Lab/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/Drone-Lab/subscriptions",
+        "organizations_url": "https://api.github.com/users/Drone-Lab/orgs",
+        "repos_url": "https://api.github.com/users/Drone-Lab/repos",
+        "events_url": "https://api.github.com/users/Drone-Lab/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/Drone-Lab/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 11,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H",
+    "score": 8.2
+  }
+}

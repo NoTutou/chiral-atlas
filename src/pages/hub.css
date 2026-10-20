@@ -153,3 +153,6 @@
   .pg-hub .unk .big{font-size:23px;letter-spacing:2px}.pg-hub .unk .zh{font-size:11px;letter-spacing:1px}
   .pg-hub .unk .rd{font-size:10px;letter-spacing:1px}
 }
+/* CVE / GHSA identifiers replace the short sample IDs. */
+.pg-hub .recent .ln2 .id{width:auto;flex:none;max-width:180px;font-size:10px;letter-spacing:0}
+.pg-hub .recent .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

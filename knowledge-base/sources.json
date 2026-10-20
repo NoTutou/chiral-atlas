@@ -1,0 +1,482 @@
+{
+  "CVE-2020-10281": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2020/10xxx/CVE-2020-10281.json",
+    "retrievedAt": "2026-10-20T03:54:18.175974+00:00",
+    "file": "sources/CVE-2020-10281.json",
+    "sha256": "1862e97fc06b528a24cd501103af0952120075518bb4c47592eee68778e5d0ea"
+  },
+  "CVE-2020-10282": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2020/10xxx/CVE-2020-10282.json",
+    "retrievedAt": "2026-10-20T03:54:18.193981+00:00",
+    "file": "sources/CVE-2020-10282.json",
+    "sha256": "9b9793d82c6fe1cae8a3b984d59c38427c157f3a0d2b9f081b7eae7f87f326dd"
+  },
+  "CVE-2020-10283": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2020/10xxx/CVE-2020-10283.json",
+    "retrievedAt": "2026-10-20T03:54:18.723023+00:00",
+    "file": "sources/CVE-2020-10283.json",
+    "sha256": "bd64e4ac9e935c9299a389a3d9e63ec4f5e1544766ee5a6032773f1e01176443"
+  },
+  "CVE-2021-34125": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2021/34xxx/CVE-2021-34125.json",
+    "retrievedAt": "2026-10-20T03:54:18.187160+00:00",
+    "file": "sources/CVE-2021-34125.json",
+    "sha256": "1751a998c93fbeed5dc708ce33801ac10f59c76cfacbccddaf22ca7c6b53729c"
+  },
+  "CVE-2021-46896": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2021/46xxx/CVE-2021-46896.json",
+    "retrievedAt": "2026-10-20T03:54:18.171872+00:00",
+    "file": "sources/CVE-2021-46896.json",
+    "sha256": "4404ea22502453ee183e6d7733297653a77746cee433582107bc5a9bd4b0372f"
+  },
+  "CVE-2023-46256": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/46xxx/CVE-2023-46256.json",
+    "retrievedAt": "2026-10-20T03:54:18.666314+00:00",
+    "file": "sources/CVE-2023-46256.json",
+    "sha256": "94de5419e06a3d783f4ba657475e8b1f10184068b1053ba70c4df01e177a1836"
+  },
+  "CVE-2023-47625": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2023/47xxx/CVE-2023-47625.json",
+    "retrievedAt": "2026-10-20T03:54:18.684936+00:00",
+    "file": "sources/CVE-2023-47625.json",
+    "sha256": "66c3763f9ccaa540b0f79406e1d73e7e28338868acf9b0461840942a9bce41bd"
+  },
+  "CVE-2024-24255": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/24xxx/CVE-2024-24255.json",
+    "retrievedAt": "2026-10-20T03:54:18.645284+00:00",
+    "file": "sources/CVE-2024-24255.json",
+    "sha256": "16f5e41e2e3ad16eb669f597e7c4ec12491d0b2e6d11612cd2f034b11e94d307"
+  },
+  "CVE-2024-29460": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/29xxx/CVE-2024-29460.json",
+    "retrievedAt": "2026-10-20T03:54:18.720218+00:00",
+    "file": "sources/CVE-2024-29460.json",
+    "sha256": "1025bc969c1fd2cbc95af6cbf59eac471fef41612175957415cbb88e49eb7a8a"
+  },
+  "CVE-2024-30799": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/30xxx/CVE-2024-30799.json",
+    "retrievedAt": "2026-10-20T03:54:19.130051+00:00",
+    "file": "sources/CVE-2024-30799.json",
+    "sha256": "0cccd35d390a09ba42ad7181fae33a6c7cbd90de803838683012201f8a505156"
+  },
+  "CVE-2024-38951": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/38xxx/CVE-2024-38951.json",
+    "retrievedAt": "2026-10-20T03:54:19.230473+00:00",
+    "file": "sources/CVE-2024-38951.json",
+    "sha256": "ef5519208eec02326432106bed987a3c582ac2a108bdc7d9732aa452bf404a3c"
+  },
+  "CVE-2024-38952": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/38xxx/CVE-2024-38952.json",
+    "retrievedAt": "2026-10-20T03:54:19.218276+00:00",
+    "file": "sources/CVE-2024-38952.json",
+    "sha256": "a4e2f36635130ff4fd94f82ee232cfc432fa425162653d7e5ec788a7027c50f4"
+  },
+  "CVE-2024-40427": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2024/40xxx/CVE-2024-40427.json",
+    "retrievedAt": "2026-10-20T03:54:19.653632+00:00",
+    "file": "sources/CVE-2024-40427.json",
+    "sha256": "eb422d866056c512dc69815adb9f07b3b1220760a11804c467d5d66ce14cc69f"
+  },
+  "CVE-2025-15150": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/15xxx/CVE-2025-15150.json",
+    "retrievedAt": "2026-10-20T03:54:19.730336+00:00",
+    "file": "sources/CVE-2025-15150.json",
+    "sha256": "e62aa1013f2f30cf959eba8dbc57e53422fdc71c5d33b36a0e14e4d9a8e6c78b"
+  },
+  "CVE-2025-5640": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/5xxx/CVE-2025-5640.json",
+    "retrievedAt": "2026-10-20T03:54:19.660417+00:00",
+    "file": "sources/CVE-2025-5640.json",
+    "sha256": "cfa0891fd91baffad3b16ca5da4f2aaa2f5815b54403e7bbcd0447e53792e06d"
+  },
+  "CVE-2025-9020": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2025/9xxx/CVE-2025-9020.json",
+    "retrievedAt": "2026-10-20T03:54:19.671455+00:00",
+    "file": "sources/CVE-2025-9020.json",
+    "sha256": "28b657d9d979d7c2112ccdb1be3ba0a1947931d15a2457655cea415657660a71"
+  },
+  "CVE-2026-32705": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32705.json",
+    "retrievedAt": "2026-10-20T03:54:19.697859+00:00",
+    "file": "sources/CVE-2026-32705.json",
+    "sha256": "d56b8fbdee5d43670692fd24caa0a66e6be77fd4df01c73c385410eed97db5b0"
+  },
+  "CVE-2026-32706": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32706.json",
+    "retrievedAt": "2026-10-20T03:54:20.223500+00:00",
+    "file": "sources/CVE-2026-32706.json",
+    "sha256": "4118482db2f7f03778a8efc685dbf1f8bba9fd78ee967dbb9735d03c18f69ac7"
+  },
+  "CVE-2026-32707": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32707.json",
+    "retrievedAt": "2026-10-20T03:54:20.223221+00:00",
+    "file": "sources/CVE-2026-32707.json",
+    "sha256": "d7724e773726e9c85e10d1c2e9f02a682e952e901f79e0710b22a027f6d9b74c"
+  },
+  "CVE-2026-32708": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32708.json",
+    "retrievedAt": "2026-10-20T03:54:20.272615+00:00",
+    "file": "sources/CVE-2026-32708.json",
+    "sha256": "93e806782dc8e4a0d2d928871d3575d91a976c2487b32bf6a5ee77d253d7261f"
+  },
+  "CVE-2026-32709": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32709.json",
+    "retrievedAt": "2026-10-20T03:54:20.574159+00:00",
+    "file": "sources/CVE-2026-32709.json",
+    "sha256": "cd547bfea032cc718caed56daa96aa05b139589a905eff63e0e8e26b5f19109c"
+  },
+  "CVE-2026-32713": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32713.json",
+    "retrievedAt": "2026-10-20T03:54:20.895446+00:00",
+    "file": "sources/CVE-2026-32713.json",
+    "sha256": "361f88d23b22cbd95e9ba63798053451e9535d205694c2a2958cdffdeafdd100"
+  },
+  "CVE-2026-32724": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32724.json",
+    "retrievedAt": "2026-10-20T03:54:21.164507+00:00",
+    "file": "sources/CVE-2026-32724.json",
+    "sha256": "8b1d9e255e409b327ec01fdca97d83219d43216de4a2584a4722ddf622111727"
+  },
+  "CVE-2026-32743": {
+    "url": "https://raw.githubusercontent.com/CVEProject/cvelistV5/main/cves/2026/32xxx/CVE-2026-32743.json",
+    "retrievedAt": "2026-10-20T03:54:21.196448+00:00",
+    "file": "sources/CVE-2026-32743.json",
+    "sha256": "dd2ab47cdf6698870cb477d0cea43217088a3a96ffe6f4a607885ba503b2b4a8"
+  },
+  "EDB-52339": {
+    "url": "https://www.exploit-db.com/exploits/52339",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/EDB-52339.json",
+    "sha256": "4aadcea0d358b4b1b6fe0be594e9302b47243e83e8aa9b05d09d417e00ab5f73",
+    "retrievalMethod": "manual metadata note from web tool; not original HTML"
+  },
+  "GH-ISSUE-18385": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/18385",
+    "retrievedAt": "2026-10-20T03:54:22.590849+00:00",
+    "file": "sources/GH-ISSUE-18385.json",
+    "sha256": "a2155f5d843047be452aa0dca9c17d202d95d71387ee85eacbfc13514f398a3b"
+  },
+  "GH-ISSUE-18385-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/18385/comments",
+    "retrievedAt": "2026-10-20T03:54:23.143076+00:00",
+    "file": "sources/GH-ISSUE-18385-comments.json",
+    "sha256": "bc85794cde1f738db667bf2757d9653d78581456ac740427c1d7922421ac9fce"
+  },
+  "GH-ISSUE-23251": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23251",
+    "retrievedAt": "2026-10-20T03:54:23.704699+00:00",
+    "file": "sources/GH-ISSUE-23251.json",
+    "sha256": "32ee3e21d153a4a8d9de4bb925b8000a3a89aca8168b3ba40aadc172763cfee4"
+  },
+  "GH-ISSUE-23251-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23251/comments",
+    "retrievedAt": "2026-10-20T03:54:24.211510+00:00",
+    "file": "sources/GH-ISSUE-23251-comments.json",
+    "sha256": "212be1ff5e8e7a23ae26475395c16583b40a45aa20fe241928ca5ee3e77fb67c"
+  },
+  "GHSA-55wq-2hgm-75m4": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-55wq-2hgm-75m4",
+    "retrievedAt": "2026-10-20T03:55:59.189210+00:00",
+    "file": "sources/GHSA-55wq-2hgm-75m4.json",
+    "sha256": "87d9b71d8bcc77b0443e4d330accf417c9838dd5ba37246d77912780850a2423"
+  },
+  "GHSA-5hvv-q2r5-rppw": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-5hvv-q2r5-rppw",
+    "retrievedAt": "2026-10-20T03:55:59.105132+00:00",
+    "file": "sources/GHSA-5hvv-q2r5-rppw.json",
+    "sha256": "e9df351bd071abefe6d25ddefebbfcd332a509522b972964b4c3772521361be0"
+  },
+  "GHSA-69g4-hcqf-j45p": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-69g4-hcqf-j45p",
+    "retrievedAt": "2026-10-20T03:55:59.711938+00:00",
+    "file": "sources/GHSA-69g4-hcqf-j45p.json",
+    "sha256": "0106692f851ba1700c7ff3006d668dee21125e537f0e03d5321821ff6548405f"
+  },
+  "GHSA-79mp-34pp-2f3f": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-79mp-34pp-2f3f",
+    "retrievedAt": "2026-10-20T03:55:59.162167+00:00",
+    "file": "sources/GHSA-79mp-34pp-2f3f.json",
+    "sha256": "bd3e9815f893f6b956e9660881740457da36c978776956cecf9856acffb15ae6"
+  },
+  "GHSA-97c4-68r9-96p5": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-97c4-68r9-96p5",
+    "retrievedAt": "2026-10-20T03:56:00.280580+00:00",
+    "file": "sources/GHSA-97c4-68r9-96p5.json",
+    "sha256": "a067f93fec3a356b6a370568a39ea003afc6f21d1264666782994d04d2219a9b"
+  },
+  "GHSA-fh32-qxj9-x32f": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-fh32-qxj9-x32f",
+    "retrievedAt": "2026-10-20T03:55:59.765195+00:00",
+    "file": "sources/GHSA-fh32-qxj9-x32f.json",
+    "sha256": "ceb9f026d6bac75d8b561387d073d88611ca424384f8d16b604ca21700e7fec1"
+  },
+  "GHSA-j5w2-w79c-mqrw": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-j5w2-w79c-mqrw",
+    "retrievedAt": "2026-10-20T03:55:59.774593+00:00",
+    "file": "sources/GHSA-j5w2-w79c-mqrw.json",
+    "sha256": "5407a642c5c443c107349b667d38103f489fe2ec78cac7cdbe73ab3c736686bd"
+  },
+  "GHSA-mq93-4g5w-w34h": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories?per_page=100",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/GHSA-mq93-4g5w-w34h.json",
+    "sha256": "a7594916e4de6c039f357aa6c3d8a31261d682b964131b4c97c1c65102c14715",
+    "extractedFrom": "PX4-ADVISORIES",
+    "retrievalMethod": "extract from previously downloaded full repository API index"
+  },
+  "GHSA-mqgj-hh4g-fg5p": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-mqgj-hh4g-fg5p",
+    "retrievedAt": "2026-10-20T03:55:59.125826+00:00",
+    "file": "sources/GHSA-mqgj-hh4g-fg5p.json",
+    "sha256": "7f9eed7a88bdebc4f82208f1cd1cf7d58efb4909a65f5deb7f86d3cd8d68dace"
+  },
+  "GHSA-p74g-gvg5-6pgc": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories?per_page=100",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/GHSA-p74g-gvg5-6pgc.json",
+    "sha256": "4164d3f0b195e587b9799fed90d41d514746fb2e7ac45028a8b2e6bdb3659685",
+    "extractedFrom": "PX4-ADVISORIES",
+    "retrievalMethod": "extract from previously downloaded full repository API index"
+  },
+  "GHSA-pp2c-jr5g-6f2m": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-pp2c-jr5g-6f2m",
+    "retrievedAt": "2026-10-20T03:55:59.778823+00:00",
+    "file": "sources/GHSA-pp2c-jr5g-6f2m.json",
+    "sha256": "2f0102f82fd3d94ef49f1735280545750c355d9b64082e90109ad4f773ba2fe1"
+  },
+  "GHSA-qpw7-65ww-wj82": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-qpw7-65ww-wj82",
+    "retrievedAt": "2026-10-20T03:55:59.073454+00:00",
+    "file": "sources/GHSA-qpw7-65ww-wj82.json",
+    "sha256": "4875bd7ea8fcec41cd41170037d7837cbc0bf04a1a494509004d01bc7b53473e"
+  },
+  "GHSA-rfc7-3pxc-c68p": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories?per_page=100",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/GHSA-rfc7-3pxc-c68p.json",
+    "sha256": "aa01fbe788ce6f99777f41802ddb2e952266cefa5775d4fc808f601554136d91",
+    "extractedFrom": "PX4-ADVISORIES",
+    "retrievalMethod": "extract from previously downloaded full repository API index"
+  },
+  "GHSA-wxwm-xmx9-hr32": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-wxwm-xmx9-hr32",
+    "retrievedAt": "2026-10-20T03:55:59.653514+00:00",
+    "file": "sources/GHSA-wxwm-xmx9-hr32.json",
+    "sha256": "8c838b744308ce22718c029e5200da09f97769914e761599e1fffa69e7dfa3db"
+  },
+  "GHSA-x57h-c282-63hg": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories?per_page=100",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/GHSA-x57h-c282-63hg.json",
+    "sha256": "6f0990230c29b2911c9f2f3c6ee3d6bf96c3bf948b5af4bc933ce01509ad2362",
+    "extractedFrom": "PX4-ADVISORIES",
+    "retrievalMethod": "extract from previously downloaded full repository API index"
+  },
+  "GHSL-2025-087": {
+    "url": "https://securitylab.github.com/advisories/GHSL-2025-087_PX4_PX4-Autopilot/",
+    "retrievedAt": "2026-10-20T03:56:56.078452+00:00",
+    "file": "sources/GHSL-2025-087.txt",
+    "sha256": "067091e11ff5249eead93f826e86f8f0a10564deee112814f3e57649ee717f89"
+  },
+  "MAVLINK-ISSUE-474": {
+    "url": "https://api.github.com/repos/mavlink/mavlink/issues/474",
+    "retrievedAt": "2026-10-20T03:56:01.502923+00:00",
+    "file": "sources/MAVLINK-ISSUE-474.json",
+    "sha256": "2aefaaeab014fa057fd1fa325abc03351f489a8ec24dfa8001172611699afd71"
+  },
+  "MAVLINK-ISSUE-474-comments": {
+    "url": "https://api.github.com/repos/mavlink/mavlink/issues/474/comments",
+    "retrievedAt": "2026-10-20T03:56:01.994687+00:00",
+    "file": "sources/MAVLINK-ISSUE-474-comments.json",
+    "sha256": "9484ca6a395d7e6f26d3c20ecff3341596e2a6953a038630fb02429ff90d01e7"
+  },
+  "PX4--PX4-Autopilot-issues-17062": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/17062",
+    "retrievedAt": "2026-10-20T03:56:40.667557+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-17062.json",
+    "sha256": "c96109f8458ac05c7d0d39006ff08f502c3a308216c226f65b9a5be94171bba6"
+  },
+  "PX4--PX4-Autopilot-issues-17062-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/17062/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:41.170600+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-17062-comments.json",
+    "sha256": "d9ec45c63e0a2ddeb312025efa489eb2eb10eb4e54f47442a4cc0820de78cd29"
+  },
+  "PX4--PX4-Autopilot-issues-18369": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/18369",
+    "retrievedAt": "2026-10-20T03:56:41.728444+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-18369.json",
+    "sha256": "6ab4e6c046bc84a7e1f1cf85b06ec2341ff9753d3bf2f0cd38ee74710fbe830b"
+  },
+  "PX4--PX4-Autopilot-issues-18369-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/18369/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:42.217677+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-18369-comments.json",
+    "sha256": "439fac69aecda690dd321ba2e68694743130e280c2438da4ce047aa95bec3e9e"
+  },
+  "PX4--PX4-Autopilot-issues-22428": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/22428",
+    "retrievedAt": "2026-10-20T03:56:42.743761+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-22428.json",
+    "sha256": "f5a1304ecdee81a943129e7f9ceaac9509e15b02a8bffdb71fec2ce66b15134e"
+  },
+  "PX4--PX4-Autopilot-issues-22428-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/22428/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:43.290233+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-22428-comments.json",
+    "sha256": "1254059e5a914a411d18924a95d2dec6c89e3f4cc46a00e71948fa5b55374035"
+  },
+  "PX4--PX4-Autopilot-issues-23251": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23251",
+    "retrievedAt": "2026-10-20T03:56:43.925128+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-23251.json",
+    "sha256": "32ee3e21d153a4a8d9de4bb925b8000a3a89aca8168b3ba40aadc172763cfee4"
+  },
+  "PX4--PX4-Autopilot-issues-23251-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23251/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:44.488881+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-23251-comments.json",
+    "sha256": "212be1ff5e8e7a23ae26475395c16583b40a45aa20fe241928ca5ee3e77fb67c"
+  },
+  "PX4--PX4-Autopilot-issues-23258": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23258",
+    "retrievedAt": "2026-10-20T03:56:44.990884+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-23258.json",
+    "sha256": "e8e7f0125bf5426af9e7ac6c19ccebcfa51aa8cdeb165c785a37a40da0fc999e"
+  },
+  "PX4--PX4-Autopilot-issues-23258-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23258/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:45.778466+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-23258-comments.json",
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  "PX4--PX4-Autopilot-issues-24915": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/24915",
+    "retrievedAt": "2026-10-20T03:56:46.562048+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-24915.json",
+    "sha256": "64277a36bf98e1ce5f40b48c9e28775e596c436585a9d0bfc5cef1232f1026ae"
+  },
+  "PX4--PX4-Autopilot-issues-24915-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/24915/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:47.056339+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-24915-comments.json",
+    "sha256": "e1d6afc2a39953edcb464b610e7ed6cb73aef4ec35a51f90c8fc3a0153e86cb1"
+  },
+  "PX4--PX4-Autopilot-issues-25046": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/25046",
+    "retrievedAt": "2026-10-20T03:56:47.617602+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-25046.json",
+    "sha256": "1b55372d899785dfdffff8a09f8f433f24876eb2d51edf06b1f77973fdc8bd84"
+  },
+  "PX4--PX4-Autopilot-issues-25046-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/25046/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:48.127667+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-25046-comments.json",
+    "sha256": "182abc32607ff863fc3ac1d830202909dcea95f66a9869f4942b70886da36b0e"
+  },
+  "PX4--PX4-Autopilot-issues-26118": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/26118",
+    "retrievedAt": "2026-10-20T03:56:48.660787+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-26118.json",
+    "sha256": "ed280f6dd7e8b59393d4a6fdb791c974fe03d2007144e29ba1cf4f3ef451b26f"
+  },
+  "PX4--PX4-Autopilot-issues-26118-comments": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/26118/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:49.158742+00:00",
+    "file": "sources/PX4--PX4-Autopilot-issues-26118-comments.json",
+    "sha256": "9eda5c76efadaed06b8707b5f3c51e7044c15d970e6f2bc823750b5db45a2a93"
+  },
+  "PX4--PX4-Autopilot-pull-17264": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/pulls/17264",
+    "retrievedAt": "2026-10-20T03:56:49.799604+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-17264.json",
+    "sha256": "c4fa44d18a50d1bb506330c3a6effccb92ce9763378ff031cf4e32de38e1cb24"
+  },
+  "PX4--PX4-Autopilot-pull-18371": {
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/18371",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-18371.json",
+    "sha256": "71e749686fc3c49f4c84c86c913c13057585901a0418205bab62301aa684e83a",
+    "retrievalMethod": "manual note from web tool; API rate limit"
+  },
+  "PX4--PX4-Autopilot-pull-18411": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/pulls/18411",
+    "retrievedAt": "2026-10-20T03:56:50.295302+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-18411.json",
+    "sha256": "beea950f1734501c9405002f49b92bfdeb643b6d3051cf8bb27e0ecfee40f454"
+  },
+  "PX4--PX4-Autopilot-pull-22531": {
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/22531",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-22531.json",
+    "sha256": "c22a009edb5a379e95f2b5b4ba786b5cb728bcedcc48e58ec67e1739fce2494a",
+    "retrievalMethod": "manual note from web tool; API rate limit"
+  },
+  "PX4--PX4-Autopilot-pull-22834": {
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/22834",
+    "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-22834.json",
+    "sha256": "225438bb12c93fd2fb9a34e7772aba75673eda6d43f88dc781a6e168f2bc4814",
+    "retrievalMethod": "manual note from web tool; API rate limit"
+  },
+  "PX4--PX4-Autopilot-pull-25082": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/pulls/25082",
+    "retrievedAt": "2026-10-20T03:56:50.856391+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-25082.json",
+    "sha256": "1203fe717c7d76b3e7ca481dd2ce4673758eb0b85563676650e2192a39167421"
+  },
+  "PX4--PX4-Autopilot-pull-26124": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/pulls/26124",
+    "retrievedAt": "2026-10-20T03:56:51.517174+00:00",
+    "file": "sources/PX4--PX4-Autopilot-pull-26124.json",
+    "sha256": "f17f464d1f6f6f3ebd1f4b34f4040b64dd10052436a918b7751e86ea23cc1464"
+  },
+  "PX4-ADVISORIES": {
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:00.993233+00:00",
+    "file": "sources/PX4-ADVISORIES.json",
+    "sha256": "0068b9925ed380a88d79a73e75d058f035e364f9188a423884ddf808b5355139"
+  },
+  "aliasrobotics--RVD-issues-3316": {
+    "url": "https://api.github.com/repos/aliasrobotics/RVD/issues/3316",
+    "retrievedAt": "2026-10-20T03:56:52.020785+00:00",
+    "file": "sources/aliasrobotics--RVD-issues-3316.json",
+    "sha256": "8abb9af5590e0cfae9de9b5b2987a6f3deba135eec1528fb88e71952cb45db98"
+  },
+  "aliasrobotics--RVD-issues-3316-comments": {
+    "url": "https://api.github.com/repos/aliasrobotics/RVD/issues/3316/comments?per_page=100",
+    "retrievedAt": "2026-10-20T03:56:52.532424+00:00",
+    "file": "sources/aliasrobotics--RVD-issues-3316-comments.json",
+    "sha256": "5d23077c58d8257c24a4aec357d8c446ce9ab35fb63713cb41c092d8230fb696"
+  },
+  "apache--incubator-nuttx-apps-pull-647": {
+    "url": "https://api.github.com/repos/apache/incubator-nuttx-apps/pulls/647",
+    "retrievedAt": "2026-10-20T03:56:54.545102+00:00",
+    "file": "sources/apache--incubator-nuttx-apps-pull-647.json",
+    "sha256": "f14dbc285853b936fc5f77340753df279e497f5c7b2409fddf0cc2d205d417e8"
+  },
+  "apache--incubator-nuttx-pull-3292": {
+    "url": "https://api.github.com/repos/apache/incubator-nuttx/pulls/3292",
+    "retrievedAt": "2026-10-20T03:56:53.501737+00:00",
+    "file": "sources/apache--incubator-nuttx-pull-3292.json",
+    "sha256": "d9c27ebbed4bb3cb60f3bef5fcec17ac394c6d8c5f00005f7c284c71cd62366d"
+  },
+  "mavlink-signing": {
+    "url": "https://mavlink.io/en/guide/message_signing.html",
+    "retrievedAt": "2026-10-20T03:56:57.062888+00:00",
+    "file": "sources/mavlink-signing.txt",
+    "sha256": "c78b7c96fa60f207c74e2d4f938f7666ef4aa1f2b06ad497cd2a8f3ac693f979"
+  },
+  "report-geofence": {
+    "url": "https://raw.githubusercontent.com/Drone-Lab/PX4-Autopilot/report-the-faliure-of-precheck/report-the-faliure-of-precheck.md",
+    "retrievedAt": "2026-10-20T03:56:55.044523+00:00",
+    "file": "sources/report-geofence.txt",
+    "sha256": "bcc15c437eb7d17bad0234330eadcd7aa7f2463ae527c45418d3e5954c6141d6"
+  },
+  "report-homepoint": {
+    "url": "https://raw.githubusercontent.com/Drone-Lab/PX4-Autopilot/report-can%27t-finish-mission/report-can%27t-finish-mission.md",
+    "retrievedAt": "2026-10-20T03:56:55.610203+00:00",
+    "file": "sources/report-homepoint.txt",
+    "sha256": "80c7eb76a7ffb028f0ac41020f3d7fbfe72252e3b533cf67997c48b699f8be33"
+  }
+}

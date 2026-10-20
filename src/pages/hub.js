@@ -8,7 +8,7 @@
    ========================================================= */
 import './hub.css';
 import { clamp, lerp, seg, ease, damp, hash, decode, typeText, pad, hexPath, Bag, esc } from '../core/util.js';
-import { SHELVES, RECORDS, TOTAL } from '../data/archive.js';
+import { SHELVES, RECORDS, TOTAL, GROUP_TOTAL } from '../data/archive.js';
 import { drawOdradek, drawHatch } from './reserved.js';
 
 const SW = 1600, SH = 800;
@@ -47,7 +47,7 @@ const XOFF = (31 * RK.PX + RK.GX) / 2;
 const cases = [];
 for (let r = 0; r < 3; r++) for (let j = 0; j < 32; j++) {
   const sh = j >= 16 ? 1 : 0, k = r * 2 + sh, i = j % 16;
-  cases.push({ r, j, k, i, rec: SHELVES[k].records[i], col: SHELVES[k].col,
+  cases.push({ r, j, k, i, rec: SHELVES[k].records[i % SHELVES[k].records.length], col: SHELVES[k].col,
     x: j * RK.PX + sh * RK.GX - XOFF, z: (r - 1) * RK.PZ, h: 0, v: 0, hot: 0 });
 }
 const caseAt = (r, j) => cases[r * 32 + j];
@@ -73,10 +73,10 @@ function drawCase(g, cs, lift, a, sc) {
     g.globalAlpha = a * pl;
     g.fillStyle = 'rgba(233,241,244,.95)'; g.fillRect(8, 9, 62, 21);
     g.fillStyle = '#05080b'; g.font = '600 4.4px "Barlow Condensed"'; g.fillText('CHIRAL ATLAS', 12, 15.5);
-    g.font = '700 10px "Barlow Condensed"'; g.fillText(cs.rec.id, 12, 26.5);
+    g.font = '700 10px "Barlow Condensed"'; g.fillText(cs.rec.id, 12, 26.5, 52);
     g.fillStyle = cs.col; g.fillRect(58, 12, 8, 3);
     g.fillStyle = 'rgba(200,225,235,.55)'; g.font = '5px "Share Tech Mono"';
-    g.fillText(`${SHELVES[cs.k].en} // ${cs.rec.pages}P`, 8, HY - 9);
+    g.fillText(`${SHELVES[cs.k].en} // ${cs.rec.severity}`, 8, HY - 9);
   }
   g.globalAlpha = 1;
   g.setTransform(sc, 0, 0, sc, 0, 0);
@@ -210,7 +210,7 @@ function updateRack(dt) {
     const dp = seg(T - rkHoverSince, 60, 520);
     els.tipA.innerHTML = `<span style="color:${rkHover.col}">${decode(rkHover.rec.id, dp, rkHover.i)}</span><span style="color:var(--dim)">${SHELVES[rkHover.k].en}</span>`;
     els.tipB.textContent = decode(rkHover.rec.title, dp, rkHover.i + 3);
-    els.tipC.innerHTML = `<span>${rkHover.rec.pages} PAGES · ${rkHover.rec.updated.slice(5, 10)}</span><b>▶ CLICK 读取</b>`;
+    els.tipC.innerHTML = `<span>${rkHover.rec.severity} · ${rkHover.rec.sources.length} SOURCES</span><b>▶ CLICK 读取</b>`;
   } else tip.style.opacity = damp(+tip.style.opacity || 0, 0, 18, dt);
 }
 
@@ -466,7 +466,7 @@ function updateNet() {
       g.beginPath(); g.arc(x, y, 2, 0, 7); g.fill(); g.shadowBlur = 0;
     }
     const [mx, my] = bp(P, 0.42);
-    g.font = '9.5px "Share Tech Mono"'; g.fillStyle = `rgba(255,210,126,${0.7 * draw})`; g.fillText('CHIRAL LINK · 1.83 km · 96 REC/s', mx - 60, my + 26);
+    g.font = '9.5px "Share Tech Mono"'; g.fillStyle = `rgba(255,210,126,${0.7 * draw})`; g.fillText(`CHIRAL LINK · ${TOTAL} PUBLIC RECORDS`, mx - 60, my + 26);
   }
   // links to the uncharted zone: dashed, broken in the middle
   for (const [a, b, lab] of [[[812, 600], [1030, 546], true], [[1190, 462], [1060, 512], false]]) {
@@ -545,7 +545,7 @@ function enter(k, hashPath, sx, sy, cs) {
   if (k === 1) ctx.sfx.play('deny', { vol: 0.6 });
 }
 
-const recent = RECORDS.slice().sort((a, b) => (a.updated < b.updated ? 1 : -1)).slice(0, 8);
+const recent = RECORDS.slice().sort((a, b) => (b.updated || '').localeCompare(a.updated || '')).slice(0, 8);
 
 export default {
   hints: [[['●', '进入板块'], ['1·2·3', '快速进入', 'sq'], ['Q', '/ E 切换', 'sq'], ['M', '音效', 'sq']],
@@ -554,7 +554,7 @@ export default {
   mount(r, c) {
     root = r; ctx = c; bag = new Bag(); T = 0; hov = 0; hp = [0, 0, 0, 0]; entering = null; tau = 0; lastStep = -2;
     rkHover = null; cases.forEach((x) => { x.h = 0; x.v = 0; x.hot = 0; });
-    const pagesBy = SHELVES.map((s) => s.records.reduce((a, x) => a + x.pages, 0));
+    const pagesBy = SHELVES.map((s) => s.records.length);
     const maxP = Math.max(...pagesBy);
     root.innerHTML = `<div class="stage">
       <canvas class="net"></canvas>
@@ -564,12 +564,12 @@ export default {
       <div class="fac f2" data-k="2">
         <canvas class="rack"></canvas>
         <div class="lab"><div class="hx">02</div><div><div class="k">KNOT 02 · DISTRIBUTION ARCHIVE</div>
-          <div class="n">ARCHIVE<span class="st"><i></i>ONLINE</span></div><div class="z">知识档案库 · CD 存储空间</div></div></div>
+          <div class="n">ARCHIVE<span class="st"><i></i>ONLINE</span></div><div class="z">漏洞知识库 · ${TOTAL} 档案 / ${GROUP_TOTAL} 问题组 · 循环预览</div></div></div>
         <div class="enter">ENTER ▶ <span class="zh">进入档案库</span></div>
         <div class="idx"><div class="h"><span>SHELF INDEX / 货架</span><span><b>${TOTAL}</b> REC</span></div>
           ${SHELVES.map((s, k) => `<div class="row" data-shelf="${k}"><span class="c" style="background:${s.col}"></span><span class="l">${s.k}</span>
             <span>${s.zh}<span class="en">${s.en}</span></span><span class="pb"><i style="width:${(pagesBy[k] / maxP * 100).toFixed(0)}%;background:${s.col}"></i></span></div>`).join('')}</div>
-        <div class="recent"><div class="h">RECENT <b>▸ NEW</b><span class="ln"></span><span>最近更新</span></div>
+        <div class="recent"><div class="h">RECENT <b>▸ NEW</b><span class="ln"></span><span>最近来源更新</span></div>
           <div class="it"><div class="ln2"><span class="id"></span><span class="nm"></span><span class="dt"></span></div></div></div>
         <div class="tip"><div class="a"></div><div class="b"></div><div class="c"></div></div>
       </div>
@@ -663,7 +663,7 @@ export default {
     const dp = seg(rph, 0, 650);
     els.rec.querySelector('.id').textContent = decode(rr.id, dp, ri);
     els.rec.querySelector('.nm').textContent = decode(rr.title, dp, ri + 5);
-    els.rec.querySelector('.dt').textContent = rr.updated.slice(0, 10);
+    els.rec.querySelector('.dt').textContent = rr.updated || '未确认';
     els.rec.style.opacity = (seg(rph, 0, 200) * (1 - seg(rph, 2550, 2800))).toFixed(3);
     els.rec.style.transform = `translateY(${(1 - ease.out(seg(rph, 0, 400))) * 10 - seg(rph, 2550, 2800) * 10}px)`;
 

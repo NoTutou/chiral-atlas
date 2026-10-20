@@ -1,0 +1,148 @@
+{
+  "ghsa_id": "GHSA-69g4-hcqf-j45p",
+  "cve_id": "CVE-2026-32708",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-69g4-hcqf-j45p",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-69g4-hcqf-j45p",
+  "summary": "Zenoh uORB Subscriber Allows Arbitrary Stack Allocation (PX4/PX4-Autopilot)",
+  "description": "### Summary\r\n\r\nThe Zenoh uORB subscriber allocates a stack VLA directly from the incoming payload length without bounds. A remote Zenoh publisher can  send an oversized fragmented message to force an unbounded stack allocation and copy, causing a stack overflow and crash of the Zenoh bridge task.\r\n\r\n### Details\r\n\r\nIn `src/modules/zenoh/subscribers/uorb_subscriber.hpp` (data_handler), when the payload is non-contiguous, the code does:\r\n\r\n```\r\n  size_t len = z_bytes_len(payload);\r\n  unsigned char reassembled_payload[len];\r\n  z_bytes_reader_read(&reader, reassembled_payload, len);\r\n  dds_istream_t is = {.m_buffer = &reassembled_payload[4], .m_size = static_cast<int>(len), ...};\r\n  dds_stream_read(&is, data, ...);\r\n```\r\n\r\nThere is no maximum length check. With `Z_FEATURE_UNSTABLE_API` enabled (on by default in `src/modules/zenoh/CMakeLists.txt`) large Zenoh messages are fragmented (`FRAG_MAX_SIZE`=512), taking the non-contiguous path and hitting the VLA. Any payload larger than the thread stack will overflow and corrupt adjacent frames.\r\n\r\n### PoC\r\n\r\n[zenoh-vla-stack-overflow-poc.tar.gz](https://github.com/user-attachments/files/23834662/zenoh-vla-stack-overflow-poc.tar.gz)\r\n\r\nA minimal ASAN PoC is in zenoh-vla-stack-overflow-poc/:\r\n\r\n```\r\n  cmake -S zenoh-vla-stack-overflow-poc -B zenoh-vla-stack-overflow-poc/build\r\n  cmake --build zenoh-vla-stack-overflow-poc/build\r\n  ./zenoh-vla-stack-overflow-poc/build/zenoh_vla_stack_overflow_poc\r\n```\r\n\r\nThe harness includes the real `uorb_subscriber.hpp` and forces the non-contiguous path with a 16 MB payload. ASAN reports stack-overflow at uorb_subscriber.hpp:97 (the VLA allocation).\r\n\r\n### Impact\r\n\r\nStack-based buffer overflow triggered over the Zenoh network. Any reachable Zenoh publisher (adjacent network) can crash the PX4 Zenoh bridge task; with weak stack protections this could lead to control-flow compromise (remote code execution).\r\n\r\n### Acknowledgments\r\n- Found by SecMate (https://secmate.dev)\r\n",
+  "severity": "high",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-69g4-hcqf-j45p",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32708",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-03-13T19:51:41Z",
+  "published_at": "2026-03-13T19:51:41Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+      "score": 7.8
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-121",
+      "name": "Stack-based Buffer Overflow"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-121"
+  ],
+  "credits": [
+    {
+      "login": "max-r-b",
+      "type": "reporter"
+    },
+    {
+      "login": "enitmar",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "max-r-b",
+        "id": 25744117,
+        "node_id": "MDQ6VXNlcjI1NzQ0MTE3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/25744117?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/max-r-b",
+        "html_url": "https://github.com/max-r-b",
+        "followers_url": "https://api.github.com/users/max-r-b/followers",
+        "following_url": "https://api.github.com/users/max-r-b/following{/other_user}",
+        "gists_url": "https://api.github.com/users/max-r-b/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/max-r-b/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/max-r-b/subscriptions",
+        "organizations_url": "https://api.github.com/users/max-r-b/orgs",
+        "repos_url": "https://api.github.com/users/max-r-b/repos",
+        "events_url": "https://api.github.com/users/max-r-b/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/max-r-b/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    },
+    {
+      "user": {
+        "login": "enitmar",
+        "id": 203963681,
+        "node_id": "U_kgDODCg9IQ",
+        "avatar_url": "https://avatars.githubusercontent.com/u/203963681?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/enitmar",
+        "html_url": "https://github.com/enitmar",
+        "followers_url": "https://api.github.com/users/enitmar/followers",
+        "following_url": "https://api.github.com/users/enitmar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/enitmar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/enitmar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/enitmar/subscriptions",
+        "organizations_url": "https://api.github.com/users/enitmar/orgs",
+        "repos_url": "https://api.github.com/users/enitmar/repos",
+        "events_url": "https://api.github.com/users/enitmar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/enitmar/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 4,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+    "score": 7.8
+  }
+}

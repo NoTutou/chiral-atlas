@@ -1,0 +1,8 @@
+{
+  "kind": "manual web verification note, NOT GitHub API response",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/pull/22531",
+  "summary": "提案未合并，因长期无活动关闭；不能作为已发布补丁。",
+  "state": "closed",
+  "merged": false,
+  "closed_at": "2026-08-10"
+}

@@ -1,0 +1,119 @@
+{
+  "ghsa_id": "GHSA-wxwm-xmx9-hr32",
+  "cve_id": "CVE-2026-32707",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-wxwm-xmx9-hr32",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-wxwm-xmx9-hr32",
+  "summary": "Stack buffer overflow in tattu_can due to unbounded memcpy in frame assembly loop",
+  "description": "### Summary\r\n`tattu_can` contains an unbounded `memcpy` in its multi-frame assembly loop, allowing stack memory overwrite when crafted CAN frames are processed.  \r\nIn deployments where `tattu_can` is enabled and running, a CAN-injection-capable attacker can trigger a crash (DoS) and memory corruption.\r\n\r\n### Details\r\nThe vulnerable code is in `src/drivers/tattu_can/TattuCan.cpp` (assembly logic around line 114):\r\n\r\n- `offset` starts at 5.\r\n- For each subsequent frame, `payload_size = received_frame.payload_size - 1`.\r\n- Data is copied with:\r\n  `memcpy(((char *)&tattu_message) + offset, received_frame.payload, payload_size);`\r\n- There is no bounds check enforcing:\r\n  `offset + payload_size <= sizeof(Tattu12SBatteryMessage)`.\r\n\r\nAs a result, repeated crafted frames overflow the stack object `tattu_message`.\r\n\r\nOperational condition:\r\n- `tattu_can` must be compiled and started (`CONFIG_DRIVERS_TATTU_CAN=y` + `tattu_can start`).\r\n- This is typically vendor/custom firmware specific (not commonly enabled in default upstream builds).\r\n\r\n### PoC\r\nIntegrated reproduction was performed with real PX4 runtime in Docker (not copied vulnerable snippet testing).\r\n\r\nReproduction files:\r\n- `security-lab/Dockerfile`\r\n- `security-lab/container_run.sh`\r\n- `security-lab/poc/tattu_can_can_injector.c`\r\n- `security-lab/run.sh`\r\n\r\nSteps:\r\n```bash\r\ncd security-lab\r\n./run.sh\r\n```\r\n\r\n### Attachment\r\n[security-lab_20260311_200146.zip](https://github.com/user-attachments/files/25899417/security-lab_20260311_200146.zip)",
+  "severity": "medium",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-wxwm-xmx9-hr32",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32707",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-04-07T03:06:18Z",
+  "published_at": "2026-03-13T19:50:52Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+      "score": 5.2
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-121",
+      "name": "Stack-based Buffer Overflow"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-121"
+  ],
+  "credits": [
+    {
+      "login": "kmm2003",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "kmm2003",
+        "id": 69188747,
+        "node_id": "MDQ6VXNlcjY5MTg4NzQ3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/69188747?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/kmm2003",
+        "html_url": "https://github.com/kmm2003",
+        "followers_url": "https://api.github.com/users/kmm2003/followers",
+        "following_url": "https://api.github.com/users/kmm2003/following{/other_user}",
+        "gists_url": "https://api.github.com/users/kmm2003/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/kmm2003/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/kmm2003/subscriptions",
+        "organizations_url": "https://api.github.com/users/kmm2003/orgs",
+        "repos_url": "https://api.github.com/users/kmm2003/repos",
+        "events_url": "https://api.github.com/users/kmm2003/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/kmm2003/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 2,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+    "score": 5.2
+  }
+}

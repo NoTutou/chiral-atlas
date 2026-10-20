@@ -1,0 +1,5345 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+  "originalCount": 30,
+  "recordCount": 32,
+  "groupCount": 29,
+  "snapshotCount": 78,
+  "ratingPolicy": "主评级依次优先 CVSS 3.1、3.0、4.0、2.0；同版本优先 CNA，保留全部来源评级。没有来源评级时显示未评级，仅有等级时注明无分数。",
+  "records": [
+    {
+      "id": "CVE-2020-10281",
+      "shelf": "B",
+      "title": "MAVLink 明文传输导致敏感信息泄露",
+      "component": "MAVLink 1.0 / 2.0",
+      "affected": "MAVLink 1.0、2.0 协议；不是特定 PX4 发布版本",
+      "fixed": "协议未提供原生加密；未查到对应固件修复版本",
+      "trigger": "攻击者能够监听 MAVLink 通信介质或链路流量；消息中包含敏感遥测或控制信息。",
+      "rootCause": "消息载荷以明文传输。消息签名用于认证和完整性，不能提供载荷机密性。",
+      "impact": "可泄露遥测、位置及其他明文信息。此编号描述信息泄露，不单独证明节点伪造或指令接管。",
+      "remediation": "整理建议：在受控网络中运行，并由外层加密通道提供机密性；认证问题应同时检查 CVE-2020-10282。",
+      "notes": [
+        "纠正输入表：将“无凭证伪造任意节点”的影响移至认证漏洞的语义范围。"
+      ],
+      "extraSources": [
+        "mavlink-signing"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2020-10281",
+      "original": [
+        "CVE-2020-10281",
+        "mavlink",
+        "MAVLink Cleartext Transmission of Sensitive Information",
+        "Cleartext Transmission of Sensitive Information",
+        "只要能接入 MAVLink 总线,攻击者就可以在无任何凭证的前提下伪造任意 MAVLink 节点"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "RVD#3315: Cleartext transmission of sensitive information in MAVLink protocol version 1.0 and 2.0",
+      "summary": "消息载荷以明文传输。消息签名用于认证和完整性，不能提供载荷机密性。 可泄露遥测、位置及其他明文信息。此编号描述信息泄露，不单独证明节点伪造或指令接管。",
+      "tags": [
+        "认证与通信",
+        "CWE-319",
+        "High",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-319"
+      ],
+      "rating": {
+        "source": "CVE-2020-10281",
+        "version": "3.0",
+        "score": 7.5,
+        "severity": "High",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2020-10281",
+          "version": "3.0",
+          "score": 7.5,
+          "severity": "High",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2020-10281",
+          "label": "CVE-2020-10281 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2020-10281",
+          "snapshot": "sources/CVE-2020-10281.json",
+          "retrievedAt": "2026-10-20T03:54:18.175974+00:00",
+          "sha256": "1862e97fc06b528a24cd501103af0952120075518bb4c47592eee68778e5d0ea",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "mavlink-signing",
+          "label": "mavlink-signing",
+          "url": "https://mavlink.io/en/guide/message_signing.html",
+          "snapshot": "sources/mavlink-signing.txt",
+          "retrievedAt": "2026-10-20T03:56:57.062888+00:00",
+          "sha256": "c78b7c96fa60f207c74e2d4f938f7666ef4aa1f2b06ad497cd2a8f3ac693f979",
+          "method": "原始页面/报告快照"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2020-07-03",
+      "updated": "2024-09-16",
+      "verifiedAt": "2026-10-20T03:56:57.062888+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者能够监听 MAVLink 通信介质或链路流量；消息中包含敏感遥测或控制信息。",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "消息载荷以明文传输。消息签名用于认证和完整性，不能提供载荷机密性。",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可泄露遥测、位置及其他明文信息。此编号描述信息泄露，不单独证明节点伪造或指令接管。",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "MAVLink 1.0、2.0 协议；不是特定 PX4 发布版本\n\n协议未提供原生加密；未查到对应固件修复版本",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：在受控网络中运行，并由外层加密通道提供机密性；认证问题应同时检查 CVE-2020-10282。",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n纠正输入表：将“无凭证伪造任意节点”的影响移至认证漏洞的语义范围。",
+          "sources": [
+            "CVE-2020-10281",
+            "mavlink-signing"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2020-07-03T14:30:11.491Z",
+          "event": "CVE-2020-10281 发布",
+          "source": "CVE-2020-10281"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2020-10282",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        },
+        {
+          "id": "CVE-2020-10283",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2020-10282",
+      "shelf": "B",
+      "title": "MAVLink 关键功能缺少认证",
+      "component": "MAVLink 身份认证",
+      "affected": "MAVLink 1.0；未启用或未强制验证签名的 MAVLink 2.0 部署",
+      "fixed": "MAVLink 2 支持消息签名；需部署端正确配置，并非所有 v2 部署自动安全",
+      "trigger": "攻击者具备向目标 MAVLink 链路注入消息的能力；接收端接受未认证消息。",
+      "rootCause": "MAVLink 1 无消息认证，MAVLink 2 的签名能力是可选机制；节点标识本身不构成身份凭证。",
+      "impact": "攻击者可冒充节点、注入控制消息，破坏机密性、完整性和可用性；实际可执行指令受部署策略约束。",
+      "remediation": "整理建议：启用并强制验证 MAVLink 2 签名，保护共享密钥，限制未签名消息接收，隔离控制链路。",
+      "notes": [],
+      "extraSources": [
+        "mavlink-signing"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2020-10282",
+      "original": [
+        "CVE-2020-10282",
+        "mavlink",
+        "MAVLink Missing Authentication for Critical Function",
+        "Missing Authentication for Critical Function",
+        "任何能接入 MAVLink 链路的攻击者都可以在无凭证的情况下伪造地面站、注入或篡改 MAVLink 消息"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "RVD#3316: No authentication in MAVLink protocol",
+      "summary": "MAVLink 1 无消息认证，MAVLink 2 的签名能力是可选机制；节点标识本身不构成身份凭证。 攻击者可冒充节点、注入控制消息，破坏机密性、完整性和可用性；实际可执行指令受部署策略约束。",
+      "tags": [
+        "认证与通信",
+        "CWE-306",
+        "Critical",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-306"
+      ],
+      "rating": {
+        "source": "CVE-2020-10282",
+        "version": "3.0",
+        "score": 9.8,
+        "severity": "Critical",
+        "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2020-10282",
+          "version": "3.0",
+          "score": 9.8,
+          "severity": "Critical",
+          "vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        }
+      ],
+      "severity": "Critical",
+      "sources": [
+        {
+          "id": "CVE-2020-10282",
+          "label": "CVE-2020-10282 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2020-10282",
+          "snapshot": "sources/CVE-2020-10282.json",
+          "retrievedAt": "2026-10-20T03:54:18.193981+00:00",
+          "sha256": "9b9793d82c6fe1cae8a3b984d59c38427c157f3a0d2b9f081b7eae7f87f326dd",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "mavlink-signing",
+          "label": "mavlink-signing",
+          "url": "https://mavlink.io/en/guide/message_signing.html",
+          "snapshot": "sources/mavlink-signing.txt",
+          "retrievedAt": "2026-10-20T03:56:57.062888+00:00",
+          "sha256": "c78b7c96fa60f207c74e2d4f938f7666ef4aa1f2b06ad497cd2a8f3ac693f979",
+          "method": "原始页面/报告快照"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2020-07-03",
+      "updated": "2024-09-16",
+      "verifiedAt": "2026-10-20T03:56:57.062888+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者具备向目标 MAVLink 链路注入消息的能力；接收端接受未认证消息。",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "MAVLink 1 无消息认证，MAVLink 2 的签名能力是可选机制；节点标识本身不构成身份凭证。",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "攻击者可冒充节点、注入控制消息，破坏机密性、完整性和可用性；实际可执行指令受部署策略约束。",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "MAVLink 1.0；未启用或未强制验证签名的 MAVLink 2.0 部署\n\nMAVLink 2 支持消息签名；需部署端正确配置，并非所有 v2 部署自动安全",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：启用并强制验证 MAVLink 2 签名，保护共享密钥，限制未签名消息接收，隔离控制链路。",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n",
+          "sources": [
+            "CVE-2020-10282",
+            "mavlink-signing"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2020-07-03T14:30:15.587Z",
+          "event": "CVE-2020-10282 发布",
+          "source": "CVE-2020-10282"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2020-10281",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        },
+        {
+          "id": "CVE-2020-10283",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2020-10283",
+      "shelf": "B",
+      "title": "MAVLink 版本协商降级绕过认证",
+      "component": "MAVLink 版本协商 / AUTOPILOT_VERSION",
+      "affected": "CNA 指向 MAVLink 2.0 协商行为；未给出 PX4 固件版本范围",
+      "fixed": "未查到统一的已修复固件版本",
+      "trigger": "攻击者可干预链路中的版本能力协商，且接收端允许从带签名的 v2 回退到不支持签名的 v1。",
+      "rootCause": "协商过程没有可靠地将协议版本与认证策略绑定；回退后可能失去签名保护。",
+      "impact": "在允许降级的部署中绕过消息认证，继而伪造消息；不能仅凭协议版本认定任意无人机可被直接接管。",
+      "remediation": "整理建议：对安全链路强制 MAVLink 2 与签名验证，拒绝不满足认证策略的降级。",
+      "notes": [
+        "CNA 引用 RVD #3316 与认证漏洞有关；这是关联证据，不把两个 CVE 合并。"
+      ],
+      "extraSources": [
+        "aliasrobotics--RVD-issues-3316",
+        "mavlink-signing"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2020-10283",
+      "original": [
+        "CVE-2020-10283",
+        "PX4",
+        "MAVLink v2 to v1 Downgrade Authentication Bypass",
+        "Improper Authentication",
+        "严重情况下攻击者可以在无凭证、无交互的情况下接管无人机"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "RVD#3317: MAVLink version handshaking allows for an attacker to bypass authentication",
+      "summary": "协商过程没有可靠地将协议版本与认证策略绑定；回退后可能失去签名保护。 在允许降级的部署中绕过消息认证，继而伪造消息；不能仅凭协议版本认定任意无人机可被直接接管。",
+      "tags": [
+        "认证与通信",
+        "CWE-288",
+        "High",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-288"
+      ],
+      "rating": {
+        "source": "CVE-2020-10283",
+        "version": "3.0",
+        "score": 8.1,
+        "severity": "High",
+        "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2020-10283",
+          "version": "3.0",
+          "score": 8.1,
+          "severity": "High",
+          "vector": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2020-10283",
+          "label": "CVE-2020-10283 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2020-10283",
+          "snapshot": "sources/CVE-2020-10283.json",
+          "retrievedAt": "2026-10-20T03:54:18.723023+00:00",
+          "sha256": "bd64e4ac9e935c9299a389a3d9e63ec4f5e1544766ee5a6032773f1e01176443",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "aliasrobotics--RVD-issues-3316",
+          "label": "RVD#3316: No authentication in MAVLink protocol",
+          "url": "https://github.com/aliasrobotics/RVD/issues/3316",
+          "snapshot": "sources/aliasrobotics--RVD-issues-3316.json",
+          "retrievedAt": "2026-10-20T03:56:52.020785+00:00",
+          "sha256": "8abb9af5590e0cfae9de9b5b2987a6f3deba135eec1528fb88e71952cb45db98",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "mavlink-signing",
+          "label": "mavlink-signing",
+          "url": "https://mavlink.io/en/guide/message_signing.html",
+          "snapshot": "sources/mavlink-signing.txt",
+          "retrievedAt": "2026-10-20T03:56:57.062888+00:00",
+          "sha256": "c78b7c96fa60f207c74e2d4f938f7666ef4aa1f2b06ad497cd2a8f3ac693f979",
+          "method": "原始页面/报告快照"
+        },
+        {
+          "id": "aliasrobotics--RVD-issues-3316-comments",
+          "label": "aliasrobotics--RVD-issues-3316-comments · 讨论回复",
+          "url": "https://github.com/aliasrobotics/RVD/issues/3316#issuecomment-651934962",
+          "snapshot": "sources/aliasrobotics--RVD-issues-3316-comments.json",
+          "retrievedAt": "2026-10-20T03:56:52.532424+00:00",
+          "sha256": "5d23077c58d8257c24a4aec357d8c446ce9ab35fb63713cb41c092d8230fb696",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2020-06-30",
+      "updated": "2024-09-16",
+      "verifiedAt": "2026-10-20T03:56:57.062888+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者可干预链路中的版本能力协商，且接收端允许从带签名的 v2 回退到不支持签名的 v1。",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "协商过程没有可靠地将协议版本与认证策略绑定；回退后可能失去签名保护。",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "在允许降级的部署中绕过消息认证，继而伪造消息；不能仅凭协议版本认定任意无人机可被直接接管。",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA 指向 MAVLink 2.0 协商行为；未给出 PX4 固件版本范围\n\n未查到统一的已修复固件版本",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：对安全链路强制 MAVLink 2 与签名验证，拒绝不满足认证策略的降级。",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\nCNA 引用 RVD #3316 与认证漏洞有关；这是关联证据，不把两个 CVE 合并。",
+          "sources": [
+            "CVE-2020-10283",
+            "aliasrobotics--RVD-issues-3316",
+            "mavlink-signing",
+            "aliasrobotics--RVD-issues-3316-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2020-06-30T17:20:40Z",
+          "event": "原始报告/提案创建",
+          "source": "aliasrobotics--RVD-issues-3316"
+        },
+        {
+          "time": "2020-08-20T08:15:13.054Z",
+          "event": "CVE-2020-10283 发布",
+          "source": "CVE-2020-10283"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2020-10281",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        },
+        {
+          "id": "CVE-2020-10282",
+          "type": "相关机制",
+          "reason": "MAVLink 协议机密性、认证及降级的不同问题。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2021-34125",
+      "shelf": "C",
+      "title": "NuttX 内存访问命令泄露固件",
+      "component": "NuttX NSH mb / mh / mw",
+      "affected": "CNA：Yuneec Mantis Q，PX4 <= 1.11.3；原始报告还讨论 Typhoon H",
+      "fixed": "PX4 PR #17264 及 NuttX 配置相关变更；首次修复发布版本未明确",
+      "trigger": "能够接入 NSH 调试控制台，并调用构建中启用的内存访问命令。",
+      "rootCause": "运行中的固件允许 NSH 读取任意内存地址；芯片读出保护不能阻止固件自身通过控制台输出 flash 内容。",
+      "impact": "可提取固件二进制与相关敏感内存，削弱厂商知识产权和读出保护。",
+      "remediation": "生产构建禁用不需要的 NSH 内存访问命令，并限制调试接口；参考 PX4 PR #17264 与关联 NuttX 变更。",
+      "notes": [
+        "需要控制台访问权限；不将其描述为任意远程 MAVLink 节点直接可读内存。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-17062",
+        "PX4--PX4-Autopilot-pull-17264"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2021-34125",
+      "original": [
+        "CVE-2021-34125",
+        "PX4",
+        "PX4 NuttX Commands Information Disclosure",
+        "Insufficient Information",
+        "允许攻击者获取一些敏感信息"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "NuttX NSH mb / mh / mw",
+      "summary": "运行中的固件允许 NSH 读取任意内存地址；芯片读出保护不能阻止固件自身通过控制台输出 flash 内容。 可提取固件二进制与相关敏感内存，削弱厂商知识产权和读出保护。",
+      "tags": [
+        "文件与权限",
+        "Unknown"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2021-34125",
+          "label": "CVE-2021-34125 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2021-34125",
+          "snapshot": "sources/CVE-2021-34125.json",
+          "retrievedAt": "2026-10-20T03:54:18.187160+00:00",
+          "sha256": "1751a998c93fbeed5dc708ce33801ac10f59c76cfacbccddaf22ca7c6b53729c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-17062",
+          "label": "Nsh Debug Commands Vulnerability Report",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/17062",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-17062.json",
+          "retrievedAt": "2026-10-20T03:56:40.667557+00:00",
+          "sha256": "c96109f8458ac05c7d0d39006ff08f502c3a308216c226f65b9a5be94171bba6",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-17264",
+          "label": "boards: NuttX disable all NSH memory debug commands (mb, mh, mw) by default",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/17264",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-17264.json",
+          "retrievedAt": "2026-10-20T03:56:49.799604+00:00",
+          "sha256": "c4fa44d18a50d1bb506330c3a6effccb92ce9763378ff031cf4e32de38e1cb24",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "apache--incubator-nuttx-pull-3292",
+          "label": "boards/**/defconfig: Remove explict disables for mb, mh, and mw",
+          "url": "https://github.com/apache/nuttx/pull/3292",
+          "snapshot": "sources/apache--incubator-nuttx-pull-3292.json",
+          "retrievedAt": "2026-10-20T03:56:53.501737+00:00",
+          "sha256": "d9c27ebbed4bb3cb60f3bef5fcec17ac394c6d8c5f00005f7c284c71cd62366d",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "apache--incubator-nuttx-apps-pull-647",
+          "label": "nshlib: Disable mb, mh, and mw by default",
+          "url": "https://github.com/apache/nuttx-apps/pull/647",
+          "snapshot": "sources/apache--incubator-nuttx-apps-pull-647.json",
+          "retrievedAt": "2026-10-20T03:56:54.545102+00:00",
+          "sha256": "f14dbc285853b936fc5f77340753df279e497f5c7b2409fddf0cc2d205d417e8",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-17062-comments",
+          "label": "PX4--PX4-Autopilot-issues-17062-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/17062#issuecomment-793484948",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-17062-comments.json",
+          "retrievedAt": "2026-10-20T03:56:41.170600+00:00",
+          "sha256": "d9ec45c63e0a2ddeb312025efa489eb2eb10eb4e54f47442a4cc0820de78cd29",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2021-03-09",
+      "updated": "2025-02-28",
+      "verifiedAt": "2026-10-20T03:56:54.545102+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能够接入 NSH 调试控制台，并调用构建中启用的内存访问命令。",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "运行中的固件允许 NSH 读取任意内存地址；芯片读出保护不能阻止固件自身通过控制台输出 flash 内容。",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可提取固件二进制与相关敏感内存，削弱厂商知识产权和读出保护。",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：Yuneec Mantis Q，PX4 <= 1.11.3；原始报告还讨论 Typhoon H\n\nPX4 PR #17264 及 NuttX 配置相关变更；首次修复发布版本未明确",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "生产构建禁用不需要的 NSH 内存访问命令，并限制调试接口；参考 PX4 PR #17264 与关联 NuttX 变更。",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n需要控制台访问权限；不将其描述为任意远程 MAVLink 节点直接可读内存。",
+          "sources": [
+            "CVE-2021-34125",
+            "PX4--PX4-Autopilot-issues-17062",
+            "PX4--PX4-Autopilot-pull-17264",
+            "apache--incubator-nuttx-pull-3292",
+            "apache--incubator-nuttx-apps-pull-647",
+            "PX4--PX4-Autopilot-issues-17062-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2021-03-09T07:14:00Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-17062"
+        },
+        {
+          "time": "2021-03-29T15:18:38Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-pull-17264"
+        },
+        {
+          "time": "2021-03-30T13:23:43Z",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "PX4--PX4-Autopilot-pull-17264"
+        },
+        {
+          "time": "2021-04-03T04:12:37Z",
+          "event": "原始报告/提案创建",
+          "source": "apache--incubator-nuttx-apps-pull-647"
+        },
+        {
+          "time": "2021-04-03T13:09:08Z",
+          "event": "原始报告/提案创建",
+          "source": "apache--incubator-nuttx-pull-3292"
+        },
+        {
+          "time": "2021-04-03T14:36:08Z",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "apache--incubator-nuttx-pull-3292"
+        },
+        {
+          "time": "2021-04-03T14:40:18Z",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "apache--incubator-nuttx-apps-pull-647"
+        },
+        {
+          "time": "2023-03-09T00:00:00.000Z",
+          "event": "CVE-2021-34125 发布",
+          "source": "CVE-2021-34125"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "CVE-2021-46896",
+      "shelf": "A",
+      "title": "轨迹航点消息 valid_points 越界",
+      "component": "MavlinkReceiver / TRAJECTORY_REPRESENTATION_WAYPOINTS",
+      "affected": "CNA：PX4 v1.12.0-beta1；Issue #18369 的报告环境",
+      "fixed": "PR #18371 于 2021-10-06 合入 main（0bdcd54）；首次修复发布版本未明确",
+      "trigger": "目标启用 MAVLink 轨迹消息处理；攻击者可向链路发送 valid_points 超出固定数组容量的消息。",
+      "rootCause": "处理 msgid 332 时使用消息中的 valid_points 控制循环，未在使用前限制到轨迹数组容量。",
+      "impact": "越界访问造成内存安全问题和进程崩溃；原始报告含仿真及飞控板验证反馈。",
+      "remediation": "参考 PR #18371 对计数做边界限制；使用包含该变更的维护版本。",
+      "notes": [
+        "与 CVE-2024-38951、CVE-2025-5640 同属轨迹消息处理问题；没有官方重复编号声明，保留独立 CVE。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-18369",
+        "PX4--PX4-Autopilot-pull-18371"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2021-46896",
+      "original": [
+        "CVE-2021-46896",
+        "PX4",
+        "PX4 MAVLink msgid 332 Buffer Overflow",
+        "Buffer Overflow",
+        "导致BOF文件崩溃"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "MavlinkReceiver / TRAJECTORY_REPRESENTATION_WAYPOINTS",
+      "summary": "处理 msgid 332 时使用消息中的 valid_points 控制循环，未在使用前限制到轨迹数组容量。 越界访问造成内存安全问题和进程崩溃；原始报告含仿真及飞控板验证反馈。",
+      "tags": [
+        "内存与边界",
+        "Unknown",
+        "MAVLink"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2021-46896",
+          "label": "CVE-2021-46896 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2021-46896",
+          "snapshot": "sources/CVE-2021-46896.json",
+          "retrievedAt": "2026-10-20T03:54:18.171872+00:00",
+          "sha256": "4404ea22502453ee183e6d7733297653a77746cee433582107bc5a9bd4b0372f",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-18369",
+          "label": "Bug Found in msgID #332 mavlink protocol BOF",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/18369",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-18369.json",
+          "retrievedAt": "2026-10-20T03:56:41.728444+00:00",
+          "sha256": "6ab4e6c046bc84a7e1f1cf85b06ec2341ff9753d3bf2f0cd38ee74710fbe830b",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-18371",
+          "label": "mavlink receiver trajectory valid_points boundary fix",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/18371",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-18371.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "71e749686fc3c49f4c84c86c913c13057585901a0418205bab62301aa684e83a",
+          "method": "manual note from web tool; API rate limit"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-18369-comments",
+          "label": "PX4--PX4-Autopilot-issues-18369-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/18369#issuecomment-936268086",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-18369-comments.json",
+          "retrievedAt": "2026-10-20T03:56:42.217677+00:00",
+          "sha256": "439fac69aecda690dd321ba2e68694743130e280c2438da4ce047aa95bec3e9e",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2021-10-06",
+      "updated": "2024-11-20",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "目标启用 MAVLink 轨迹消息处理；攻击者可向链路发送 valid_points 超出固定数组容量的消息。",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "处理 msgid 332 时使用消息中的 valid_points 控制循环，未在使用前限制到轨迹数组容量。",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "越界访问造成内存安全问题和进程崩溃；原始报告含仿真及飞控板验证反馈。",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 v1.12.0-beta1；Issue #18369 的报告环境\n\nPR #18371 于 2021-10-06 合入 main（0bdcd54）；首次修复发布版本未明确",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考 PR #18371 对计数做边界限制；使用包含该变更的维护版本。",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n与 CVE-2024-38951、CVE-2025-5640 同属轨迹消息处理问题；没有官方重复编号声明，保留独立 CVE。",
+          "sources": [
+            "CVE-2021-46896",
+            "PX4--PX4-Autopilot-issues-18369",
+            "PX4--PX4-Autopilot-pull-18371",
+            "PX4--PX4-Autopilot-issues-18369-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2021-10-06",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "PX4--PX4-Autopilot-pull-18371"
+        },
+        {
+          "time": "2021-10-06T13:06:24Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-18369"
+        },
+        {
+          "time": "2023-07-06T00:00:00.000Z",
+          "event": "CVE-2021-46896 发布",
+          "source": "CVE-2021-46896"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-38951",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        },
+        {
+          "id": "CVE-2025-5640",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        },
+        {
+          "id": "GH-ISSUE-18385",
+          "type": "相关机制",
+          "reason": "早期 MAVLink 消息计数与数组边界报告；独立输入路径。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2023-46256",
+      "shelf": "A",
+      "title": "Lightware 激光测距串口解析堆越界",
+      "component": "lightware_laser_serial / parser.cpp",
+      "affected": "PX4 <= 1.14.0-rc1",
+      "fixed": "公告未给出已修复版本",
+      "trigger": "构建启用 Lightware 串口驱动，并使驱动接收到能持续进入解析状态的异常传感器输入。",
+      "rootCause": "解析器递增写入索引，写入 heap 缓冲区前没有充分检查索引边界。",
+      "impact": "可造成堆内存越界写和可用性问题；原始证据不证明任意配置均可远程接管。",
+      "remediation": "整理建议：在每次写入前约束索引、异常帧复位；部署前核实所用分支补丁状态。",
+      "notes": [
+        "GHSA-5hvv-q2r5-rppw 是同一漏洞的公告编号；公告和 CNA 均为 Medium 4.4。"
+      ],
+      "extraSources": [
+        "GHSA-5hvv-q2r5-rppw"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2023-46256",
+      "original": [
+        "CVE-2023-46256",
+        "PX4",
+        "PX4 Heap Buffer Overflow in Parser",
+        "Out-of-bounds Write和 Buffer Overflow",
+        "内存溢出导致无人机执行预期外的行为"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-5hvv-q2r5-rppw"
+      ],
+      "en": "PX4-Autopilot Heap Buffer Overflow Bug",
+      "summary": "解析器递增写入索引，写入 heap 缓冲区前没有充分检查索引边界。 可造成堆内存越界写和可用性问题；原始证据不证明任意配置均可远程接管。",
+      "tags": [
+        "内存与边界",
+        "CWE-122",
+        "CWE-120",
+        "Medium"
+      ],
+      "cwes": [
+        "CWE-120",
+        "CWE-122"
+      ],
+      "rating": {
+        "source": "CVE-2023-46256",
+        "version": "3.1",
+        "score": 4.4,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2023-46256",
+          "version": "3.1",
+          "score": 4.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+        },
+        {
+          "source": "GHSA-5hvv-q2r5-rppw",
+          "version": "3.1",
+          "score": 4.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2023-46256",
+          "label": "CVE-2023-46256 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2023-46256",
+          "snapshot": "sources/CVE-2023-46256.json",
+          "retrievedAt": "2026-10-20T03:54:18.666314+00:00",
+          "sha256": "94de5419e06a3d783f4ba657475e8b1f10184068b1053ba70c4df01e177a1836",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-5hvv-q2r5-rppw",
+          "label": "[REPORT] Heap Buffer Overflow Bug Found in src/drivers/distance_sensor/lightware_laser_serial/parser.cpp",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-5hvv-q2r5-rppw",
+          "snapshot": "sources/GHSA-5hvv-q2r5-rppw.json",
+          "retrievedAt": "2026-10-20T03:55:59.105132+00:00",
+          "sha256": "e9df351bd071abefe6d25ddefebbfcd332a509522b972964b4c3772521361be0",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2023-10-30",
+      "updated": "2024-09-05",
+      "verifiedAt": "2026-10-20T03:55:59.105132+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "构建启用 Lightware 串口驱动，并使驱动接收到能持续进入解析状态的异常传感器输入。",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "解析器递增写入索引，写入 heap 缓冲区前没有充分检查索引边界。",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可造成堆内存越界写和可用性问题；原始证据不证明任意配置均可远程接管。",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.14.0-rc1\n\n公告未给出已修复版本",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：在每次写入前约束索引、异常帧复位；部署前核实所用分支补丁状态。",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\nGHSA-5hvv-q2r5-rppw 是同一漏洞的公告编号；公告和 CNA 均为 Medium 4.4。",
+          "sources": [
+            "CVE-2023-46256",
+            "GHSA-5hvv-q2r5-rppw"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2023-10-30T19:42:36Z",
+          "event": "GHSA-5hvv-q2r5-rppw 公告发布",
+          "source": "GHSA-5hvv-q2r5-rppw"
+        },
+        {
+          "time": "2023-10-31T15:29:05.943Z",
+          "event": "CVE-2023-46256 发布",
+          "source": "CVE-2023-46256"
+        }
+      ],
+      "related": [
+        {
+          "id": "GHSA-5hvv-q2r5-rppw",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2023-47625",
+      "shelf": "A",
+      "title": "CRSF 未知类型帧导致全局缓冲区溢出",
+      "component": "RC CRSF parser",
+      "affected": "CNA：PX4 < 1.14.0；GHSA 列出 1.14.0-rc2",
+      "fixed": "PX4 1.14.0；commit d1fcd39a44e6312582c6ab02b0d5ee2599fb55aa",
+      "trigger": "使用 CRSF 遥控输入，异常串口帧进入未知消息类型处理分支。",
+      "rootCause": "未知类型数据包的长度计算和拷贝处理缺少足够边界约束，导致全局缓冲区越界。",
+      "impact": "公告给出拒绝服务影响；官方 CVSS 3.1 为 Low 2.9。",
+      "remediation": "升级至包含上述修复的 PX4 1.14.0 或适用维护版本。",
+      "notes": [
+        "与 CVE-2026-32706 的已知可变长度类型分支不同，旧修复不能证明后一个问题已修复。"
+      ],
+      "extraSources": [
+        "GHSA-qpw7-65ww-wj82"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2023-47625",
+      "original": [
+        "CVE-2023-47625",
+        "PX4",
+        "PX4 CRSF Parser Global Buffer Overflow",
+        "Buffer Overflow",
+        "内存溢出导致无人机执行预期外的行为"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-qpw7-65ww-wj82"
+      ],
+      "en": "Global Buffer Overflow leading to denial of service in PX4-Autopilot",
+      "summary": "未知类型数据包的长度计算和拷贝处理缺少足够边界约束，导致全局缓冲区越界。 公告给出拒绝服务影响；官方 CVSS 3.1 为 Low 2.9。",
+      "tags": [
+        "内存与边界",
+        "CWE-120",
+        "Low"
+      ],
+      "cwes": [
+        "CWE-120"
+      ],
+      "rating": {
+        "source": "CVE-2023-47625",
+        "version": "3.1",
+        "score": 2.9,
+        "severity": "Low",
+        "vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2023-47625",
+          "version": "3.1",
+          "score": 2.9,
+          "severity": "Low",
+          "vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "GHSA-qpw7-65ww-wj82",
+          "version": "3.1",
+          "score": 2.9,
+          "severity": "Low",
+          "vector": "CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        }
+      ],
+      "severity": "Low",
+      "sources": [
+        {
+          "id": "CVE-2023-47625",
+          "label": "CVE-2023-47625 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2023-47625",
+          "snapshot": "sources/CVE-2023-47625.json",
+          "retrievedAt": "2026-10-20T03:54:18.684936+00:00",
+          "sha256": "66c3763f9ccaa540b0f79406e1d73e7e28338868acf9b0461840942a9bce41bd",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-qpw7-65ww-wj82",
+          "label": "[Bug Report] Vulnerable Bug Found in CrsfParser_TryParseCrsfPacket which can trigger Global Buffer Overflow",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-qpw7-65ww-wj82",
+          "snapshot": "sources/GHSA-qpw7-65ww-wj82.json",
+          "retrievedAt": "2026-10-20T03:55:59.073454+00:00",
+          "sha256": "4875bd7ea8fcec41cd41170037d7837cbc0bf04a1a494509004d01bc7b53473e",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2023-11-13",
+      "updated": "2024-09-03",
+      "verifiedAt": "2026-10-20T03:55:59.073454+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "使用 CRSF 遥控输入，异常串口帧进入未知消息类型处理分支。",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "未知类型数据包的长度计算和拷贝处理缺少足够边界约束，导致全局缓冲区越界。",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "公告给出拒绝服务影响；官方 CVSS 3.1 为 Low 2.9。",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 < 1.14.0；GHSA 列出 1.14.0-rc2\n\nPX4 1.14.0；commit d1fcd39a44e6312582c6ab02b0d5ee2599fb55aa",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级至包含上述修复的 PX4 1.14.0 或适用维护版本。",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n与 CVE-2026-32706 的已知可变长度类型分支不同，旧修复不能证明后一个问题已修复。",
+          "sources": [
+            "CVE-2023-47625",
+            "GHSA-qpw7-65ww-wj82"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2023-11-13T18:08:06Z",
+          "event": "GHSA-qpw7-65ww-wj82 公告发布",
+          "source": "GHSA-qpw7-65ww-wj82"
+        },
+        {
+          "time": "2023-11-13T20:40:56.752Z",
+          "event": "CVE-2023-47625 发布",
+          "source": "CVE-2023-47625"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2026-32706",
+          "type": "相关机制",
+          "reason": "同为 CRSF 解析；未知类型和已知可变长度类型的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-24255",
+      "shelf": "D",
+      "title": "围栏异步加载与任务检查时序不一致",
+      "component": "navigator / geofence.cpp / mission_feasibility_checker.cpp",
+      "affected": "CNA：PX4 <= 1.14；报告及 GHSA：1.14.0",
+      "fixed": "PR #22531 为未合并提案，2026-08-10 关闭；未确认首次修复发布版本",
+      "trigger": "具备上传任务和围栏的能力，同时更新两类数据，使任务可行性检查先于新围栏加载完成。",
+      "rootCause": "围栏数据通过异步状态机在多个 navigator 循环中更新，而任务检查使用尚未更新的围栏快照，缺少一致性同步。",
+      "impact": "任务可能通过过时围栏数据的检查；报告进一步演示组合 home/返航/任务模式操作可在禁飞区执行任务。",
+      "remediation": "参考报告的围栏更新后重新校验方案；整理建议：统一数据版本，完成加载后再校验并在执行前复核。",
+      "notes": [
+        "GHSA-p74g-gvg5-6pgc 描述同一报告主题，但其元数据没有 CVE 别名；按同报告证据关联。",
+        "报告称为数据竞争；已有证据重点是异步状态更新与检查时序，不泛化为任意共享内存竞争。"
+      ],
+      "extraSources": [
+        "report-geofence",
+        "GHSA-p74g-gvg5-6pgc",
+        "PX4--PX4-Autopilot-pull-22531"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2024-24255",
+      "original": [
+        "CVE-2024-24255",
+        "PX4",
+        "PX4 Geofence/Mission Race Condition",
+        "Race Condition",
+        "使得无人机可以执行在禁飞区内飞行的任务"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-p74g-gvg5-6pgc"
+      ],
+      "en": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/geofence.cpp cause MissionFeasibilityChecker useless",
+      "summary": "围栏数据通过异步状态机在多个 navigator 循环中更新，而任务检查使用尚未更新的围栏快照，缺少一致性同步。 任务可能通过过时围栏数据的检查；报告进一步演示组合 home/返航/任务模式操作可在禁飞区执行任务。",
+      "tags": [
+        "并发与生命周期",
+        "CWE-362",
+        "High"
+      ],
+      "cwes": [
+        "CWE-362"
+      ],
+      "rating": {
+        "source": "GHSA-p74g-gvg5-6pgc",
+        "version": "3.1",
+        "score": 8.1,
+        "severity": "High",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:C/C:N/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "GHSA-p74g-gvg5-6pgc",
+          "version": "3.1",
+          "score": 8.1,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:C/C:N/I:H/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2024-24255",
+          "label": "CVE-2024-24255 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-24255",
+          "snapshot": "sources/CVE-2024-24255.json",
+          "retrievedAt": "2026-10-20T03:54:18.645284+00:00",
+          "sha256": "16f5e41e2e3ad16eb669f597e7c4ec12491d0b2e6d11612cd2f034b11e94d307",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "report-geofence",
+          "label": "report-geofence",
+          "url": "https://raw.githubusercontent.com/Drone-Lab/PX4-Autopilot/report-the-faliure-of-precheck/report-the-faliure-of-precheck.md",
+          "snapshot": "sources/report-geofence.txt",
+          "retrievedAt": "2026-10-20T03:56:55.044523+00:00",
+          "sha256": "bcc15c437eb7d17bad0234330eadcd7aa7f2463ae527c45418d3e5954c6141d6",
+          "method": "原始页面/报告快照"
+        },
+        {
+          "id": "GHSA-p74g-gvg5-6pgc",
+          "label": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/geofence.cpp cause MissionFeasibilityChecker useless",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-p74g-gvg5-6pgc",
+          "snapshot": "sources/GHSA-p74g-gvg5-6pgc.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "4164d3f0b195e587b9799fed90d41d514746fb2e7ac45028a8b2e6bdb3659685",
+          "method": "extract from previously downloaded full repository API index"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-22531",
+          "label": "提案未合并，因长期无活动关闭；不能作为已发布补丁。",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/22531",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-22531.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "c22a009edb5a379e95f2b5b4ba786b5cb728bcedcc48e58ec67e1739fce2494a",
+          "method": "manual note from web tool; API rate limit"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-02-06",
+      "updated": "2025-05-08",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "具备上传任务和围栏的能力，同时更新两类数据，使任务可行性检查先于新围栏加载完成。",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "围栏数据通过异步状态机在多个 navigator 循环中更新，而任务检查使用尚未更新的围栏快照，缺少一致性同步。",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "任务可能通过过时围栏数据的检查；报告进一步演示组合 home/返航/任务模式操作可在禁飞区执行任务。",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 <= 1.14；报告及 GHSA：1.14.0\n\nPR #22531 为未合并提案，2026-08-10 关闭；未确认首次修复发布版本",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考报告的围栏更新后重新校验方案；整理建议：统一数据版本，完成加载后再校验并在执行前复核。",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\nGHSA-p74g-gvg5-6pgc 描述同一报告主题，但其元数据没有 CVE 别名；按同报告证据关联。\n\n报告称为数据竞争；已有证据重点是异步状态更新与检查时序，不泛化为任意共享内存竞争。",
+          "sources": [
+            "CVE-2024-24255",
+            "report-geofence",
+            "GHSA-p74g-gvg5-6pgc",
+            "PX4--PX4-Autopilot-pull-22531"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-02-06T00:00:00.000Z",
+          "event": "CVE-2024-24255 发布",
+          "source": "CVE-2024-24255"
+        },
+        {
+          "time": "2024-03-14T07:31:50Z",
+          "event": "GHSA-p74g-gvg5-6pgc 公告发布",
+          "source": "GHSA-p74g-gvg5-6pgc"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-29460",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "CVE-2024-30799",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "GHSA-x57h-c282-63hg",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-29460",
+      "shelf": "E",
+      "title": "修改 Home 高度后航点完成判定不一致",
+      "component": "navigator / mission_block.cpp",
+      "affected": "PX4 1.14.0",
+      "fixed": "PR #22834 于 2024-03-20 合入 main（37cadde）；首次修复发布版本待确认",
+      "trigger": "执行相对起飞点高度的任务期间，通过有权限的控制通道改变 home 点的高度。",
+      "rootCause": "航点距离判定以新的 home_alt 重新计算目标高度，但当前实际执行的 mission_item 没有同步更新，执行目标与完成判定目标分离。",
+      "impact": "无人机可能在航点附近振荡、漂移，无法正常推进任务；报告讨论碰撞和坠机风险。",
+      "remediation": "参考 PR #22834；整理建议：明确任务高度基准，更新 home 时同步更新当前目标或固定上传时的高度基准。",
+      "notes": [
+        "需要能够修改 home 点的控制权限，不是仅通过监听链路即可触发。"
+      ],
+      "extraSources": [
+        "report-homepoint",
+        "PX4--PX4-Autopilot-pull-22834"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2024-29460",
+      "original": [
+        "CVE-2024-29460",
+        "PX4",
+        "PX4 Home Point Manipulation / Flight Path Attack",
+        "Improper Handling of Values",
+        "无人机无法正确到达目标点,而是在附近不规则偏移"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "navigator / mission_block.cpp",
+      "summary": "航点距离判定以新的 home_alt 重新计算目标高度，但当前实际执行的 mission_item 没有同步更新，执行目标与完成判定目标分离。 无人机可能在航点附近振荡、漂移，无法正常推进任务；报告讨论碰撞和坠机风险。",
+      "tags": [
+        "飞行逻辑",
+        "Unknown"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2024-29460",
+          "label": "CVE-2024-29460 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-29460",
+          "snapshot": "sources/CVE-2024-29460.json",
+          "retrievedAt": "2026-10-20T03:54:18.720218+00:00",
+          "sha256": "1025bc969c1fd2cbc95af6cbf59eac471fef41612175957415cbb88e49eb7a8a",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "report-homepoint",
+          "label": "report-homepoint",
+          "url": "https://raw.githubusercontent.com/Drone-Lab/PX4-Autopilot/report-can%27t-finish-mission/report-can%27t-finish-mission.md",
+          "snapshot": "sources/report-homepoint.txt",
+          "retrievedAt": "2026-10-20T03:56:55.610203+00:00",
+          "sha256": "80c7eb76a7ffb028f0ac41020f3d7fbfe72252e3b533cf67997c48b699f8be33",
+          "method": "原始页面/报告快照"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-22834",
+          "label": "PR 已合并到 main；首次包含变更的发布版本未确认。",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/22834",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-22834.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "225438bb12c93fd2fb9a34e7772aba75673eda6d43f88dc781a6e168f2bc4814",
+          "method": "manual note from web tool; API rate limit"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-04-10",
+      "updated": "2024-08-02",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "执行相对起飞点高度的任务期间，通过有权限的控制通道改变 home 点的高度。",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "航点距离判定以新的 home_alt 重新计算目标高度，但当前实际执行的 mission_item 没有同步更新，执行目标与完成判定目标分离。",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "无人机可能在航点附近振荡、漂移，无法正常推进任务；报告讨论碰撞和坠机风险。",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 1.14.0\n\nPR #22834 于 2024-03-20 合入 main（37cadde）；首次修复发布版本待确认",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考 PR #22834；整理建议：明确任务高度基准，更新 home 时同步更新当前目标或固定上传时的高度基准。",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n需要能够修改 home 点的控制权限，不是仅通过监听链路即可触发。",
+          "sources": [
+            "CVE-2024-29460",
+            "report-homepoint",
+            "PX4--PX4-Autopilot-pull-22834"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-03-20",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "PX4--PX4-Autopilot-pull-22834"
+        },
+        {
+          "time": "2024-04-10T00:00:00.000Z",
+          "event": "CVE-2024-29460 发布",
+          "source": "CVE-2024-29460"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-24255",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "CVE-2024-30799",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "GHSA-x57h-c282-63hg",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-30799",
+      "shelf": "E",
+      "title": "围栏返航点行为报告与 CVE 影响声明不一致",
+      "component": "Geofence / RTL_TYPE / rally point",
+      "affected": "CNA：PX4 <= 1.14；Issue：SITL 1.14.0",
+      "fixed": "未确认修复版本；维护者表示 main / v1.14 按 rally point 正常返航",
+      "trigger": "报告者在 QGC 设置围栏 breach return point，并在飞行越界后观察返航行为；场景涉及 RTL_TYPE=3。",
+      "rootCause": "报告描述预期返航点与实际返航目标不同，但没有给出内存破坏或代码执行根因；维护者未复现异常。",
+      "impact": "CNA 声称任意代码执行和 DoS；引用的 Issue 只支持返航行为争议，不能据此确认 RCE。",
+      "remediation": "先复核 rally point 配置、RTL 参数和实际版本；尚无证据支持将此条作为已验证代码执行问题。",
+      "notes": [
+        "重要证据冲突：保留 CNA 声明及原始 Issue 的反证，避免把代码执行描述当作已验证事实。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-22428"
+      ],
+      "verification": "证据冲突／维护者未复现报告行为",
+      "canonicalId": "CVE-2024-30799",
+      "original": [
+        "CVE-2024-30799",
+        "PX4",
+        "PX4 Breach Return Point Vulnerability",
+        "QGC软件设计的问题?(没有找到这种错误叫什么)",
+        "Breach Return Point无法发挥预期作用"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "Geofence / RTL_TYPE / rally point",
+      "summary": "报告描述预期返航点与实际返航目标不同，但没有给出内存破坏或代码执行根因；维护者未复现异常。 CNA 声称任意代码执行和 DoS；引用的 Issue 只支持返航行为争议，不能据此确认 RCE。",
+      "tags": [
+        "飞行逻辑",
+        "Unknown"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2024-30799",
+          "label": "CVE-2024-30799 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-30799",
+          "snapshot": "sources/CVE-2024-30799.json",
+          "retrievedAt": "2026-10-20T03:54:19.130051+00:00",
+          "sha256": "0cccd35d390a09ba42ad7181fae33a6c7cbd90de803838683012201f8a505156",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-22428",
+          "label": "[Bug] The Breach Return Point set in QGC is invalid.",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/22428",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-22428.json",
+          "retrievedAt": "2026-10-20T03:56:42.743761+00:00",
+          "sha256": "f5a1304ecdee81a943129e7f9ceaac9509e15b02a8bffdb71fec2ce66b15134e",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-22428-comments",
+          "label": "PX4--PX4-Autopilot-issues-22428-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/22428#issuecomment-1858130392",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-22428-comments.json",
+          "retrievedAt": "2026-10-20T03:56:43.290233+00:00",
+          "sha256": "1254059e5a914a411d18924a95d2dec6c89e3f4cc46a00e71948fa5b55374035",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2023-11-22",
+      "updated": "2024-11-22",
+      "verifiedAt": "2026-10-20T03:56:43.290233+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "报告者在 QGC 设置围栏 breach return point，并在飞行越界后观察返航行为；场景涉及 RTL_TYPE=3。",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "报告描述预期返航点与实际返航目标不同，但没有给出内存破坏或代码执行根因；维护者未复现异常。",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "CNA 声称任意代码执行和 DoS；引用的 Issue 只支持返航行为争议，不能据此确认 RCE。",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 <= 1.14；Issue：SITL 1.14.0\n\n未确认修复版本；维护者表示 main / v1.14 按 rally point 正常返航",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "先复核 rally point 配置、RTL 参数和实际版本；尚无证据支持将此条作为已验证代码执行问题。",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "证据冲突／维护者未复现报告行为\n\n重要证据冲突：保留 CNA 声明及原始 Issue 的反证，避免把代码执行描述当作已验证事实。",
+          "sources": [
+            "CVE-2024-30799",
+            "PX4--PX4-Autopilot-issues-22428",
+            "PX4--PX4-Autopilot-issues-22428-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2023-11-22T07:38:38Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-22428"
+        },
+        {
+          "time": "2024-04-22T00:00:00.000Z",
+          "event": "CVE-2024-30799 发布",
+          "source": "CVE-2024-30799"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-24255",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "CVE-2024-29460",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "GHSA-x57h-c282-63hg",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-38951",
+      "shelf": "A",
+      "title": "旧版 MAVLink 轨迹处理堆越界",
+      "component": "MavlinkReceiver / msgid 332",
+      "affected": "PX4 1.12.3（原始 SITL 报告）",
+      "fixed": "Issue 未确认修复发布版本；维护者要求改用受维护版本",
+      "trigger": "能够发送轨迹航点 MAVLink 消息，valid_points 超过长度为 5 的轨迹数组容量。",
+      "rootCause": "消息计数未被正确约束，循环访问超出 trajectory 数组；原始报告附 AddressSanitizer heap-buffer-overflow。",
+      "impact": "SITL 进程越界崩溃与拒绝服务；不能由堆越界报告直接推导已实现 RCE。",
+      "remediation": "升级受维护 PX4 分支并核对轨迹消息边界检查；旧版 1.12 不应继续作为可维护基线。",
+      "notes": [
+        "GH-ISSUE-23251 是本 CVE 引用的原始报告，作为独立证据档案保留但不重复统计。"
+      ],
+      "extraSources": [
+        "GH-ISSUE-23251"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2024-38951",
+      "original": [
+        "CVE-2024-38951",
+        "PX4",
+        "PX4 DoS via Crafted MAVLink Message",
+        "Buffer Overflow",
+        "实现Denial of Service (DoS)攻击进而导致系统崩溃"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "MavlinkReceiver / msgid 332",
+      "summary": "消息计数未被正确约束，循环访问超出 trajectory 数组；原始报告附 AddressSanitizer heap-buffer-overflow。 SITL 进程越界崩溃与拒绝服务；不能由堆越界报告直接推导已实现 RCE。",
+      "tags": [
+        "内存与边界",
+        "Unknown",
+        "MAVLink"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2024-38951",
+          "label": "CVE-2024-38951 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-38951",
+          "snapshot": "sources/CVE-2024-38951.json",
+          "retrievedAt": "2026-10-20T03:54:19.230473+00:00",
+          "sha256": "ef5519208eec02326432106bed987a3c582ac2a108bdc7d9732aa452bf404a3c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GH-ISSUE-23251",
+          "label": "[Bug] The mavlink module has heap-overflow",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/23251",
+          "snapshot": "sources/GH-ISSUE-23251.json",
+          "retrievedAt": "2026-10-20T03:54:23.704699+00:00",
+          "sha256": "32ee3e21d153a4a8d9de4bb925b8000a3a89aca8168b3ba40aadc172763cfee4",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GH-ISSUE-23251-comments",
+          "label": "GH-ISSUE-23251-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/23251#issuecomment-2160286916",
+          "snapshot": "sources/GH-ISSUE-23251-comments.json",
+          "retrievedAt": "2026-10-20T03:54:24.211510+00:00",
+          "sha256": "212be1ff5e8e7a23ae26475395c16583b40a45aa20fe241928ca5ee3e77fb67c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-06-11",
+      "updated": "2024-10-28",
+      "verifiedAt": "2026-10-20T03:54:24.211510+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能够发送轨迹航点 MAVLink 消息，valid_points 超过长度为 5 的轨迹数组容量。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "消息计数未被正确约束，循环访问超出 trajectory 数组；原始报告附 AddressSanitizer heap-buffer-overflow。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "SITL 进程越界崩溃与拒绝服务；不能由堆越界报告直接推导已实现 RCE。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 1.12.3（原始 SITL 报告）\n\nIssue 未确认修复发布版本；维护者要求改用受维护版本",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级受维护 PX4 分支并核对轨迹消息边界检查；旧版 1.12 不应继续作为可维护基线。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\nGH-ISSUE-23251 是本 CVE 引用的原始报告，作为独立证据档案保留但不重复统计。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-06-11T07:06:00Z",
+          "event": "原始报告/提案创建",
+          "source": "GH-ISSUE-23251"
+        },
+        {
+          "time": "2024-06-25T00:00:00.000Z",
+          "event": "CVE-2024-38951 发布",
+          "source": "CVE-2024-38951"
+        }
+      ],
+      "related": [
+        {
+          "id": "GH-ISSUE-23251",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        },
+        {
+          "id": "CVE-2021-46896",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        },
+        {
+          "id": "CVE-2025-5640",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-38952",
+      "shelf": "A",
+      "title": "Logger 主题名缓冲区溢出静态报告",
+      "component": "logger / logged_topics.cpp / topic_name",
+      "affected": "CNA：PX4 1.14.3；报告分析 main 源码",
+      "fixed": "未查到已确认修复版本",
+      "trigger": "攻击者需要能够影响 /etc/logging/logger_topics.txt 等主题配置输入，使主题名超过固定容量。",
+      "rootCause": "报告者认为主题名复制到固定长度 topic_name 缓冲区时缺少长度限制；报告中明确表示没有成功复现。",
+      "impact": "CNA 声称可造成缓冲区溢出和崩溃；目前本资料只确认存在公开静态分析报告，不能确认可利用性。",
+      "remediation": "整理建议：验证配置来源与权限，并检查解析和拷贝是否同时限制长度、保留字符串终止空间。",
+      "notes": [
+        "原始 Issue 明确未复现；不能标成已验证 PoC 或无认证远程溢出。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-23258"
+      ],
+      "verification": "静态分析报告／报告者未复现",
+      "canonicalId": "CVE-2024-38952",
+      "original": [
+        "CVE-2024-38952",
+        "PX4",
+        "PX4 Logger Buffer Overflow",
+        "Buffer Overflow",
+        "内存溢出进而导致系统崩溃"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "logger / logged_topics.cpp / topic_name",
+      "summary": "报告者认为主题名复制到固定长度 topic_name 缓冲区时缺少长度限制；报告中明确表示没有成功复现。 CNA 声称可造成缓冲区溢出和崩溃；目前本资料只确认存在公开静态分析报告，不能确认可利用性。",
+      "tags": [
+        "内存与边界",
+        "Unknown"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2024-38952",
+          "label": "CVE-2024-38952 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-38952",
+          "snapshot": "sources/CVE-2024-38952.json",
+          "retrievedAt": "2026-10-20T03:54:19.218276+00:00",
+          "sha256": "a4e2f36635130ff4fd94f82ee232cfc432fa425162653d7e5ec788a7027c50f4",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-23258",
+          "label": "[Bug] There is a potential buffer overflow vulnerability in the logger module",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/23258",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-23258.json",
+          "retrievedAt": "2026-10-20T03:56:44.990884+00:00",
+          "sha256": "e8e7f0125bf5426af9e7ac6c19ccebcfa51aa8cdeb165c785a37a40da0fc999e",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-23258-comments",
+          "label": "PX4--PX4-Autopilot-issues-23258-comments · 讨论回复",
+          "url": "https://api.github.com/repos/PX4/PX4-Autopilot/issues/23258/comments?per_page=100",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-23258-comments.json",
+          "retrievedAt": "2026-10-20T03:56:45.778466+00:00",
+          "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-06-12",
+      "updated": "2024-08-14",
+      "verifiedAt": "2026-10-20T03:56:45.778466+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者需要能够影响 /etc/logging/logger_topics.txt 等主题配置输入，使主题名超过固定容量。",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "报告者认为主题名复制到固定长度 topic_name 缓冲区时缺少长度限制；报告中明确表示没有成功复现。",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "CNA 声称可造成缓冲区溢出和崩溃；目前本资料只确认存在公开静态分析报告，不能确认可利用性。",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 1.14.3；报告分析 main 源码\n\n未查到已确认修复版本",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：验证配置来源与权限，并检查解析和拷贝是否同时限制长度、保留字符串终止空间。",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "静态分析报告／报告者未复现\n\n原始 Issue 明确未复现；不能标成已验证 PoC 或无认证远程溢出。",
+          "sources": [
+            "CVE-2024-38952",
+            "PX4--PX4-Autopilot-issues-23258",
+            "PX4--PX4-Autopilot-issues-23258-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-06-12T03:29:18Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-23258"
+        },
+        {
+          "time": "2024-06-25T00:00:00.000Z",
+          "event": "CVE-2024-38952 发布",
+          "source": "CVE-2024-38952"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2025-15150",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        },
+        {
+          "id": "CVE-2026-32743",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2024-40427",
+      "shelf": "A",
+      "title": "SERIAL_CONTROL 长度未校验导致越界读取",
+      "component": "MavlinkShell / handle_message_serial_control",
+      "affected": "CNA：PX4 1.14.3；GHSA 写作 < v1.14.3（范围不一致）",
+      "fixed": "commit e03e0261a1a0c82f545e66a1e3795956c886db71；首次修复发布版本未明确",
+      "trigger": "可向开启 MAVLink shell 的目标发送 SERIAL_CONTROL，count 字段大于消息 data 数组容量。",
+      "rootCause": "将外部 count 直接作为写入 shell 文件描述符的长度，导致系统调用从消息栈对象之后继续读取。",
+      "impact": "公开 ASan 记录为 stack-buffer-overflow READ，可导致拒绝服务及越界数据读取风险；不是已证明的栈越界写 RCE。",
+      "remediation": "应用已引用边界检查提交，约束 count <= sizeof(data) 并核实所用版本包含补丁。",
+      "notes": [
+        "公告标题写栈溢出，描述又提全局溢出；以 ASan 的越界 READ 证据说明实际访问方向。"
+      ],
+      "extraSources": [
+        "GHSA-55wq-2hgm-75m4"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2024-40427",
+      "original": [
+        "CVE-2024-40427",
+        "PX4",
+        "PX4 Stack Buffer Overflow",
+        "Buffer Overflow",
+        "在仿真中导致无人机拒绝执行"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-55wq-2hgm-75m4"
+      ],
+      "en": "There is a stack-buffer overflow vulnerability in the mavlink_receiver.cpp,which can cause the program to refuse to execute",
+      "summary": "将外部 count 直接作为写入 shell 文件描述符的长度，导致系统调用从消息栈对象之后继续读取。 公开 ASan 记录为 stack-buffer-overflow READ，可导致拒绝服务及越界数据读取风险；不是已证明的栈越界写 RCE。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "High",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "GHSA-55wq-2hgm-75m4",
+        "version": "3.1",
+        "score": 7.9,
+        "severity": "High",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "GHSA-55wq-2hgm-75m4",
+          "version": "3.1",
+          "score": 7.9,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2024-40427",
+          "label": "CVE-2024-40427 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-40427",
+          "snapshot": "sources/CVE-2024-40427.json",
+          "retrievedAt": "2026-10-20T03:54:19.653632+00:00",
+          "sha256": "eb422d866056c512dc69815adb9f07b3b1220760a11804c467d5d66ce14cc69f",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-55wq-2hgm-75m4",
+          "label": "There is a stack-buffer overflow vulnerability in the mavlink_receiver.cpp,which can cause the program to refuse to execute",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-55wq-2hgm-75m4",
+          "snapshot": "sources/GHSA-55wq-2hgm-75m4.json",
+          "retrievedAt": "2026-10-20T03:55:59.189210+00:00",
+          "sha256": "87d9b71d8bcc77b0443e4d330accf417c9838dd5ba37246d77912780850a2423",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-07-03",
+      "updated": "2025-01-08",
+      "verifiedAt": "2026-10-20T03:55:59.189210+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "可向开启 MAVLink shell 的目标发送 SERIAL_CONTROL，count 字段大于消息 data 数组容量。",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "将外部 count 直接作为写入 shell 文件描述符的长度，导致系统调用从消息栈对象之后继续读取。",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "公开 ASan 记录为 stack-buffer-overflow READ，可导致拒绝服务及越界数据读取风险；不是已证明的栈越界写 RCE。",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：PX4 1.14.3；GHSA 写作 < v1.14.3（范围不一致）\n\ncommit e03e0261a1a0c82f545e66a1e3795956c886db71；首次修复发布版本未明确",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "应用已引用边界检查提交，约束 count <= sizeof(data) 并核实所用版本包含补丁。",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n公告标题写栈溢出，描述又提全局溢出；以 ASan 的越界 READ 证据说明实际访问方向。",
+          "sources": [
+            "CVE-2024-40427",
+            "GHSA-55wq-2hgm-75m4"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-07-03T06:12:03Z",
+          "event": "GHSA-55wq-2hgm-75m4 公告发布",
+          "source": "GHSA-55wq-2hgm-75m4"
+        },
+        {
+          "time": "2025-01-07T00:00:00.000Z",
+          "event": "CVE-2024-40427 发布",
+          "source": "CVE-2024-40427"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2025-9020",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        },
+        {
+          "id": "CVE-2026-32724",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-5640",
+      "shelf": "A",
+      "title": "轨迹航点消息触发旧版 PX4 拒绝服务",
+      "component": "MavlinkReceiver / TRAJECTORY_REPRESENTATION_WAYPOINTS",
+      "affected": "PX4 1.12.3；报告和公开 PoC 的测试目标",
+      "fixed": "未确认修复发布版本；新版本适用性需单独检查",
+      "trigger": "可接入 MAVLink 通道并向易受影响消息处理路径提交畸形轨迹消息；公开 PoC 以 SITL UDP 为场景。",
+      "rootCause": "CNA 指向 mavlink_receiver.cpp 的轨迹消息处理栈缓冲区溢出；Issue 提供触发材料。与其他轨迹 CVE 有重叠，但未获官方重复编号结论。",
+      "impact": "公开材料声称可触发进程崩溃与 DoS；真实飞行的故障后果依赖冗余与失效保护，未在本机或实机验证。",
+      "remediation": "整理建议：停用不受维护的 1.12.3，升级并检查轨迹消息的长度与计数边界。",
+      "notes": [
+        "CNA 的 CVSS 3.1 为 Low 3.3、CVSS 4.0 为 Medium 4.8，攻击向量是 Local；公开 PoC 的 UDP 场景与此存在差异，分开保留。",
+        "EDB-52339 明确标注此 CVE，是 PoC 文献而不是另一个独立漏洞。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-24915",
+        "EDB-52339"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2025-5640",
+      "original": [
+        "CVE-2025-5640",
+        "PX4",
+        "PX4 TRAJECTORY_REPRESENTATION_WAYPOINTS Stack Buffer Overflow",
+        "Buffer Overflow",
+        "栈缓冲区溢出导致飞控进程崩溃,在仿真中表现为模拟器 crash,在真实飞行中可能导致无人机立刻失控或坠毁"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "PX4-Autopilot TRAJECTORY_REPRESENTATION_WAYPOINTS Message mavlink_receiver.cpp stack-based overflow",
+      "summary": "CNA 指向 mavlink_receiver.cpp 的轨迹消息处理栈缓冲区溢出；Issue 提供触发材料。与其他轨迹 CVE 有重叠，但未获官方重复编号结论。 公开材料声称可触发进程崩溃与 DoS；真实飞行的故障后果依赖冗余与失效保护，未在本机或实机验证。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "CWE-119",
+        "Low",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-119",
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2025-5640",
+        "version": "3.1",
+        "score": 3.3,
+        "severity": "Low",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2025-5640",
+          "version": "3.1",
+          "score": 3.3,
+          "severity": "Low",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "3.0",
+          "score": 3.3,
+          "severity": "Low",
+          "vector": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "4.0",
+          "score": 4.8,
+          "severity": "Medium",
+          "vector": "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "2.0",
+          "score": 1.7,
+          "severity": "Unknown",
+          "vector": "AV:L/AC:L/Au:S/C:N/I:N/A:P"
+        }
+      ],
+      "severity": "Low",
+      "sources": [
+        {
+          "id": "CVE-2025-5640",
+          "label": "CVE-2025-5640 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2025-5640",
+          "snapshot": "sources/CVE-2025-5640.json",
+          "retrievedAt": "2026-10-20T03:54:19.660417+00:00",
+          "sha256": "cfa0891fd91baffad3b16ca5da4f2aaa2f5815b54403e7bbcd0447e53792e06d",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-24915",
+          "label": "[Bug] stack-buffer-overflow",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/24915",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-24915.json",
+          "retrievedAt": "2026-10-20T03:56:46.562048+00:00",
+          "sha256": "64277a36bf98e1ce5f40b48c9e28775e596c436585a9d0bfc5cef1232f1026ae",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "EDB-52339",
+          "label": "公开文献声称畸形轨迹消息可经 MAVLink UDP 触发 DoS；未执行或复现。",
+          "url": "https://www.exploit-db.com/exploits/52339",
+          "snapshot": "sources/EDB-52339.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "4aadcea0d358b4b1b6fe0be594e9302b47243e83e8aa9b05d09d417e00ab5f73",
+          "method": "manual metadata note from web tool; not original HTML"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-24915-comments",
+          "label": "PX4--PX4-Autopilot-issues-24915-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/24915#issuecomment-2950673556",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-24915-comments.json",
+          "retrievedAt": "2026-10-20T03:56:47.056339+00:00",
+          "sha256": "e1d6afc2a39953edcb464b610e7ed6cb73aef4ec35a51f90c8fc3a0153e86cb1",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2025-05-26",
+      "updated": "2026-01-12",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "可接入 MAVLink 通道并向易受影响消息处理路径提交畸形轨迹消息；公开 PoC 以 SITL UDP 为场景。",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "CNA 指向 mavlink_receiver.cpp 的轨迹消息处理栈缓冲区溢出；Issue 提供触发材料。与其他轨迹 CVE 有重叠，但未获官方重复编号结论。",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "公开材料声称可触发进程崩溃与 DoS；真实飞行的故障后果依赖冗余与失效保护，未在本机或实机验证。",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 1.12.3；报告和公开 PoC 的测试目标\n\n未确认修复发布版本；新版本适用性需单独检查",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "整理建议：停用不受维护的 1.12.3，升级并检查轨迹消息的长度与计数边界。",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\nCNA 的 CVSS 3.1 为 Low 3.3、CVSS 4.0 为 Medium 4.8，攻击向量是 Local；公开 PoC 的 UDP 场景与此存在差异，分开保留。\n\nEDB-52339 明确标注此 CVE，是 PoC 文献而不是另一个独立漏洞。",
+          "sources": [
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "EDB-52339",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-05-26T12:25:24Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-24915"
+        },
+        {
+          "time": "2025-06-05T06:00:19.757Z",
+          "event": "CVE-2025-5640 发布",
+          "source": "CVE-2025-5640"
+        }
+      ],
+      "related": [
+        {
+          "id": "EDB-52339",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        },
+        {
+          "id": "CVE-2021-46896",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        },
+        {
+          "id": "CVE-2024-38951",
+          "type": "相关机制",
+          "reason": "同属轨迹航点消息及 valid_points 处理；没有官方重复 CVE 结论。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-9020",
+      "shelf": "D",
+      "title": "MAVLink Shell 关闭处理的释放后使用",
+      "component": "MavlinkReceiver / handle_message_serial_control",
+      "affected": "PX4 <= 1.15.4（CNA）",
+      "fixed": "PR #25082；commit 4395d4f00c49b888f030f5b43e2a779f1fa78708",
+      "trigger": "MAVLink shell 生命周期操作与其他线程访问发生重叠；CNA 评分前提为本地低权限、高复杂度。",
+      "rootCause": "关闭和释放 shell 对象时，其他执行路径仍可能引用该对象，造成 use-after-free。",
+      "impact": "可造成内存安全与可用性问题；CNA 评分涉及低程度 C/I/A 影响，没有充分证据确认已实现远程代码执行。",
+      "remediation": "参考 PR #25082 中 shell 生命周期修复；确认部署分支包含提交并核对后续并发修复。",
+      "notes": [
+        "纠正输入表中“极端情况下远程代码执行”的无证据扩张。",
+        "与 CVE-2026-32724 同组件且均为 UAF，但有独立编号、版本和修复语境，不直接合并。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-pull-25082",
+        "PX4--PX4-Autopilot-issues-25046"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2025-9020",
+      "original": [
+        "CVE-2025-9020",
+        "PX4",
+        "PX4 Mavlink Shell Closing Handler Use-After-Free",
+        "Use After Free",
+        "导致飞控崩溃甚至在极端情况下实现远程代码执行,从而使无人机失控或被完全接管。"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "PX4 PX4-Autopilot Mavlink Shell Closing mavlink_receiver.cpp handle_message_serial_control use after free",
+      "summary": "关闭和释放 shell 对象时，其他执行路径仍可能引用该对象，造成 use-after-free。 可造成内存安全与可用性问题；CNA 评分涉及低程度 C/I/A 影响，没有充分证据确认已实现远程代码执行。",
+      "tags": [
+        "并发与生命周期",
+        "CWE-416",
+        "CWE-119",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-119",
+        "CWE-416"
+      ],
+      "rating": {
+        "source": "CVE-2025-9020",
+        "version": "3.1",
+        "score": 4.5,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2025-9020",
+          "version": "3.1",
+          "score": 4.5,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+        },
+        {
+          "source": "CVE-2025-9020",
+          "version": "3.0",
+          "score": 4.5,
+          "severity": "Medium",
+          "vector": "CVSS:3.0/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+        },
+        {
+          "source": "CVE-2025-9020",
+          "version": "4.0",
+          "score": 2,
+          "severity": "Low",
+          "vector": "CVSS:4.0/AV:L/AC:H/AT:N/PR:L/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N/E:X"
+        },
+        {
+          "source": "CVE-2025-9020",
+          "version": "2.0",
+          "score": 3.5,
+          "severity": "Unknown",
+          "vector": "AV:L/AC:H/Au:S/C:P/I:P/A:P/E:ND/RL:OF/RC:C"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2025-9020",
+          "label": "CVE-2025-9020 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2025-9020",
+          "snapshot": "sources/CVE-2025-9020.json",
+          "retrievedAt": "2026-10-20T03:54:19.671455+00:00",
+          "sha256": "28b657d9d979d7c2112ccdb1be3ba0a1947931d15a2457655cea415657660a71",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-25082",
+          "label": "fix mavlink: add mutex for mavlink shell",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/25082",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-25082.json",
+          "retrievedAt": "2026-10-20T03:56:50.856391+00:00",
+          "sha256": "1203fe717c7d76b3e7ca481dd2ce4673758eb0b85563676650e2192a39167421",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-25046",
+          "label": "[Bug] ty Submission via GitHub Security Advisorie",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/25046",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-25046.json",
+          "retrievedAt": "2026-10-20T03:56:47.617602+00:00",
+          "sha256": "1b55372d899785dfdffff8a09f8f433f24876eb2d51edf06b1f77973fdc8bd84",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-25046-comments",
+          "label": "PX4--PX4-Autopilot-issues-25046-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/25046#issuecomment-2989651058",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-25046-comments.json",
+          "retrievedAt": "2026-10-20T03:56:48.127667+00:00",
+          "sha256": "182abc32607ff863fc3ac1d830202909dcea95f66a9869f4942b70886da36b0e",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2025-06-15",
+      "updated": "2026-01-11",
+      "verifiedAt": "2026-10-20T03:56:50.856391+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "MAVLink shell 生命周期操作与其他线程访问发生重叠；CNA 评分前提为本地低权限、高复杂度。",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "关闭和释放 shell 对象时，其他执行路径仍可能引用该对象，造成 use-after-free。",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可造成内存安全与可用性问题；CNA 评分涉及低程度 C/I/A 影响，没有充分证据确认已实现远程代码执行。",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.15.4（CNA）\n\nPR #25082；commit 4395d4f00c49b888f030f5b43e2a779f1fa78708",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考 PR #25082 中 shell 生命周期修复；确认部署分支包含提交并核对后续并发修复。",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n纠正输入表中“极端情况下远程代码执行”的无证据扩张。\n\n与 CVE-2026-32724 同组件且均为 UAF，但有独立编号、版本和修复语境，不直接合并。",
+          "sources": [
+            "CVE-2025-9020",
+            "PX4--PX4-Autopilot-pull-25082",
+            "PX4--PX4-Autopilot-issues-25046",
+            "PX4--PX4-Autopilot-issues-25046-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-06-15T11:58:50Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-25046"
+        },
+        {
+          "time": "2025-06-19T13:38:58Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-pull-25082"
+        },
+        {
+          "time": "2025-06-19T21:03:01Z",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "PX4--PX4-Autopilot-pull-25082"
+        },
+        {
+          "time": "2025-08-15T07:32:07.425Z",
+          "event": "CVE-2025-9020 发布",
+          "source": "CVE-2025-9020"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-40427",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        },
+        {
+          "id": "CVE-2026-32724",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2025-15150",
+      "shelf": "A",
+      "title": "日志索引文件名无宽度解析导致栈溢出",
+      "component": "MavlinkLogHandler / log_entry_from_id / state_listing",
+      "affected": "PX4 <= 1.16.0（CNA）；报告测试 main SITL",
+      "fixed": "PR #26124；commit 338595edd1d235efd885fd5e9f45e7f9dcf4013d",
+      "trigger": "能够影响日志列表/文件路径内容；原始报告通过 FTP 建立长文件名后，使用 MAVLink 日志请求进入解析。",
+      "rootCause": "sscanf 的 %s 未限制最大字符数，向 LogEntry.filepath 的 60 字节固定数组写入过长路径。",
+      "impact": "栈内存破坏与进程崩溃；代码执行仍是需另证的可能性，未在本任务执行利用。",
+      "remediation": "参考 PR #26124 修复字符串解析宽度并验证路径上限。",
+      "notes": [
+        "输入表标 High，CNA 的 CVSS 3.1 是 Medium 5.3、CVSS 4.0 是 Medium 4.8。",
+        "原始报告链路场景与 CNA Local 向量不一致；需要日志输入控制能力，不等价于任意网络数据包即可利用。"
+      ],
+      "extraSources": [
+        "PX4--PX4-Autopilot-issues-26118",
+        "PX4--PX4-Autopilot-pull-26124"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2025-15150",
+      "original": [
+        "CVE-2025-15150",
+        "cve",
+        "buffer_overflow",
+        "High",
+        "PX4 MavlinkLogHandler Stack Buffer Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "PX4 PX4-Autopilot mavlink_log_handler.cpp log_entry_from_id stack-based overflow",
+      "summary": "sscanf 的 %s 未限制最大字符数，向 LogEntry.filepath 的 60 字节固定数组写入过长路径。 栈内存破坏与进程崩溃；代码执行仍是需另证的可能性，未在本任务执行利用。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "CWE-119",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-119",
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2025-15150",
+        "version": "3.1",
+        "score": 5.3,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2025-15150",
+          "version": "3.1",
+          "score": 5.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+        },
+        {
+          "source": "CVE-2025-15150",
+          "version": "3.0",
+          "score": 5.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L/E:X/RL:O/RC:C"
+        },
+        {
+          "source": "CVE-2025-15150",
+          "version": "4.0",
+          "score": 4.8,
+          "severity": "Medium",
+          "vector": "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N/E:X"
+        },
+        {
+          "source": "CVE-2025-15150",
+          "version": "2.0",
+          "score": 4.3,
+          "severity": "Unknown",
+          "vector": "AV:L/AC:L/Au:S/C:P/I:P/A:P/E:ND/RL:OF/RC:C"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2025-15150",
+          "label": "CVE-2025-15150 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2025-15150",
+          "snapshot": "sources/CVE-2025-15150.json",
+          "retrievedAt": "2026-10-20T03:54:19.730336+00:00",
+          "sha256": "e62aa1013f2f30cf959eba8dbc57e53422fdc71c5d33b36a0e14e4d9a8e6c78b",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-26118",
+          "label": "[Bug] Stack buffer overflow in mavlink_log_handler when parsing logdata.txt due to unbounded sscanf(\"%s\") into LogEntry.filepath",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/26118",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-26118.json",
+          "retrievedAt": "2026-10-20T03:56:48.660787+00:00",
+          "sha256": "ed280f6dd7e8b59393d4a6fdb791c974fe03d2007144e29ba1cf4f3ef451b26f",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-26124",
+          "label": "Fix stack buffer overflow in mavlink_log_handler logdata.txt parsing",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/26124",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-26124.json",
+          "retrievedAt": "2026-10-20T03:56:51.517174+00:00",
+          "sha256": "f17f464d1f6f6f3ebd1f4b34f4040b64dd10052436a918b7751e86ea23cc1464",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-26118-comments",
+          "label": "PX4--PX4-Autopilot-issues-26118-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/26118#issuecomment-3656480708",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-26118-comments.json",
+          "retrievedAt": "2026-10-20T03:56:49.158742+00:00",
+          "sha256": "9eda5c76efadaed06b8707b5f3c51e7044c15d970e6f2bc823750b5db45a2a93",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2025-12-15",
+      "updated": "2026-04-15",
+      "verifiedAt": "2026-10-20T03:56:51.517174+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能够影响日志列表/文件路径内容；原始报告通过 FTP 建立长文件名后，使用 MAVLink 日志请求进入解析。",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "sscanf 的 %s 未限制最大字符数，向 LogEntry.filepath 的 60 字节固定数组写入过长路径。",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "栈内存破坏与进程崩溃；代码执行仍是需另证的可能性，未在本任务执行利用。",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.16.0（CNA）；报告测试 main SITL\n\nPR #26124；commit 338595edd1d235efd885fd5e9f45e7f9dcf4013d",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考 PR #26124 修复字符串解析宽度并验证路径上限。",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n输入表标 High，CNA 的 CVSS 3.1 是 Medium 5.3、CVSS 4.0 是 Medium 4.8。\n\n原始报告链路场景与 CNA Local 向量不一致；需要日志输入控制能力，不等价于任意网络数据包即可利用。",
+          "sources": [
+            "CVE-2025-15150",
+            "PX4--PX4-Autopilot-issues-26118",
+            "PX4--PX4-Autopilot-pull-26124",
+            "PX4--PX4-Autopilot-issues-26118-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-12-15T08:27:52Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-26118"
+        },
+        {
+          "time": "2025-12-15T21:33:03Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-pull-26124"
+        },
+        {
+          "time": "2025-12-28T19:02:07.960Z",
+          "event": "CVE-2025-15150 发布",
+          "source": "CVE-2025-15150"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-38952",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        },
+        {
+          "id": "CVE-2026-32743",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-32705",
+      "shelf": "A",
+      "title": "BST 设备名终止符栈越界写",
+      "component": "BST telemetry / BST::probe",
+      "affected": "PX4 <= 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "启用 BST 遥测驱动，并连接能返回恶意设备名长度的 I2C/BST 设备；需物理总线访问。",
+      "rootCause": "dev_name 固定为 32 字节，使用外部 dev_name_len 写入字符串终止符时未确保索引 < 32。",
+      "impact": "栈越界写；公告讨论代码执行潜力，实际后果依赖目标内存布局与保护。",
+      "remediation": "升级至 1.17.0-rc2 或包含修复的适用版本；驱动探测阶段约束长度。",
+      "notes": [],
+      "extraSources": [
+        "GHSA-79mp-34pp-2f3f"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32705",
+      "original": [
+        "CVE-2026-32705",
+        "cve",
+        "buffer_overflow",
+        "Medium",
+        "PX4 BST Telemetry Stack Overflow with Code Execution"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-79mp-34pp-2f3f"
+      ],
+      "en": "PX4 autopilot BST Device Name Length Can Overflow Driver Buffer",
+      "summary": "dev_name 固定为 32 字节，使用外部 dev_name_len 写入字符串终止符时未确保索引 < 32。 栈越界写；公告讨论代码执行潜力，实际后果依赖目标内存布局与保护。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "Medium"
+      ],
+      "cwes": [
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2026-32705",
+        "version": "3.1",
+        "score": 6.8,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32705",
+          "version": "3.1",
+          "score": 6.8,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        },
+        {
+          "source": "GHSA-79mp-34pp-2f3f",
+          "version": "3.1",
+          "score": 6.8,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32705",
+          "label": "CVE-2026-32705 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32705",
+          "snapshot": "sources/CVE-2026-32705.json",
+          "retrievedAt": "2026-10-20T03:54:19.697859+00:00",
+          "sha256": "d56b8fbdee5d43670692fd24caa0a66e6be77fd4df01c73c385410eed97db5b0",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-79mp-34pp-2f3f",
+          "label": "BST Device Name Length Can Overflow Driver Buffer",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-79mp-34pp-2f3f",
+          "snapshot": "sources/GHSA-79mp-34pp-2f3f.json",
+          "retrievedAt": "2026-10-20T03:55:59.162167+00:00",
+          "sha256": "bd3e9815f893f6b956e9660881740457da36c978776956cecf9856acffb15ae6",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-03-17",
+      "verifiedAt": "2026-10-20T03:55:59.162167+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "启用 BST 遥测驱动，并连接能返回恶意设备名长度的 I2C/BST 设备；需物理总线访问。",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "dev_name 固定为 32 字节，使用外部 dev_name_len 写入字符串终止符时未确保索引 < 32。",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "栈越界写；公告讨论代码执行潜力，实际后果依赖目标内存布局与保护。",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.17.0-rc1\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级至 1.17.0-rc2 或包含修复的适用版本；驱动探测阶段约束长度。",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n",
+          "sources": [
+            "CVE-2026-32705",
+            "GHSA-79mp-34pp-2f3f"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:49:17Z",
+          "event": "GHSA-79mp-34pp-2f3f 公告发布",
+          "source": "GHSA-79mp-34pp-2f3f"
+        },
+        {
+          "time": "2026-03-13T21:15:55.509Z",
+          "event": "CVE-2026-32705 发布",
+          "source": "CVE-2026-32705"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "CVE-2026-32706",
+      "shelf": "A",
+      "title": "CRSF 已知可变长帧绕过长度校验",
+      "component": "crsf_rc / ELRS_STATUS / process_buffer",
+      "affected": "PX4 < 1.17.0-rc2",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "启用 CRSF 遥控驱动，攻击者可影响其串口输入；提交超长的已知可变长消息类型。",
+      "rootCause": "已知 ELRS_STATUS 等帧绕开未知类型分支的限制，unchecked memcpy 在 CRC 检查之前拷入 64 字节 process_buffer。",
+      "impact": "全局缓冲区内存破坏与拒绝服务，可能影响遥控输入处理。",
+      "remediation": "升级 1.17.0-rc2；对所有类型统一校验接收长度与目标容量，再复制和处理。",
+      "notes": [
+        "输入表 Medium 更正为 CNA/GHSA 的 High 7.1。",
+        "与 CVE-2023-47625 分属不同解析分支，不能以旧补丁代替此修复。"
+      ],
+      "extraSources": [
+        "GHSA-mqgj-hh4g-fg5p"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32706",
+      "original": [
+        "CVE-2026-32706",
+        "cve",
+        "buffer_overflow",
+        "Medium",
+        "PX4 CRSF RC Parser Memory Corruption"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-mqgj-hh4g-fg5p"
+      ],
+      "en": "PX4 autopilot has a global buffer overflow in crsf_rc via oversized variable-length known packet",
+      "summary": "已知 ELRS_STATUS 等帧绕开未知类型分支的限制，unchecked memcpy 在 CRC 检查之前拷入 64 字节 process_buffer。 全局缓冲区内存破坏与拒绝服务，可能影响遥控输入处理。",
+      "tags": [
+        "内存与边界",
+        "CWE-120",
+        "CWE-787",
+        "High"
+      ],
+      "cwes": [
+        "CWE-120",
+        "CWE-787"
+      ],
+      "rating": {
+        "source": "CVE-2026-32706",
+        "version": "3.1",
+        "score": 7.1,
+        "severity": "High",
+        "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32706",
+          "version": "3.1",
+          "score": 7.1,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+        },
+        {
+          "source": "GHSA-mqgj-hh4g-fg5p",
+          "version": "3.1",
+          "score": 7.1,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2026-32706",
+          "label": "CVE-2026-32706 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32706",
+          "snapshot": "sources/CVE-2026-32706.json",
+          "retrievedAt": "2026-10-20T03:54:20.223500+00:00",
+          "sha256": "4118482db2f7f03778a8efc685dbf1f8bba9fd78ee967dbb9735d03c18f69ac7",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-mqgj-hh4g-fg5p",
+          "label": "Global buffer overflow in crsf_rc via oversized variable-length known packet",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-mqgj-hh4g-fg5p",
+          "snapshot": "sources/GHSA-mqgj-hh4g-fg5p.json",
+          "retrievedAt": "2026-10-20T03:55:59.125826+00:00",
+          "sha256": "7f9eed7a88bdebc4f82208f1cd1cf7d58efb4909a65f5deb7f86d3cd8d68dace",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-04-07",
+      "verifiedAt": "2026-10-20T03:55:59.125826+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "启用 CRSF 遥控驱动，攻击者可影响其串口输入；提交超长的已知可变长消息类型。",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "已知 ELRS_STATUS 等帧绕开未知类型分支的限制，unchecked memcpy 在 CRC 检查之前拷入 64 字节 process_buffer。",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "全局缓冲区内存破坏与拒绝服务，可能影响遥控输入处理。",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 < 1.17.0-rc2\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc2；对所有类型统一校验接收长度与目标容量，再复制和处理。",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n输入表 Medium 更正为 CNA/GHSA 的 High 7.1。\n\n与 CVE-2023-47625 分属不同解析分支，不能以旧补丁代替此修复。",
+          "sources": [
+            "CVE-2026-32706",
+            "GHSA-mqgj-hh4g-fg5p"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:56:16Z",
+          "event": "GHSA-mqgj-hh4g-fg5p 公告发布",
+          "source": "GHSA-mqgj-hh4g-fg5p"
+        },
+        {
+          "time": "2026-03-13T21:17:02.719Z",
+          "event": "CVE-2026-32706 发布",
+          "source": "CVE-2026-32706"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2023-47625",
+          "type": "相关机制",
+          "reason": "同为 CRSF 解析；未知类型和已知可变长度类型的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-32707",
+      "shelf": "A",
+      "title": "Tattu CAN 电池分帧组装栈越界",
+      "component": "tattu_can / frame assembly",
+      "affected": "PX4 <= 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "构建并启用 Tattu CAN 电池驱动，攻击者能注入 CAN 电池分帧数据；需要物理总线访问。",
+      "rootCause": "拼装循环按 received_size - 1 计算载荷并 memcpy 到 battery 对象的偏移处，没有将累计偏移和目标对象剩余容量一并约束。",
+      "impact": "栈内存破坏，可造成驱动或飞控异常与拒绝服务；并非所有 PX4 默认配置都启用此驱动。",
+      "remediation": "升级 1.17.0-rc2；校验帧有效长度、累计偏移与对象大小。",
+      "notes": [],
+      "extraSources": [
+        "GHSA-wxwm-xmx9-hr32"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32707",
+      "original": [
+        "CVE-2026-32707",
+        "cve",
+        "buffer_overflow",
+        "Medium",
+        "PX4 tattu_can Unbounded memcpy Stack Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-wxwm-xmx9-hr32"
+      ],
+      "en": "PX4 autopilot has a stack buffer overflow in tattu_can due to unbounded memcpy in frame assembly loop",
+      "summary": "拼装循环按 received_size - 1 计算载荷并 memcpy 到 battery 对象的偏移处，没有将累计偏移和目标对象剩余容量一并约束。 栈内存破坏，可造成驱动或飞控异常与拒绝服务；并非所有 PX4 默认配置都启用此驱动。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "Medium"
+      ],
+      "cwes": [
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2026-32707",
+        "version": "3.1",
+        "score": 5.2,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32707",
+          "version": "3.1",
+          "score": 5.2,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+        },
+        {
+          "source": "GHSA-wxwm-xmx9-hr32",
+          "version": "3.1",
+          "score": 5.2,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32707",
+          "label": "CVE-2026-32707 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32707",
+          "snapshot": "sources/CVE-2026-32707.json",
+          "retrievedAt": "2026-10-20T03:54:20.223221+00:00",
+          "sha256": "d7724e773726e9c85e10d1c2e9f02a682e952e901f79e0710b22a027f6d9b74c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-wxwm-xmx9-hr32",
+          "label": "Stack buffer overflow in tattu_can due to unbounded memcpy in frame assembly loop",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-wxwm-xmx9-hr32",
+          "snapshot": "sources/GHSA-wxwm-xmx9-hr32.json",
+          "retrievedAt": "2026-10-20T03:55:59.653514+00:00",
+          "sha256": "8c838b744308ce22718c029e5200da09f97769914e761599e1fffa69e7dfa3db",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-04-07",
+      "verifiedAt": "2026-10-20T03:55:59.653514+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "构建并启用 Tattu CAN 电池驱动，攻击者能注入 CAN 电池分帧数据；需要物理总线访问。",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "拼装循环按 received_size - 1 计算载荷并 memcpy 到 battery 对象的偏移处，没有将累计偏移和目标对象剩余容量一并约束。",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "栈内存破坏，可造成驱动或飞控异常与拒绝服务；并非所有 PX4 默认配置都启用此驱动。",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.17.0-rc1\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc2；校验帧有效长度、累计偏移与对象大小。",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n",
+          "sources": [
+            "CVE-2026-32707",
+            "GHSA-wxwm-xmx9-hr32"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:50:52Z",
+          "event": "GHSA-wxwm-xmx9-hr32 公告发布",
+          "source": "GHSA-wxwm-xmx9-hr32"
+        },
+        {
+          "time": "2026-03-13T21:18:09.118Z",
+          "event": "CVE-2026-32707 发布",
+          "source": "CVE-2026-32707"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "CVE-2026-32708",
+      "shelf": "A",
+      "title": "Zenoh uORB 分片载荷导致任意栈分配",
+      "component": "Zenoh bridge / uORB subscriber",
+      "affected": "PX4 <= 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "启用 Zenoh bridge，攻击者能向订阅路径提供异常大小、非连续存储的 Zenoh 载荷；CNA 向量为本地低权限。",
+      "rootCause": "将外部载荷长度用于栈上可变长数组分配，再拷贝分片数据，缺少消息大小上限。",
+      "impact": "栈耗尽或越界导致桥接线程/进程崩溃；公告讨论弱保护目标的进一步控制流风险，未证明所有目标均可执行代码。",
+      "remediation": "升级 1.17.0-rc2；依据 uORB 消息实际大小限制输入并避免外部长度决定栈分配。",
+      "notes": [
+        "输入表 Medium 更正为 CNA/GHSA 的 High 7.8；不要将启用条件泛化为所有飞控的网络暴露。"
+      ],
+      "extraSources": [
+        "GHSA-69g4-hcqf-j45p"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32708",
+      "original": [
+        "CVE-2026-32708",
+        "cve",
+        "buffer_overflow",
+        "Medium",
+        "PX4 Zenoh Bridge Stack Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-69g4-hcqf-j45p"
+      ],
+      "en": "Zenoh uORB Subscriber Allows Arbitrary Stack Allocation (PX4/PX4-Autopilot)",
+      "summary": "将外部载荷长度用于栈上可变长数组分配，再拷贝分片数据，缺少消息大小上限。 栈耗尽或越界导致桥接线程/进程崩溃；公告讨论弱保护目标的进一步控制流风险，未证明所有目标均可执行代码。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "High"
+      ],
+      "cwes": [
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2026-32708",
+        "version": "3.1",
+        "score": 7.8,
+        "severity": "High",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32708",
+          "version": "3.1",
+          "score": 7.8,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+        },
+        {
+          "source": "GHSA-69g4-hcqf-j45p",
+          "version": "3.1",
+          "score": 7.8,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "CVE-2026-32708",
+          "label": "CVE-2026-32708 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32708",
+          "snapshot": "sources/CVE-2026-32708.json",
+          "retrievedAt": "2026-10-20T03:54:20.272615+00:00",
+          "sha256": "93e806782dc8e4a0d2d928871d3575d91a976c2487b32bf6a5ee77d253d7261f",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-69g4-hcqf-j45p",
+          "label": "Zenoh uORB Subscriber Allows Arbitrary Stack Allocation (PX4/PX4-Autopilot)",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-69g4-hcqf-j45p",
+          "snapshot": "sources/GHSA-69g4-hcqf-j45p.json",
+          "retrievedAt": "2026-10-20T03:55:59.711938+00:00",
+          "sha256": "0106692f851ba1700c7ff3006d668dee21125e537f0e03d5321821ff6548405f",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-03-17",
+      "verifiedAt": "2026-10-20T03:55:59.711938+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "启用 Zenoh bridge，攻击者能向订阅路径提供异常大小、非连续存储的 Zenoh 载荷；CNA 向量为本地低权限。",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "将外部载荷长度用于栈上可变长数组分配，再拷贝分片数据，缺少消息大小上限。",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "栈耗尽或越界导致桥接线程/进程崩溃；公告讨论弱保护目标的进一步控制流风险，未证明所有目标均可执行代码。",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.17.0-rc1\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc2；依据 uORB 消息实际大小限制输入并避免外部长度决定栈分配。",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n输入表 Medium 更正为 CNA/GHSA 的 High 7.8；不要将启用条件泛化为所有飞控的网络暴露。",
+          "sources": [
+            "CVE-2026-32708",
+            "GHSA-69g4-hcqf-j45p"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:51:41Z",
+          "event": "GHSA-69g4-hcqf-j45p 公告发布",
+          "source": "GHSA-69g4-hcqf-j45p"
+        },
+        {
+          "time": "2026-03-13T21:18:53.025Z",
+          "event": "CVE-2026-32708 发布",
+          "source": "CVE-2026-32708"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "CVE-2026-32709",
+      "shelf": "C",
+      "title": "MAVLink FTP 路径隔离与权限检查缺陷",
+      "component": "MAVLink FTP / mavlink_ftp.cpp",
+      "affected": "PX4 <= 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "攻击者能够访问 MAVLink FTP 服务；最终文件访问仍受进程权限与文件系统约束。",
+      "rootCause": "NuttX FTP 根路径为空且读操作缺少规范化；POSIX 写路径校验直接通过；NuttX 共享路径工作缓冲区还存在校验与实际使用不一致。",
+      "impact": "可能越过预期目录边界读取、写入、创建、删除或重命名文件；实际范围取决于平台与权限。",
+      "remediation": "升级 1.17.0-rc2；整理建议：限制 FTP 暴露、规范化路径并将验证结果绑定到所用文件句柄。",
+      "notes": [
+        "重要评级冲突：输入表 Critical，GHSA 正文写 9.8 Critical，但同公告结构化评级和 CNA 均为 Medium 5.4。页面主评级采用可追溯的结构化 CVSS，并保留此冲突。"
+      ],
+      "extraSources": [
+        "GHSA-fh32-qxj9-x32f"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32709",
+      "original": [
+        "CVE-2026-32709",
+        "cve",
+        "path_traversal",
+        "Critical",
+        "PX4 MAVLink FTP Unauthenticated Path Traversal (CRITICAL)"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-fh32-qxj9-x32f"
+      ],
+      "en": "PX4 Autopilot MAVLink FTP Unauthenticated Path Traversal (Arbitrary File Read/Write/Delete)",
+      "summary": "NuttX FTP 根路径为空且读操作缺少规范化；POSIX 写路径校验直接通过；NuttX 共享路径工作缓冲区还存在校验与实际使用不一致。 可能越过预期目录边界读取、写入、创建、删除或重命名文件；实际范围取决于平台与权限。",
+      "tags": [
+        "文件与权限",
+        "CWE-22",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-22"
+      ],
+      "rating": {
+        "source": "CVE-2026-32709",
+        "version": "3.1",
+        "score": 5.4,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32709",
+          "version": "3.1",
+          "score": 5.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+        },
+        {
+          "source": "GHSA-fh32-qxj9-x32f",
+          "version": "3.1",
+          "score": 5.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32709",
+          "label": "CVE-2026-32709 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32709",
+          "snapshot": "sources/CVE-2026-32709.json",
+          "retrievedAt": "2026-10-20T03:54:20.574159+00:00",
+          "sha256": "cd547bfea032cc718caed56daa96aa05b139589a905eff63e0e8e26b5f19109c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-fh32-qxj9-x32f",
+          "label": "PX4 Autopilot MAVLink FTP Unauthenticated Path Traversal (Arbitrary File Read/Write/Delete)",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-fh32-qxj9-x32f",
+          "snapshot": "sources/GHSA-fh32-qxj9-x32f.json",
+          "retrievedAt": "2026-10-20T03:55:59.765195+00:00",
+          "sha256": "ceb9f026d6bac75d8b561387d073d88611ca424384f8d16b604ca21700e7fec1",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-03-17",
+      "verifiedAt": "2026-10-20T03:55:59.765195+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者能够访问 MAVLink FTP 服务；最终文件访问仍受进程权限与文件系统约束。",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "NuttX FTP 根路径为空且读操作缺少规范化；POSIX 写路径校验直接通过；NuttX 共享路径工作缓冲区还存在校验与实际使用不一致。",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可能越过预期目录边界读取、写入、创建、删除或重命名文件；实际范围取决于平台与权限。",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.17.0-rc1\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc2；整理建议：限制 FTP 暴露、规范化路径并将验证结果绑定到所用文件句柄。",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n重要评级冲突：输入表 Critical，GHSA 正文写 9.8 Critical，但同公告结构化评级和 CNA 均为 Medium 5.4。页面主评级采用可追溯的结构化 CVSS，并保留此冲突。",
+          "sources": [
+            "CVE-2026-32709",
+            "GHSA-fh32-qxj9-x32f"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:52:34Z",
+          "event": "GHSA-fh32-qxj9-x32f 公告发布",
+          "source": "GHSA-fh32-qxj9-x32f"
+        },
+        {
+          "time": "2026-03-13T21:19:33.528Z",
+          "event": "CVE-2026-32709 发布",
+          "source": "CVE-2026-32709"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2026-32713",
+          "type": "相关机制",
+          "reason": "MAVLink FTP 路径边界和会话校验的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-32713",
+      "shelf": "C",
+      "title": "MAVLink FTP 会话校验布尔逻辑错误",
+      "component": "MAVLink FTP / BurstRead / Write",
+      "affected": "PX4 <= 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc2",
+      "trigger": "能够向 MAVLink FTP 提交读写会话请求，使 session 编号与文件描述符有效状态不匹配。",
+      "rootCause": "错误地用 && 组合两个应独立拒绝的无效条件，导致某些无效 session 或 fd 组合仍进入后续操作。",
+      "impact": "破坏会话隔离与错误处理，可导致有限 DoS；单会话 session 0 设计和 EBADF 行为限制影响，不等价于通用身份认证绕过。",
+      "remediation": "升级 1.17.0-rc2；使用正确的拒绝逻辑，显式检查会话及 fd 有效性。",
+      "notes": [
+        "输入表 High 更正为 CNA/GHSA 的 Medium 4.3；不把标题中的“绕过”扩张为远程代码执行。"
+      ],
+      "extraSources": [
+        "GHSA-pp2c-jr5g-6f2m"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32713",
+      "original": [
+        "CVE-2026-32713",
+        "cve",
+        "authentication_bypass",
+        "High",
+        "PX4 MAVLink FTP Session Isolation Bypass"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-pp2c-jr5g-6f2m"
+      ],
+      "en": "PX4 Autopilot MAVLink FTP Session Validation Logic Error Allows Operations on Invalid File Descriptors",
+      "summary": "错误地用 && 组合两个应独立拒绝的无效条件，导致某些无效 session 或 fd 组合仍进入后续操作。 破坏会话隔离与错误处理，可导致有限 DoS；单会话 session 0 设计和 EBADF 行为限制影响，不等价于通用身份认证绕过。",
+      "tags": [
+        "文件与权限",
+        "CWE-670",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-670"
+      ],
+      "rating": {
+        "source": "CVE-2026-32713",
+        "version": "3.1",
+        "score": 4.3,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32713",
+          "version": "3.1",
+          "score": 4.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "GHSA-pp2c-jr5g-6f2m",
+          "version": "3.1",
+          "score": 4.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32713",
+          "label": "CVE-2026-32713 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32713",
+          "snapshot": "sources/CVE-2026-32713.json",
+          "retrievedAt": "2026-10-20T03:54:20.895446+00:00",
+          "sha256": "361f88d23b22cbd95e9ba63798053451e9535d205694c2a2958cdffdeafdd100",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-pp2c-jr5g-6f2m",
+          "label": "PX4 Autopilot MAVLink FTP Session Validation Logic Error Allows Operations on Invalid File Descriptors",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-pp2c-jr5g-6f2m",
+          "snapshot": "sources/GHSA-pp2c-jr5g-6f2m.json",
+          "retrievedAt": "2026-10-20T03:55:59.778823+00:00",
+          "sha256": "2f0102f82fd3d94ef49f1735280545750c355d9b64082e90109ad4f773ba2fe1",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-03-17",
+      "verifiedAt": "2026-10-20T03:55:59.778823+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能够向 MAVLink FTP 提交读写会话请求，使 session 编号与文件描述符有效状态不匹配。",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "错误地用 && 组合两个应独立拒绝的无效条件，导致某些无效 session 或 fd 组合仍进入后续操作。",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "破坏会话隔离与错误处理，可导致有限 DoS；单会话 session 0 设计和 EBADF 行为限制影响，不等价于通用身份认证绕过。",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.17.0-rc1\n\nPX4 1.17.0-rc2",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc2；使用正确的拒绝逻辑，显式检查会话及 fd 有效性。",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n输入表 High 更正为 CNA/GHSA 的 Medium 4.3；不把标题中的“绕过”扩张为远程代码执行。",
+          "sources": [
+            "CVE-2026-32713",
+            "GHSA-pp2c-jr5g-6f2m"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T19:53:10Z",
+          "event": "GHSA-pp2c-jr5g-6f2m 公告发布",
+          "source": "GHSA-pp2c-jr5g-6f2m"
+        },
+        {
+          "time": "2026-03-13T21:20:09.352Z",
+          "event": "CVE-2026-32713 发布",
+          "source": "CVE-2026-32713"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2026-32709",
+          "type": "相关机制",
+          "reason": "MAVLink FTP 路径边界和会话校验的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-32724",
+      "shelf": "D",
+      "title": "MAVLink Shell 跨线程 available 释放后使用",
+      "component": "MavlinkShell::available / SERIAL_CONTROL",
+      "affected": "PX4 < 1.17.0-rc1",
+      "fixed": "PX4 1.17.0-rc1",
+      "trigger": "能够接入 MAVLink 链路，交错触发 shell 创建/关闭，使 receiver 删除对象与 sender 查询 available 的时序相遇。",
+      "rootCause": "不同线程访问共享 shell 对象的生命周期缺少同步，释放后仍调用对象成员。",
+      "impact": "公开报告给出 heap-use-after-free；可造成飞控进程 DoS。官方评级 5.3，攻击复杂度高。",
+      "remediation": "升级 1.17.0-rc1 或适用维护版本，确保 shell 对象生命周期与并发访问同步。",
+      "notes": [
+        "同组件 CVE-2025-9020 为相关研究线索，尚无官方别名证明两者是同一条漏洞。"
+      ],
+      "extraSources": [
+        "GHSA-j5w2-w79c-mqrw"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32724",
+      "original": [
+        "CVE-2026-32724",
+        "cve",
+        "race_condition",
+        "Medium",
+        "PX4 MAVLink Shell Race Condition / UAF"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-j5w2-w79c-mqrw"
+      ],
+      "en": "PX4 autopilot has a heap Use-After-Free in MavlinkShell::available() via SERIAL_CONTROL Race Condition",
+      "summary": "不同线程访问共享 shell 对象的生命周期缺少同步，释放后仍调用对象成员。 公开报告给出 heap-use-after-free；可造成飞控进程 DoS。官方评级 5.3，攻击复杂度高。",
+      "tags": [
+        "并发与生命周期",
+        "CWE-416",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-416"
+      ],
+      "rating": {
+        "source": "CVE-2026-32724",
+        "version": "3.1",
+        "score": 5.3,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32724",
+          "version": "3.1",
+          "score": 5.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        },
+        {
+          "source": "GHSA-j5w2-w79c-mqrw",
+          "version": "3.1",
+          "score": 5.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32724",
+          "label": "CVE-2026-32724 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32724",
+          "snapshot": "sources/CVE-2026-32724.json",
+          "retrievedAt": "2026-10-20T03:54:21.164507+00:00",
+          "sha256": "8b1d9e255e409b327ec01fdca97d83219d43216de4a2584a4722ddf622111727",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-j5w2-w79c-mqrw",
+          "label": "Heap Use-After-Free in MavlinkShell::available() via SERIAL_CONTROL Race Condition",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-j5w2-w79c-mqrw",
+          "snapshot": "sources/GHSA-j5w2-w79c-mqrw.json",
+          "retrievedAt": "2026-10-20T03:55:59.774593+00:00",
+          "sha256": "5407a642c5c443c107349b667d38103f489fe2ec78cac7cdbe73ab3c736686bd",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-13",
+      "updated": "2026-03-16",
+      "verifiedAt": "2026-10-20T03:55:59.774593+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能够接入 MAVLink 链路，交错触发 shell 创建/关闭，使 receiver 删除对象与 sender 查询 available 的时序相遇。",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "不同线程访问共享 shell 对象的生命周期缺少同步，释放后仍调用对象成员。",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "公开报告给出 heap-use-after-free；可造成飞控进程 DoS。官方评级 5.3，攻击复杂度高。",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 < 1.17.0-rc1\n\nPX4 1.17.0-rc1",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "升级 1.17.0-rc1 或适用维护版本，确保 shell 对象生命周期与并发访问同步。",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n同组件 CVE-2025-9020 为相关研究线索，尚无官方别名证明两者是同一条漏洞。",
+          "sources": [
+            "CVE-2026-32724",
+            "GHSA-j5w2-w79c-mqrw"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-13T20:04:55Z",
+          "event": "GHSA-j5w2-w79c-mqrw 公告发布",
+          "source": "GHSA-j5w2-w79c-mqrw"
+        },
+        {
+          "time": "2026-03-13T21:39:19.207Z",
+          "event": "CVE-2026-32724 发布",
+          "source": "CVE-2026-32724"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-40427",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        },
+        {
+          "id": "CVE-2025-9020",
+          "type": "相关机制",
+          "reason": "MAVLink shell 输入及生命周期的不同缺陷。"
+        }
+      ]
+    },
+    {
+      "id": "CVE-2026-32743",
+      "shelf": "A",
+      "title": "MAVLink 日志路径处理栈溢出",
+      "component": "MavlinkLogHandler / log request / path handling",
+      "affected": "CNA：<= 1.17.0-rc2；GHSA：<= 1.17.0-rc1（冲突）",
+      "fixed": "GHSA：main；commit 616b25a280e229c24d5cf12a03dbf248df89c474；未确定发布版本",
+      "trigger": "能影响过长的日志文件路径/目录输入，并通过 MAVLink 日志请求触发枚举或解析。",
+      "rootCause": "公告讨论固定长度文件路径与无宽度 %s；其 ASan 材料还包含目录遍历递归导致的栈问题，需要区分输入场景。",
+      "impact": "可导致栈内存错误和拒绝服务；本次未复现，未确认任意代码执行。",
+      "remediation": "参考引用提交与后续路径处理修复；核对部署分支，不能只按 rc2 标签判断是否安全。",
+      "notes": [
+        "版本冲突显式保留；未把 main 的补丁直接推断为已发布固件修复。",
+        "与 CVE-2025-15150 的无宽度日志文件名解析有关，但 CVE 编号和修复线索不同，保留独立记录。"
+      ],
+      "extraSources": [
+        "GHSA-97c4-68r9-96p5"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2026-32743",
+      "original": [
+        "CVE-2026-32743",
+        "cve",
+        "buffer_overflow",
+        "Medium",
+        "PX4 MavlinkLogHandler Stack Buffer Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-97c4-68r9-96p5"
+      ],
+      "en": "PX4 Autopilot: Stack-based Buffer Overflow via Oversized Path Input in MAVLink Log Request Handling",
+      "summary": "公告讨论固定长度文件路径与无宽度 %s；其 ASan 材料还包含目录遍历递归导致的栈问题，需要区分输入场景。 可导致栈内存错误和拒绝服务；本次未复现，未确认任意代码执行。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "Medium",
+        "MAVLink"
+      ],
+      "cwes": [
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2026-32743",
+        "version": "3.1",
+        "score": 6.5,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2026-32743",
+          "version": "3.1",
+          "score": 6.5,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        },
+        {
+          "source": "GHSA-97c4-68r9-96p5",
+          "version": "3.1",
+          "score": 6.5,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "CVE-2026-32743",
+          "label": "CVE-2026-32743 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2026-32743",
+          "snapshot": "sources/CVE-2026-32743.json",
+          "retrievedAt": "2026-10-20T03:54:21.196448+00:00",
+          "sha256": "dd2ab47cdf6698870cb477d0cea43217088a3a96ffe6f4a607885ba503b2b4a8",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GHSA-97c4-68r9-96p5",
+          "label": "MavlinkLogHandler sscanf stack buffer overflow via MAVLink log request",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-97c4-68r9-96p5",
+          "snapshot": "sources/GHSA-97c4-68r9-96p5.json",
+          "retrievedAt": "2026-10-20T03:56:00.280580+00:00",
+          "sha256": "a067f93fec3a356b6a370568a39ea003afc6f21d1264666782994d04d2219a9b",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2026-03-14",
+      "updated": "2026-03-19",
+      "verifiedAt": "2026-10-20T03:56:00.280580+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "能影响过长的日志文件路径/目录输入，并通过 MAVLink 日志请求触发枚举或解析。",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "公告讨论固定长度文件路径与无宽度 %s；其 ASan 材料还包含目录遍历递归导致的栈问题，需要区分输入场景。",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可导致栈内存错误和拒绝服务；本次未复现，未确认任意代码执行。",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "CNA：<= 1.17.0-rc2；GHSA：<= 1.17.0-rc1（冲突）\n\nGHSA：main；commit 616b25a280e229c24d5cf12a03dbf248df89c474；未确定发布版本",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考引用提交与后续路径处理修复；核对部署分支，不能只按 rc2 标签判断是否安全。",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n版本冲突显式保留；未把 main 的补丁直接推断为已发布固件修复。\n\n与 CVE-2025-15150 的无宽度日志文件名解析有关，但 CVE 编号和修复线索不同，保留独立记录。",
+          "sources": [
+            "CVE-2026-32743",
+            "GHSA-97c4-68r9-96p5"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2026-03-14T01:08:39Z",
+          "event": "GHSA-97c4-68r9-96p5 公告发布",
+          "source": "GHSA-97c4-68r9-96p5"
+        },
+        {
+          "time": "2026-03-18T23:26:51.255Z",
+          "event": "CVE-2026-32743 发布",
+          "source": "CVE-2026-32743"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-38952",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        },
+        {
+          "id": "CVE-2025-15150",
+          "type": "相关机制",
+          "reason": "日志相关字符串处理；不同输入路径、版本与证据。"
+        }
+      ]
+    },
+    {
+      "id": "EDB-52339",
+      "shelf": "A",
+      "title": "轨迹消息 DoS 的公开 PoC 文献",
+      "component": "PX4 SITL / MAVLink / PoC",
+      "affected": "PoC：PX4 1.12.3，Ubuntu 20.04 LTS + jMAVSim",
+      "fixed": "沿用 CVE-2025-5640 的修复状态：未确认首次修复发布版本",
+      "trigger": "PoC 作者在能够访问 SITL 的 MAVLink UDP 通道时提交畸形轨迹消息；本次未发送测试包。",
+      "rootCause": "此条是 CVE-2025-5640 的公开利用文献；根因应追溯其 CNA 与原始 Issue，不作为新增漏洞。",
+      "impact": "PoC 声称能使 autopilot 崩溃。标题中的军用措辞并不能证明任何具体军用产品受影响。",
+      "remediation": "按关联 CVE 处理升级和输入校验，并在隔离测试环境核实适用性。",
+      "notes": [
+        "网页登记日期 2025-06-26，代码注释日期 2025-06-21，分别保留。",
+        "原网页直接下载返回 HTTP 403，本地保存的是通过网页工具核读的人工摘要，不冒充原始页面快照。"
+      ],
+      "extraSources": [
+        "CVE-2025-5640",
+        "EDB-52339"
+      ],
+      "verification": "公开 PoC 文献／未执行",
+      "canonicalId": "CVE-2025-5640",
+      "original": [
+        "EDB-52339",
+        "exploit",
+        "buffer_overflow",
+        "High",
+        "PX4 Military UAV Autopilot 1.12.3 Stack-based Buffer Overflow (Public Exploit)"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "PX4-Autopilot TRAJECTORY_REPRESENTATION_WAYPOINTS Message mavlink_receiver.cpp stack-based overflow",
+      "summary": "此条是 CVE-2025-5640 的公开利用文献；根因应追溯其 CNA 与原始 Issue，不作为新增漏洞。 PoC 声称能使 autopilot 崩溃。标题中的军用措辞并不能证明任何具体军用产品受影响。",
+      "tags": [
+        "内存与边界",
+        "CWE-121",
+        "CWE-119",
+        "Low",
+        "MAVLink",
+        "公开 PoC"
+      ],
+      "cwes": [
+        "CWE-119",
+        "CWE-121"
+      ],
+      "rating": {
+        "source": "CVE-2025-5640",
+        "version": "3.1",
+        "score": 3.3,
+        "severity": "Low",
+        "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2025-5640",
+          "version": "3.1",
+          "score": 3.3,
+          "severity": "Low",
+          "vector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "3.0",
+          "score": 3.3,
+          "severity": "Low",
+          "vector": "CVSS:3.0/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "4.0",
+          "score": 4.8,
+          "severity": "Medium",
+          "vector": "CVSS:4.0/AV:L/AC:L/AT:N/PR:L/UI:N/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N"
+        },
+        {
+          "source": "CVE-2025-5640",
+          "version": "2.0",
+          "score": 1.7,
+          "severity": "Unknown",
+          "vector": "AV:L/AC:L/Au:S/C:N/I:N/A:P"
+        }
+      ],
+      "severity": "Low",
+      "sources": [
+        {
+          "id": "EDB-52339",
+          "label": "公开文献声称畸形轨迹消息可经 MAVLink UDP 触发 DoS；未执行或复现。",
+          "url": "https://www.exploit-db.com/exploits/52339",
+          "snapshot": "sources/EDB-52339.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "4aadcea0d358b4b1b6fe0be594e9302b47243e83e8aa9b05d09d417e00ab5f73",
+          "method": "manual metadata note from web tool; not original HTML"
+        },
+        {
+          "id": "CVE-2025-5640",
+          "label": "CVE-2025-5640 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2025-5640",
+          "snapshot": "sources/CVE-2025-5640.json",
+          "retrievedAt": "2026-10-20T03:54:19.660417+00:00",
+          "sha256": "cfa0891fd91baffad3b16ca5da4f2aaa2f5815b54403e7bbcd0447e53792e06d",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-24915",
+          "label": "[Bug] stack-buffer-overflow",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/24915",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-24915.json",
+          "retrievedAt": "2026-10-20T03:56:46.562048+00:00",
+          "sha256": "64277a36bf98e1ce5f40b48c9e28775e596c436585a9d0bfc5cef1232f1026ae",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-issues-24915-comments",
+          "label": "PX4--PX4-Autopilot-issues-24915-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/24915#issuecomment-2950673556",
+          "snapshot": "sources/PX4--PX4-Autopilot-issues-24915-comments.json",
+          "retrievedAt": "2026-10-20T03:56:47.056339+00:00",
+          "sha256": "e1d6afc2a39953edcb464b610e7ed6cb73aef4ec35a51f90c8fc3a0153e86cb1",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2025-05-26",
+      "updated": "2026-01-12",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "PoC 作者在能够访问 SITL 的 MAVLink UDP 通道时提交畸形轨迹消息；本次未发送测试包。",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "此条是 CVE-2025-5640 的公开利用文献；根因应追溯其 CNA 与原始 Issue，不作为新增漏洞。",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "PoC 声称能使 autopilot 崩溃。标题中的军用措辞并不能证明任何具体军用产品受影响。",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PoC：PX4 1.12.3，Ubuntu 20.04 LTS + jMAVSim\n\n沿用 CVE-2025-5640 的修复状态：未确认首次修复发布版本",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "按关联 CVE 处理升级和输入校验，并在隔离测试环境核实适用性。",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开 PoC 文献／未执行\n\n网页登记日期 2025-06-26，代码注释日期 2025-06-21，分别保留。\n\n原网页直接下载返回 HTTP 403，本地保存的是通过网页工具核读的人工摘要，不冒充原始页面快照。",
+          "sources": [
+            "EDB-52339",
+            "CVE-2025-5640",
+            "PX4--PX4-Autopilot-issues-24915",
+            "PX4--PX4-Autopilot-issues-24915-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-05-26T12:25:24Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-issues-24915"
+        },
+        {
+          "time": "2025-06-05T06:00:19.757Z",
+          "event": "CVE-2025-5640 发布",
+          "source": "CVE-2025-5640"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2025-5640",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        }
+      ]
+    },
+    {
+      "id": "GH-ISSUE-18385",
+      "shelf": "A",
+      "title": "BATTERY_STATUS 条件求值顺序导致越界读",
+      "component": "MavlinkReceiver / msgid 147 / voltages",
+      "affected": "原报告：SITL、px4_fmu-v5、nxp_fmuk66-v3；未明确完整发布范围",
+      "fixed": "PR #18411；首次修复发布版本未明确",
+      "trigger": "接收 BATTERY_STATUS，电压数组前 10 项均满足循环继续条件，使 cell_count 达到 10。",
+      "rootCause": "while 条件先读取 voltages[cell_count]，再判断 cell_count < 10；短路求值顺序使越界读先于边界拒绝发生。",
+      "impact": "读取数组之外的内存；报告者展示仿真和硬件测试，维护者确认条件中的越界。未证明代码执行。",
+      "remediation": "采用 PR #18411 将容量检查放在数组访问之前；核对所用分支补丁。",
+      "notes": [
+        "原始输入标 High，但 Issue 没有正式 CVSS，页面保留“未评级”。"
+      ],
+      "extraSources": [
+        "GH-ISSUE-18385",
+        "PX4--PX4-Autopilot-pull-18411"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "GH-ISSUE-18385",
+      "original": [
+        "GH-ISSUE-18385",
+        "github_issue",
+        "oob_access",
+        "High",
+        "PX4 MAVLink msgID #147 Out-of-Bounds Access"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "Bug Found in msgID #147 mavlink protocol OOB",
+      "summary": "while 条件先读取 voltages[cell_count]，再判断 cell_count < 10；短路求值顺序使越界读先于边界拒绝发生。 读取数组之外的内存；报告者展示仿真和硬件测试，维护者确认条件中的越界。未证明代码执行。",
+      "tags": [
+        "内存与边界",
+        "Unknown",
+        "MAVLink",
+        "原始报告"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "GH-ISSUE-18385",
+          "label": "Bug Found in msgID #147 mavlink protocol OOB",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/18385",
+          "snapshot": "sources/GH-ISSUE-18385.json",
+          "retrievedAt": "2026-10-20T03:54:22.590849+00:00",
+          "sha256": "a2155f5d843047be452aa0dca9c17d202d95d71387ee85eacbfc13514f398a3b",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "PX4--PX4-Autopilot-pull-18411",
+          "label": "mavlink: receiver battery_status prevent out of bounds access",
+          "url": "https://github.com/PX4/PX4-Autopilot/pull/18411",
+          "snapshot": "sources/PX4--PX4-Autopilot-pull-18411.json",
+          "retrievedAt": "2026-10-20T03:56:50.295302+00:00",
+          "sha256": "beea950f1734501c9405002f49b92bfdeb643b6d3051cf8bb27e0ecfee40f454",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GH-ISSUE-18385-comments",
+          "label": "GH-ISSUE-18385-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/18385#issuecomment-939084438",
+          "snapshot": "sources/GH-ISSUE-18385-comments.json",
+          "retrievedAt": "2026-10-20T03:54:23.143076+00:00",
+          "sha256": "bc85794cde1f738db667bf2757d9653d78581456ac740427c1d7922421ac9fce",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "官方公告 / 原始报告",
+      "published": "2021-10-08",
+      "updated": "2021-10-12",
+      "verifiedAt": "2026-10-20T03:56:50.295302+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "接收 BATTERY_STATUS，电压数组前 10 项均满足循环继续条件，使 cell_count 达到 10。",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "while 条件先读取 voltages[cell_count]，再判断 cell_count < 10；短路求值顺序使越界读先于边界拒绝发生。",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "读取数组之外的内存；报告者展示仿真和硬件测试，维护者确认条件中的越界。未证明代码执行。",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "原报告：SITL、px4_fmu-v5、nxp_fmuk66-v3；未明确完整发布范围\n\nPR #18411；首次修复发布版本未明确",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "采用 PR #18411 将容量检查放在数组访问之前；核对所用分支补丁。",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n原始输入标 High，但 Issue 没有正式 CVSS，页面保留“未评级”。",
+          "sources": [
+            "GH-ISSUE-18385",
+            "PX4--PX4-Autopilot-pull-18411",
+            "GH-ISSUE-18385-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2021-10-08T11:17:55Z",
+          "event": "原始报告/提案创建",
+          "source": "GH-ISSUE-18385"
+        },
+        {
+          "time": "2021-10-11T19:28:13Z",
+          "event": "原始报告/提案创建",
+          "source": "PX4--PX4-Autopilot-pull-18411"
+        },
+        {
+          "time": "2021-10-12T13:20:40Z",
+          "event": "修复 PR 合并（不等同于已发布版本）",
+          "source": "PX4--PX4-Autopilot-pull-18411"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2021-46896",
+          "type": "相关机制",
+          "reason": "早期 MAVLink 消息计数与数组边界报告；独立输入路径。"
+        }
+      ]
+    },
+    {
+      "id": "GH-ISSUE-23251",
+      "shelf": "A",
+      "title": "轨迹消息堆溢出的原始 Issue 档案",
+      "component": "MavlinkReceiver / TRAJECTORY_REPRESENTATION_WAYPOINTS",
+      "affected": "PX4 SITL 1.12.3",
+      "fixed": "Issue 未给出修复发布版本；维护者建议测试最新维护版本",
+      "trigger": "输入 valid_points > 5 的轨迹航点消息，到达旧版接收处理路径。",
+      "rootCause": "原始报告显示消息计数超出固定轨迹数组范围，并给出 ASan heap-buffer-overflow 栈。",
+      "impact": "SITL 进程崩溃与 DoS；这是 CVE-2024-38951 的原始报告证据。",
+      "remediation": "沿关联 CVE 核对边界检查与维护版本；不能将 Issue 关闭状态视为某版本已修复。",
+      "notes": [
+        "保留原始 30 条输入中的 Issue 编号，并与 CVE-2024-38951 做原始报告关系跳转。"
+      ],
+      "extraSources": [
+        "GH-ISSUE-23251",
+        "CVE-2024-38951"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2024-38951",
+      "original": [
+        "GH-ISSUE-23251",
+        "github_issue",
+        "buffer_overflow",
+        "High",
+        "PX4 MAVLink Module Heap Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "[Bug] The mavlink module has heap-overflow",
+      "summary": "原始报告显示消息计数超出固定轨迹数组范围，并给出 ASan heap-buffer-overflow 栈。 SITL 进程崩溃与 DoS；这是 CVE-2024-38951 的原始报告证据。",
+      "tags": [
+        "内存与边界",
+        "Unknown",
+        "MAVLink",
+        "原始报告"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "CVE-2024-38951",
+          "label": "CVE-2024-38951 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2024-38951",
+          "snapshot": "sources/CVE-2024-38951.json",
+          "retrievedAt": "2026-10-20T03:54:19.230473+00:00",
+          "sha256": "ef5519208eec02326432106bed987a3c582ac2a108bdc7d9732aa452bf404a3c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GH-ISSUE-23251",
+          "label": "[Bug] The mavlink module has heap-overflow",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/23251",
+          "snapshot": "sources/GH-ISSUE-23251.json",
+          "retrievedAt": "2026-10-20T03:54:23.704699+00:00",
+          "sha256": "32ee3e21d153a4a8d9de4bb925b8000a3a89aca8168b3ba40aadc172763cfee4",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "GH-ISSUE-23251-comments",
+          "label": "GH-ISSUE-23251-comments · 讨论回复",
+          "url": "https://github.com/PX4/PX4-Autopilot/issues/23251#issuecomment-2160286916",
+          "snapshot": "sources/GH-ISSUE-23251-comments.json",
+          "retrievedAt": "2026-10-20T03:54:24.211510+00:00",
+          "sha256": "212be1ff5e8e7a23ae26475395c16583b40a45aa20fe241928ca5ee3e77fb67c",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2024-06-11",
+      "updated": "2024-10-28",
+      "verifiedAt": "2026-10-20T03:54:24.211510+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "输入 valid_points > 5 的轨迹航点消息，到达旧版接收处理路径。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "原始报告显示消息计数超出固定轨迹数组范围，并给出 ASan heap-buffer-overflow 栈。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "SITL 进程崩溃与 DoS；这是 CVE-2024-38951 的原始报告证据。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 SITL 1.12.3\n\nIssue 未给出修复发布版本；维护者建议测试最新维护版本",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "沿关联 CVE 核对边界检查与维护版本；不能将 Issue 关闭状态视为某版本已修复。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n保留原始 30 条输入中的 Issue 编号，并与 CVE-2024-38951 做原始报告关系跳转。",
+          "sources": [
+            "CVE-2024-38951",
+            "GH-ISSUE-23251",
+            "GH-ISSUE-23251-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-06-11T07:06:00Z",
+          "event": "原始报告/提案创建",
+          "source": "GH-ISSUE-23251"
+        },
+        {
+          "time": "2024-06-25T00:00:00.000Z",
+          "event": "CVE-2024-38951 发布",
+          "source": "CVE-2024-38951"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-38951",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        }
+      ]
+    },
+    {
+      "id": "GHSA-5hvv-q2r5-rppw",
+      "shelf": "A",
+      "title": "Lightware 激光解析器安全公告档案",
+      "component": "lightware_laser_serial / parser.cpp",
+      "affected": "PX4 <= 1.14.0-rc1",
+      "fixed": "公告未指定已修复版本",
+      "trigger": "需启用相关串口驱动，异常输入触发解析器写入索引越过分配的缓冲区容量。",
+      "rootCause": "与 CVE-2023-46256 同一问题：解析器缺少写入索引边界检查，形成堆越界写。",
+      "impact": "公告给出内存安全与可用性风险；正式 CVSS 3.1 为 Medium 4.4。",
+      "remediation": "沿关联 CVE 和公告核查目标分支修复状态，先补齐索引校验。",
+      "notes": [
+        "原始输入标 High，经 CNA 与仓库公告核验改为 Medium 4.4。",
+        "此条作为公告档案保留，与 CVE 共用同一漏洞组。"
+      ],
+      "extraSources": [
+        "GHSA-5hvv-q2r5-rppw",
+        "CVE-2023-46256"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "CVE-2023-46256",
+      "original": [
+        "GHSA-5hvv-q2r5-rppw",
+        "github_advisory",
+        "buffer_overflow",
+        "High",
+        "PX4 Lightware Laser Serial Parser Heap Buffer Overflow"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "CVE-2023-46256"
+      ],
+      "en": "[REPORT] Heap Buffer Overflow Bug Found in src/drivers/distance_sensor/lightware_laser_serial/parser.cpp",
+      "summary": "与 CVE-2023-46256 同一问题：解析器缺少写入索引边界检查，形成堆越界写。 公告给出内存安全与可用性风险；正式 CVSS 3.1 为 Medium 4.4。",
+      "tags": [
+        "内存与边界",
+        "CWE-122",
+        "CWE-120",
+        "Medium"
+      ],
+      "cwes": [
+        "CWE-120",
+        "CWE-122"
+      ],
+      "rating": {
+        "source": "CVE-2023-46256",
+        "version": "3.1",
+        "score": 4.4,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+      },
+      "ratings": [
+        {
+          "source": "CVE-2023-46256",
+          "version": "3.1",
+          "score": 4.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+        },
+        {
+          "source": "GHSA-5hvv-q2r5-rppw",
+          "version": "3.1",
+          "score": 4.4,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:N/A:L"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "GHSA-5hvv-q2r5-rppw",
+          "label": "[REPORT] Heap Buffer Overflow Bug Found in src/drivers/distance_sensor/lightware_laser_serial/parser.cpp",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-5hvv-q2r5-rppw",
+          "snapshot": "sources/GHSA-5hvv-q2r5-rppw.json",
+          "retrievedAt": "2026-10-20T03:55:59.105132+00:00",
+          "sha256": "e9df351bd071abefe6d25ddefebbfcd332a509522b972964b4c3772521361be0",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "CVE-2023-46256",
+          "label": "CVE-2023-46256 · CVE CNA 记录",
+          "url": "https://www.cve.org/CVERecord?id=CVE-2023-46256",
+          "snapshot": "sources/CVE-2023-46256.json",
+          "retrievedAt": "2026-10-20T03:54:18.666314+00:00",
+          "sha256": "94de5419e06a3d783f4ba657475e8b1f10184068b1053ba70c4df01e177a1836",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "CVE CNA / 原始证据",
+      "published": "2023-10-30",
+      "updated": "2024-09-05",
+      "verifiedAt": "2026-10-20T03:55:59.105132+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "需启用相关串口驱动，异常输入触发解析器写入索引越过分配的缓冲区容量。",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "与 CVE-2023-46256 同一问题：解析器缺少写入索引边界检查，形成堆越界写。",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "公告给出内存安全与可用性风险；正式 CVSS 3.1 为 Medium 4.4。",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 <= 1.14.0-rc1\n\n公告未指定已修复版本",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "沿关联 CVE 和公告核查目标分支修复状态，先补齐索引校验。",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n原始输入标 High，经 CNA 与仓库公告核验改为 Medium 4.4。\n\n此条作为公告档案保留，与 CVE 共用同一漏洞组。",
+          "sources": [
+            "GHSA-5hvv-q2r5-rppw",
+            "CVE-2023-46256"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2023-10-30T19:42:36Z",
+          "event": "GHSA-5hvv-q2r5-rppw 公告发布",
+          "source": "GHSA-5hvv-q2r5-rppw"
+        },
+        {
+          "time": "2023-10-31T15:29:05.943Z",
+          "event": "CVE-2023-46256 发布",
+          "source": "CVE-2023-46256"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2023-46256",
+          "type": "同一问题 / 证据",
+          "reason": "公开编号或原始引用对应同一问题；保留档案，问题组去重。"
+        }
+      ]
+    },
+    {
+      "id": "GHSL-2025-087",
+      "shelf": "F",
+      "title": "文档评论工作流高权限代码注入",
+      "component": "GitHub Actions / docs_pr_comment.yml",
+      "affected": "报告时 PX4 main 的 CI 工作流；与飞控固件版本无直接对应",
+      "fixed": "GitHub Security Lab：2025-08-15 修复；仓库公告 main",
+      "trigger": "外部贡献者创建含恶意文件名的 PR，使文档检查结果进入 errorsFilteredByPrPages.md，再被高权限评论工作流消费。",
+      "rootCause": "工作流用表达式插值把文件内容直接放入 shell 命令；引号不足以阻止插入内容成为 shell 语法。",
+      "impact": "可在高权限 CI 上下文执行代码并危及构建流水线；不是飞行中无人机固件的直接 RCE。",
+      "remediation": "参考 GHSA-mq93-4g5w-w34h 的修复；通过环境变量传递不可信内容，避免直接拼接 shell 脚本。",
+      "notes": [
+        "输入表 High，仓库公告为 Medium 且未提供 CVSS 数值。",
+        "与 GHSA-rfc7-3pxc-c68p 属同一文档 CI 链路的不同注入位置，分别记录。"
+      ],
+      "extraSources": [
+        "GHSL-2025-087",
+        "GHSA-mq93-4g5w-w34h"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "GHSL-2025-087",
+      "original": [
+        "GHSL-2025-087",
+        "github_advisory",
+        "supply_chain",
+        "High",
+        "PX4 CI/CD Pipeline Code Execution"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [
+        "GHSA-mq93-4g5w-w34h"
+      ],
+      "en": "Code injection in Github Actions `docs_pr_comment.yml` in privileged context",
+      "summary": "工作流用表达式插值把文件内容直接放入 shell 命令；引号不足以阻止插入内容成为 shell 语法。 可在高权限 CI 上下文执行代码并危及构建流水线；不是飞行中无人机固件的直接 RCE。",
+      "tags": [
+        "供应链与构建",
+        "Medium"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": "GHSA-mq93-4g5w-w34h",
+        "version": "未提供",
+        "score": null,
+        "severity": "Medium",
+        "vector": ""
+      },
+      "ratings": [
+        {
+          "source": "GHSA-mq93-4g5w-w34h",
+          "version": "未提供",
+          "score": null,
+          "severity": "Medium",
+          "vector": ""
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "GHSL-2025-087",
+          "label": "GHSL-2025-087",
+          "url": "https://securitylab.github.com/advisories/GHSL-2025-087_PX4_PX4-Autopilot/",
+          "snapshot": "sources/GHSL-2025-087.txt",
+          "retrievedAt": "2026-10-20T03:56:56.078452+00:00",
+          "sha256": "067091e11ff5249eead93f826e86f8f0a10564deee112814f3e57649ee717f89",
+          "method": "原始页面/报告快照"
+        },
+        {
+          "id": "GHSA-mq93-4g5w-w34h",
+          "label": "Code injection in Github Actions `docs_pr_comment.yml` in privileged context",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-mq93-4g5w-w34h",
+          "snapshot": "sources/GHSA-mq93-4g5w-w34h.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "a7594916e4de6c039f357aa6c3d8a31261d682b964131b4c97c1c65102c14715",
+          "method": "extract from previously downloaded full repository API index"
+        }
+      ],
+      "source": "官方公告 / 原始报告",
+      "published": "2025-08-15",
+      "updated": "2025-08-15",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "外部贡献者创建含恶意文件名的 PR，使文档检查结果进入 errorsFilteredByPrPages.md，再被高权限评论工作流消费。",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "工作流用表达式插值把文件内容直接放入 shell 命令；引号不足以阻止插入内容成为 shell 语法。",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "可在高权限 CI 上下文执行代码并危及构建流水线；不是飞行中无人机固件的直接 RCE。",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "报告时 PX4 main 的 CI 工作流；与飞控固件版本无直接对应\n\nGitHub Security Lab：2025-08-15 修复；仓库公告 main",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考 GHSA-mq93-4g5w-w34h 的修复；通过环境变量传递不可信内容，避免直接拼接 shell 脚本。",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n输入表 High，仓库公告为 Medium 且未提供 CVSS 数值。\n\n与 GHSA-rfc7-3pxc-c68p 属同一文档 CI 链路的不同注入位置，分别记录。",
+          "sources": [
+            "GHSL-2025-087",
+            "GHSA-mq93-4g5w-w34h"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-08-15T06:12:57Z",
+          "event": "GHSA-mq93-4g5w-w34h 公告发布",
+          "source": "GHSA-mq93-4g5w-w34h"
+        }
+      ],
+      "related": [
+        {
+          "id": "GHSA-rfc7-3pxc-c68p",
+          "type": "相关机制",
+          "reason": "PX4 GitHub Actions 中不同工作流的命令注入。"
+        }
+      ]
+    },
+    {
+      "id": "MAVLINK-ISSUE-474",
+      "shelf": "A",
+      "title": "MAVLink Java 解码器缓冲区异常",
+      "component": "MAVLink Java parser / HeapByteBuffer",
+      "affected": "Issue 2015 年报告的 Java 实现；未指定版本标签",
+      "fixed": "2016-03-22 评论称修复已进入代码；未给出可追溯发布版本或提交",
+      "trigger": "畸形或 CRC 错误输入导致解析器重新寻找帧头，重同步路径没有正确重置 payload 缓冲区。",
+      "rootCause": "评论定位为状态转换中 payload 未清空，后续消息累积写入 Java 缓冲区，最终抛出 BufferOverflowException。",
+      "impact": "Java 解码器异常和消息处理可用性问题；不应表述为 PX4 C/C++ 原生内存覆盖或已验证固件 RCE。",
+      "remediation": "核查实际使用的 Java 解析器重同步修复；处理异常并在新帧开始时一致重置解析状态。",
+      "notes": [
+        "原表将该库报告泛化为 PX4 漏洞；这里明确实现语言与范围。",
+        "原始 Medium 无正式评分出处，页面显示未评级。"
+      ],
+      "extraSources": [
+        "MAVLINK-ISSUE-474"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "MAVLINK-ISSUE-474",
+      "original": [
+        "MAVLINK-ISSUE-474",
+        "github_issue",
+        "buffer_overflow",
+        "Medium",
+        "MAVLink Library Buffer Overflow During Message Decoding",
+        "1"
+      ],
+      "origin": "BUGS.md 原有档案",
+      "aliases": [],
+      "en": "Java: buffer overflow while decoding message",
+      "summary": "评论定位为状态转换中 payload 未清空，后续消息累积写入 Java 缓冲区，最终抛出 BufferOverflowException。 Java 解码器异常和消息处理可用性问题；不应表述为 PX4 C/C++ 原生内存覆盖或已验证固件 RCE。",
+      "tags": [
+        "内存与边界",
+        "Unknown",
+        "MAVLink",
+        "原始报告"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": null,
+        "version": null,
+        "score": null,
+        "severity": "Unknown",
+        "vector": ""
+      },
+      "ratings": [],
+      "severity": "Unknown",
+      "sources": [
+        {
+          "id": "MAVLINK-ISSUE-474",
+          "label": "Java: buffer overflow while decoding message",
+          "url": "https://github.com/mavlink/mavlink/issues/474",
+          "snapshot": "sources/MAVLINK-ISSUE-474.json",
+          "retrievedAt": "2026-10-20T03:56:01.502923+00:00",
+          "sha256": "2aefaaeab014fa057fd1fa325abc03351f489a8ec24dfa8001172611699afd71",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        },
+        {
+          "id": "MAVLINK-ISSUE-474-comments",
+          "label": "MAVLINK-ISSUE-474-comments · 讨论回复",
+          "url": "https://github.com/mavlink/mavlink/issues/474#issuecomment-162284380",
+          "snapshot": "sources/MAVLINK-ISSUE-474-comments.json",
+          "retrievedAt": "2026-10-20T03:56:01.994687+00:00",
+          "sha256": "9484ca6a395d7e6f26d3c20ecff3341596e2a6953a038630fb02429ff90d01e7",
+          "method": "官方/原始材料快照（JSON 已规范化排版）"
+        }
+      ],
+      "source": "官方公告 / 原始报告",
+      "published": "2015-12-06",
+      "updated": "2016-03-22",
+      "verifiedAt": "2026-10-20T03:56:01.994687+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "畸形或 CRC 错误输入导致解析器重新寻找帧头，重同步路径没有正确重置 payload 缓冲区。",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "评论定位为状态转换中 payload 未清空，后续消息累积写入 Java 缓冲区，最终抛出 BufferOverflowException。",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "Java 解码器异常和消息处理可用性问题；不应表述为 PX4 C/C++ 原生内存覆盖或已验证固件 RCE。",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "Issue 2015 年报告的 Java 实现；未指定版本标签\n\n2016-03-22 评论称修复已进入代码；未给出可追溯发布版本或提交",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "核查实际使用的 Java 解析器重同步修复；处理异常并在新帧开始时一致重置解析状态。",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n原表将该库报告泛化为 PX4 漏洞；这里明确实现语言与范围。\n\n原始 Medium 无正式评分出处，页面显示未评级。",
+          "sources": [
+            "MAVLINK-ISSUE-474",
+            "MAVLINK-ISSUE-474-comments"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2015-12-06T07:12:04Z",
+          "event": "原始报告/提案创建",
+          "source": "MAVLINK-ISSUE-474"
+        }
+      ],
+      "related": []
+    },
+    {
+      "id": "GHSA-x57h-c282-63hg",
+      "shelf": "D",
+      "title": "暂停与重定位时序导致悬停位置失效",
+      "component": "navigator_main.cpp / Commander.cpp",
+      "affected": "PX4 1.14.0（公告）",
+      "fixed": "公告给出临时修复思路；未指定正式修复版本",
+      "trigger": "任务执行中从任务切至暂停/悬停，再在特定时序进行高度重定位操作；需能发送飞行控制指令。",
+      "rootCause": "navigator 与 commander 的状态切换不同步；后续 REPOSITION 目标可能覆盖先前计算的制动停止点，模式已变为 hold 但仍持续移动。",
+      "impact": "报告仿真展示暂停后的非预期移动，存在碰撞风险。",
+      "remediation": "参考公告的目标/模式同步修复建议，核实当前分支；整理建议：对模式切换与重定位更新统一处理。",
+      "notes": [
+        "补充条目；未分配 CVE 的仓库安全公告，不能自行编造 CVE 编号。"
+      ],
+      "extraSources": [
+        "GHSA-x57h-c282-63hg"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "GHSA-x57h-c282-63hg",
+      "original": null,
+      "origin": "补充官方公告",
+      "aliases": [],
+      "en": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/navigator_main.cpp which cause drone can not PAUSE",
+      "summary": "navigator 与 commander 的状态切换不同步；后续 REPOSITION 目标可能覆盖先前计算的制动停止点，模式已变为 hold 但仍持续移动。 报告仿真展示暂停后的非预期移动，存在碰撞风险。",
+      "tags": [
+        "并发与生命周期",
+        "CWE-362",
+        "High"
+      ],
+      "cwes": [
+        "CWE-362"
+      ],
+      "rating": {
+        "source": "GHSA-x57h-c282-63hg",
+        "version": "3.1",
+        "score": 8.2,
+        "severity": "High",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H"
+      },
+      "ratings": [
+        {
+          "source": "GHSA-x57h-c282-63hg",
+          "version": "3.1",
+          "score": 8.2,
+          "severity": "High",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:N/I:L/A:H"
+        }
+      ],
+      "severity": "High",
+      "sources": [
+        {
+          "id": "GHSA-x57h-c282-63hg",
+          "label": "[REPORT]Multi-Threaded Race Condition bug found in src/modules/navigator/navigator_main.cpp which cause drone can not PAUSE",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-x57h-c282-63hg",
+          "snapshot": "sources/GHSA-x57h-c282-63hg.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "6f0990230c29b2911c9f2f3c6ee3d6bf96c3bf948b5af4bc933ce01509ad2362",
+          "method": "extract from previously downloaded full repository API index"
+        }
+      ],
+      "source": "官方公告 / 原始报告",
+      "published": "2024-01-25",
+      "updated": "2024-01-25",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "任务执行中从任务切至暂停/悬停，再在特定时序进行高度重定位操作；需能发送飞行控制指令。",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "navigator 与 commander 的状态切换不同步；后续 REPOSITION 目标可能覆盖先前计算的制动停止点，模式已变为 hold 但仍持续移动。",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "报告仿真展示暂停后的非预期移动，存在碰撞风险。",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 1.14.0（公告）\n\n公告给出临时修复思路；未指定正式修复版本",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考公告的目标/模式同步修复建议，核实当前分支；整理建议：对模式切换与重定位更新统一处理。",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n补充条目；未分配 CVE 的仓库安全公告，不能自行编造 CVE 编号。",
+          "sources": [
+            "GHSA-x57h-c282-63hg"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2024-01-25T07:27:47Z",
+          "event": "GHSA-x57h-c282-63hg 公告发布",
+          "source": "GHSA-x57h-c282-63hg"
+        }
+      ],
+      "related": [
+        {
+          "id": "CVE-2024-24255",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "CVE-2024-29460",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        },
+        {
+          "id": "CVE-2024-30799",
+          "type": "相关机制",
+          "reason": "飞行状态、任务或围栏逻辑问题；触发条件和证据分别列明。"
+        }
+      ]
+    },
+    {
+      "id": "GHSA-rfc7-3pxc-c68p",
+      "shelf": "F",
+      "title": "文档检查工作流 PR 文件名命令注入",
+      "component": "GitHub Actions / docs_flaw_checker.yml",
+      "affected": "PX4 main 的文档 CI 工作流（修复前）",
+      "fixed": "公告：main；2025-08-15 工作流修复",
+      "trigger": "攻击者提交带特殊文件名的 PR，触发 pull_request_target 文档检查流程。",
+      "rootCause": "不可信 PR 文件名被表达式直接插入 shell 的 echo 等命令，在高权限工作流中成为命令语法。",
+      "impact": "报告展示令牌泄露及机器人可用权限内的评论/标签等操作；原报告指出其测试令牌不能直接写 main 或合并 PR。",
+      "remediation": "参考公告修复；使用环境变量和安全参数传递，并收紧工作流令牌权限。",
+      "notes": [
+        "补充条目；与 GHSL-2025-087 的 docs_pr_comment.yml 是不同注入位置，关联而不合并。"
+      ],
+      "extraSources": [
+        "GHSA-rfc7-3pxc-c68p"
+      ],
+      "verification": "公开证据核对／未在本机复现",
+      "canonicalId": "GHSA-rfc7-3pxc-c68p",
+      "original": null,
+      "origin": "补充官方公告",
+      "aliases": [],
+      "en": "docs_flaw_checker.yml: code execution",
+      "summary": "不可信 PR 文件名被表达式直接插入 shell 的 echo 等命令，在高权限工作流中成为命令语法。 报告展示令牌泄露及机器人可用权限内的评论/标签等操作；原报告指出其测试令牌不能直接写 main 或合并 PR。",
+      "tags": [
+        "供应链与构建",
+        "Medium"
+      ],
+      "cwes": [],
+      "rating": {
+        "source": "GHSA-rfc7-3pxc-c68p",
+        "version": "3.1",
+        "score": 5.3,
+        "severity": "Medium",
+        "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+      },
+      "ratings": [
+        {
+          "source": "GHSA-rfc7-3pxc-c68p",
+          "version": "3.1",
+          "score": 5.3,
+          "severity": "Medium",
+          "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"
+        }
+      ],
+      "severity": "Medium",
+      "sources": [
+        {
+          "id": "GHSA-rfc7-3pxc-c68p",
+          "label": "docs_flaw_checker.yml: code execution",
+          "url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-rfc7-3pxc-c68p",
+          "snapshot": "sources/GHSA-rfc7-3pxc-c68p.json",
+          "retrievedAt": "2026-10-20T04:04:10.446540+00:00",
+          "sha256": "aa01fbe788ce6f99777f41802ddb2e952266cefa5775d4fc808f601554136d91",
+          "method": "extract from previously downloaded full repository API index"
+        }
+      ],
+      "source": "官方公告 / 原始报告",
+      "published": "2025-08-15",
+      "updated": "2025-08-15",
+      "verifiedAt": "2026-10-20T04:04:10.446540+00:00",
+      "tracks": [
+        {
+          "t": "触发条件与逻辑",
+          "body": "攻击者提交带特殊文件名的 PR，触发 pull_request_target 文档检查流程。",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        },
+        {
+          "t": "根因与代码路径",
+          "body": "不可信 PR 文件名被表达式直接插入 shell 的 echo 等命令，在高权限工作流中成为命令语法。",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        },
+        {
+          "t": "影响与危害边界",
+          "body": "报告展示令牌泄露及机器人可用权限内的评论/标签等操作；原报告指出其测试令牌不能直接写 main 或合并 PR。",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        },
+        {
+          "t": "受影响版本与修复",
+          "body": "PX4 main 的文档 CI 工作流（修复前）\n\n公告：main；2025-08-15 工作流修复",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        },
+        {
+          "t": "缓解与处置建议",
+          "body": "参考公告修复；使用环境变量和安全参数传递，并收紧工作流令牌权限。",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        },
+        {
+          "t": "核验说明与不确定项",
+          "body": "公开证据核对／未在本机复现\n\n补充条目；与 GHSL-2025-087 的 docs_pr_comment.yml 是不同注入位置，关联而不合并。",
+          "sources": [
+            "GHSA-rfc7-3pxc-c68p"
+          ]
+        }
+      ],
+      "timeline": [
+        {
+          "time": "2025-08-15T06:12:12Z",
+          "event": "GHSA-rfc7-3pxc-c68p 公告发布",
+          "source": "GHSA-rfc7-3pxc-c68p"
+        }
+      ],
+      "related": [
+        {
+          "id": "GHSL-2025-087",
+          "type": "相关机制",
+          "reason": "PX4 GitHub Actions 中不同工作流的命令注入。"
+        }
+      ]
+    }
+  ]
+}

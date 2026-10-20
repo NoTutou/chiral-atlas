@@ -1,6 +1,6 @@
 /* =========================================================
    infinite isometric CD-rack renderer (archive sector)
-   - lattice cell (c, i): column c (shelf = c mod 6), slot i (record = i mod 16)
+   - lattice cell (c, i): column c (shelf = c mod 6), slot i (record repeats at the individual shelf length)
    - camera: ground point (cam.x, cam.z) sits at screen anchor; zoom scales the projection
    - wave: per-cell spring toward a gaussian bump under the cursor + neighbour coupling
    - perf: faces are trimmed to the part not hidden by the nearer neighbour (kills overdraw),
@@ -11,14 +11,14 @@ import { SHELVES } from '../data/archive.js';
 import { createGL, STRIDE } from './archive-gl.js';
 
 export const PITCH_X = 15, TX = 9, LZ = 210, HY = 175, PITCH_Z = 252;
-const NSH = SHELVES.length, PER = SHELVES[0].records.length;
+const NSH = SHELVES.length, PER = 16; // visual floor-marker period; record counts vary by shelf
 const YAW = (34 * Math.PI) / 180, PITCH = (38 * Math.PI) / 180;
 const cp = Math.cos(YAW), sp = Math.sin(YAW), cq = Math.cos(PITCH), sq = Math.sin(PITCH);
 const GAPV = ((PITCH_X - TX) * Math.tan(PITCH)) / sp + 1;          // side face visible through the slot gap
 const GAPE = ((PITCH_Z - LZ) * Math.tan(PITCH)) / cp + 2;          // end face visible through the shelf gap
 const KEY = (c, i) => c * 4194304 + i;
 
-export const recordAt = (c, i) => SHELVES[mod(c, NSH)].records[mod(i, PER)];
+export const recordAt = (c, i) => shelfAt(c).records[mod(i, shelfAt(c).records.length)];
 export const shelfAt = (c) => SHELVES[mod(c, NSH)];
 
 export function createRack(canvas) {
@@ -227,15 +227,15 @@ export function createRack(canvas) {
     gg.globalAlpha = fog * (detail ? 1 : clamp(Math.max(hot, (lift - 18) / 30)));
     gg.fillStyle = 'rgba(233,241,244,.94)'; gg.fillRect(10, 12, 74, 27);
     gg.fillStyle = '#05080b'; gg.font = '600 4px "Barlow Condensed"'; gg.fillText('CHIRAL ATLAS · ARCHIVE', 14, 19);
-    gg.font = '700 11.5px "Barlow Condensed"'; gg.fillText(rec.id, 14, 33);
+    gg.font = '700 11.5px "Barlow Condensed"'; gg.fillText(rec.id, 14, 33, 64);
     gg.fillStyle = sh.col; gg.fillRect(70, 15, 10, 3);
     gg.globalAlpha = fog;
     gg.strokeStyle = 'rgba(170,220,240,.10)'; gg.lineWidth = 0.7;
     gg.beginPath(); gg.arc(LZ * 0.5, HY * 0.55, 54, 0, 7); gg.stroke();
     gg.beginPath(); gg.arc(LZ * 0.5, HY * 0.55, 13, 0, 7); gg.stroke();
     gg.fillStyle = 'rgba(200,225,235,.55)'; gg.font = '5px "Share Tech Mono"';
-    gg.fillText(`${sh.en} // ${rec.pages} PAGES`, 10, HY - 12);
-    for (let k = 0; k < 22; k++) { const w = hash(k * 7.7 + rec.pages) > 0.5 ? 1.2 : 0.5; gg.fillRect(LZ - 46 + k * 1.7, HY - 18, w, 9); }
+    gg.fillText(`${sh.en} // ${rec.severity} / ${rec.sources.length} SRC`, 10, HY - 12);
+    for (let k = 0; k < 22; k++) { const w = hash(k * 7.7 + rec.id.length) > 0.5 ? 1.2 : 0.5; gg.fillRect(LZ - 46 + k * 1.7, HY - 18, w, 9); }
     gg.strokeStyle = 'rgba(170,220,240,.08)';
     gg.beginPath(); gg.moveTo(6, 46); gg.lineTo(LZ - 6, 46); gg.moveTo(6, HY - 26); gg.lineTo(LZ - 6, HY - 26); gg.stroke();
     gg.restore();
@@ -292,7 +292,7 @@ export function createRack(canvas) {
     g.font = '600 9px "Barlow Condensed"'; g.fillStyle = 'rgba(233,241,244,.85)';
     g.fillText(`SHELF ${sh.k}`, 7, 3.4);
     g.font = '7px "Share Tech Mono"'; g.fillStyle = 'rgba(160,190,200,.7)';
-    g.fillText(`${sh.en} · ${sh.k}-001 — ${sh.k}-${String(PER).padStart(3, '0')}`, 52, 3);
+    g.fillText(`${sh.en} · ${sh.records.length} RECORDS`, 52, 3);
     g.fillStyle = 'rgba(160,190,200,.35)';
     for (let k = 0; k < PER; k++) g.fillRect(k * PITCH_X + PITCH_X / 2 - 0.3, 6, 0.6, k % 4 ? 2 : 4);
     g.globalAlpha = 1;
@@ -420,7 +420,7 @@ export function createRack(canvas) {
       a.font = '600 9px "Barlow Condensed"'; a.fillStyle = 'rgba(233,241,244,.9)';
       a.fillText(`SHELF ${sh.k}`, 7, 3.4);
       a.font = '7px "Share Tech Mono"'; a.fillStyle = 'rgba(160,190,200,.8)';
-      a.fillText(`${sh.en} · ${sh.k}-001 — ${sh.k}-${String(PER).padStart(3, '0')}`, 52, 3);
+      a.fillText(`${sh.en} · ${sh.records.length} RECORDS`, 52, 3);
       a.fillStyle = 'rgba(160,190,200,.45)';
       for (let q = 0; q < PER; q++) a.fillRect(q * PITCH_X + PITCH_X / 2 - 0.3, 5, 0.6, q % 4 ? 1.5 : 2);
     });
@@ -476,11 +476,12 @@ export function createRack(canvas) {
   R.zoomBy = (f, ax, ay) => { cam.zoomT = clamp(cam.zoomT * f, 0.55, 2.2); cam.ax = ax; cam.ay = ay; fly = null; };
   /** nearest lattice cell to the camera holding record id */
   R.cellOf = (id) => {
-    const k = SHELVES.findIndex((s) => s.k === id[0]);
+    const k = SHELVES.findIndex((s) => s.records.some((r) => r.id === id));
+    if (k < 0) return null;
     const j = SHELVES[k].records.findIndex((r) => r.id === id);
-    if (k < 0 || j < 0) return null;
+    const count = SHELVES[k].records.length, half = Math.floor(count / 2);
     const cc = Math.round(cam.z / PITCH_Z), ic = Math.round(cam.x / PITCH_X);
-    const c = cc + mod(k - cc + 3, NSH) - 3, i = ic + mod(j - ic + 8, PER) - 8;
+    const c = cc + mod(k - cc + 3, NSH) - 3, i = ic + mod(j - ic + half, count) - half;
     return { c, i, x: i * PITCH_X, z: c * PITCH_Z, rec: SHELVES[k].records[j] };
   };
   /** fly so the cell lands at screen point (sx, sy) (defaults to the anchor) */

@@ -1,0 +1,8 @@
+{
+  "kind": "manual web verification note, NOT GitHub API response",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/pull/22834",
+  "summary": "PR 已合并到 main；首次包含变更的发布版本未确认。",
+  "merged": true,
+  "merged_at": "2024-03-20",
+  "merge_commit_sha": "37cadde"
+}

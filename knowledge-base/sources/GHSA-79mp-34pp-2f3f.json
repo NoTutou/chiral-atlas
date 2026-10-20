@@ -1,0 +1,148 @@
+{
+  "ghsa_id": "GHSA-79mp-34pp-2f3f",
+  "cve_id": "CVE-2026-32705",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-79mp-34pp-2f3f",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-79mp-34pp-2f3f",
+  "summary": "BST Device Name Length Can Overflow Driver Buffer",
+  "description": "### Summary\r\n\r\nThe BST telemetry probe writes a string terminator using a device-provided length without bounds. A malicious BST device can report an oversized `dev_name_len`, causing a stack overflow in the driver and crashing the task (or enabling code execution).\r\n\r\n### Details\r\n\r\nIn `src/drivers/telemetry/bst/bst.cpp` (BST::probe), after receiving a device info reply the code does:\r\n\r\n```\r\n  dev_info_reply.payload.dev_name[dev_info_reply.payload.dev_name_len] = '\\0';\r\n\r\n  The dev_name buffer is 32 bytes, but dev_name_len is attacker-controlled from the I2C reply and is never bounded (lines ~190-215). A\r\n  length ≥32 writes past the stack buffer, corrupting adjacent data.\r\n```\r\n\r\n### PoC\r\n\r\n[px4-bst-dev-name-overflow-poc.tar.gz](https://github.com/user-attachments/files/23834751/px4-bst-dev-name-overflow-poc.tar.gz)\r\n\r\nUse the provided ASAN harness px4-bst-dev-name-overflow-poc/:\r\n\r\n```\r\n  cmake -S px4-bst-dev-name-overflow-poc -B px4-bst-dev-name-overflow-poc/build\r\n  cmake --build px4-bst-dev-name-overflow-poc/build\r\n  ./px4-bst-dev-name-overflow-poc/build/px4_bst_dev_name_overflow_poc\r\n\r\n```\r\n\r\nThe mock I2C device returns a BST info reply with `dev_name_len=0xFF`; ASAN reports a stack-buffer-overflow at bst.cpp:209 in BST::probe.\r\n\r\n### Impact\r\n\r\nStack-based buffer overflow triggered by any BST device or I2C bus attacker responding to the probe. Causes denial of service and could enable code execution in the BST driver context if protections are weak.\r\n\r\n### Acknowledgments\r\n- Found by SecMate (https://secmate.dev)\r\n\r\n",
+  "severity": "medium",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-79mp-34pp-2f3f",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32705",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-03-13T19:49:50Z",
+  "published_at": "2026-03-13T19:49:17Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+      "score": 6.8
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-121",
+      "name": "Stack-based Buffer Overflow"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-121"
+  ],
+  "credits": [
+    {
+      "login": "max-r-b",
+      "type": "reporter"
+    },
+    {
+      "login": "enitmar",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "max-r-b",
+        "id": 25744117,
+        "node_id": "MDQ6VXNlcjI1NzQ0MTE3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/25744117?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/max-r-b",
+        "html_url": "https://github.com/max-r-b",
+        "followers_url": "https://api.github.com/users/max-r-b/followers",
+        "following_url": "https://api.github.com/users/max-r-b/following{/other_user}",
+        "gists_url": "https://api.github.com/users/max-r-b/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/max-r-b/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/max-r-b/subscriptions",
+        "organizations_url": "https://api.github.com/users/max-r-b/orgs",
+        "repos_url": "https://api.github.com/users/max-r-b/repos",
+        "events_url": "https://api.github.com/users/max-r-b/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/max-r-b/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    },
+    {
+      "user": {
+        "login": "enitmar",
+        "id": 203963681,
+        "node_id": "U_kgDODCg9IQ",
+        "avatar_url": "https://avatars.githubusercontent.com/u/203963681?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/enitmar",
+        "html_url": "https://github.com/enitmar",
+        "followers_url": "https://api.github.com/users/enitmar/followers",
+        "following_url": "https://api.github.com/users/enitmar/following{/other_user}",
+        "gists_url": "https://api.github.com/users/enitmar/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/enitmar/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/enitmar/subscriptions",
+        "organizations_url": "https://api.github.com/users/enitmar/orgs",
+        "repos_url": "https://api.github.com/users/enitmar/repos",
+        "events_url": "https://api.github.com/users/enitmar/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/enitmar/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 2,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+    "score": 6.8
+  }
+}

@@ -5,7 +5,7 @@
    ========================================================= */
 import './archive.css';
 import { clamp, lerp, seg, ease, decode, pad, mod, esc, Bag, download, fitCanvas, hash } from '../core/util.js';
-import { SHELVES, RECORDS, BY_ID, TOTAL, recordToMarkdown } from '../data/archive.js';
+import { SHELVES, RECORDS, BY_ID, TOTAL, GROUP_TOTAL, VERIFIED_AT, RATING_POLICY, ratingText, recordToMarkdown } from '../data/archive.js';
 import { createRack, drawDisc, recordAt, shelfAt, PITCH_X, PITCH_Z, TX, LZ, HY } from './archive-rack.js';
 
 let S = null;
@@ -17,8 +17,8 @@ const TPL = `
   <div class="ttl">
     <div class="big">ARCHIVE<b> 02</b></div>
     <div class="zh">知识档案库</div>
-    <div class="meta"><span class="lbl">INTERNAL DATABASE</span><span class="sep"></span>
-      <span class="lbl" style="color:var(--ink-2)">${TOTAL} RECORDS · ${SHELVES.length} SHELVES · LOOP ∞</span></div>
+    <div class="meta"><span class="lbl">PUBLIC VULNERABILITY RECORDS</span><span class="sep"></span>
+      <span class="lbl" style="color:var(--ink-2)">${TOTAL} 档案 · ${GROUP_TOTAL} 问题组 · 核验 ${VERIFIED_AT}</span></div>
   </div>
   <div class="cats hit"></div>
   <div class="shelf"><div class="lbl">SHELF / 当前档案列</div><div class="n" data-r="shn">03<small>/ 06</small></div><div class="nm" data-r="shnm"></div></div>
@@ -54,7 +54,7 @@ const TPL = `
     <div class="rule" data-r="rule"></div>
     <div class="blk"><div class="grid" data-r="grid"></div><div class="mask"></div></div>
     <div class="blk"><div class="tabsd" data-r="tabs">
-      <div data-tab="0"><i>01</i>概述</div><div data-tab="1"><i>02</i>章节 TRACKS</div><div data-tab="2"><i>03</i>关联档案</div><div data-tab="3"><i>04</i>访问日志</div>
+      <div data-tab="0"><i>01</i>概述</div><div data-tab="1"><i>02</i>漏洞分析</div><div data-tab="2"><i>03</i>关联档案</div><div data-tab="3"><i>04</i>来源与核验</div>
     </div><div class="mask"></div></div>
     <div class="blk body scroll" data-r="body"><div data-r="bodyIn"></div><div class="mask"></div></div>
     <div class="blk"><div class="acts">
@@ -65,7 +65,7 @@ const TPL = `
   </div>
 </div>`;
 
-const wave = (seed, n = 34) => Array.from({ length: n }, (_, j) => `<i style="height:${3 + Math.round(hash(j * 1.7 + seed * 13) * 11)}px"></i>`).join('');
+
 
 export default {
   hints: [[['⇔', '拖拽平移', 'sq'], ['⇕', '滚轮缩放', 'sq'], ['●', '点击读取'], ['/', '检索', 'sq'], ['ESC', '返回', 'sq']], ['SECTOR 02 / ARCHIVE', 'CHIRAL LOOP ∞']],
@@ -163,7 +163,7 @@ export default {
     bag.on(r.q, 'focus', () => { if (r.q.value) doSearch(r.q.value); });
     bag.on(r.q, 'blur', () => setTimeout(() => r.res.classList.remove('on'), 150));
     bag.on(r.q, 'keydown', (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); S.sel = mod(S.sel + (e.key === 'ArrowDown' ? 1 : -1), Math.max(1, Math.min(8, S.matches.length))); paintResults(); }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); S.sel = mod(S.sel + (e.key === 'ArrowDown' ? 1 : -1), Math.max(1, S.matches.length)); paintResults(); r.res.querySelector('.sel')?.scrollIntoView({ block: 'nearest' }); }
       if (e.key === 'Enter' && S.matches[S.sel]) { r.q.blur(); openId(S.matches[S.sel].id); }
       if (e.key === 'Escape') { r.q.value = ''; doSearch(''); r.q.blur(); e.stopPropagation(); }
       else ctx.sfx.play('type');
@@ -176,6 +176,8 @@ export default {
     bag.on(r.bodyIn, 'click', (e) => {
       const tr = e.target.closest('[data-track]');
       if (tr) { S.track = +tr.dataset.track; S.tab = 1; paintTab(); ctx.sfx.play('select'); return; }
+      const tag = e.target.closest('[data-tag]');
+      if (tag) { S.pendingQuery = tag.dataset.tag; closeOpen(); return; }
       const rc = e.target.closest('[data-rel]');
       if (rc) { swapTo(rack.cellOf(rc.dataset.rel)); }
     });
@@ -325,6 +327,7 @@ const r_cats = () => S.root.querySelector('.cats');
 function toggleSavedMode() {
   S.savedMode = !S.savedMode;
   S.r.q.value = '';
+  S.matches = []; S.r.res.classList.remove('on');
   S.rack.hits = S.savedMode ? S.ctx.store.saved : null;
   S.r.savedBtn.classList.toggle('on', S.savedMode);
   S.ctx.sfx.play(S.savedMode ? 'scan' : 'back');
@@ -336,9 +339,11 @@ function paintSaved() { S.r.savedN.textContent = pad(S.ctx.store.saved.size); co
 /* ---------- search ---------- */
 function doSearch(q) {
   q = q.trim().toLowerCase();
+  const wasSaved = S.savedMode;
   S.savedMode = false; S.r.savedBtn.classList.remove('on');
+  if (wasSaved) buildCats();
   if (!q) { S.rack.hits = null; S.matches = []; S.r.res.classList.remove('on'); return; }
-  S.matches = RECORDS.filter((x) => (x.id + ' ' + x.title + ' ' + x.en + ' ' + x.tags.join(' ') + ' ' + x.summary).toLowerCase().includes(q));
+  S.matches = RECORDS.filter((x) => [x.id, x.title, x.en, x.tags.join(' '), x.aliases.join(' '), x.component, x.affected, x.fixed, x.summary, ...x.tracks.map((t) => t.body)].join(' ').toLowerCase().includes(q));
   S.rack.hits = new Set(S.matches.map((x) => x.id));
   S.sel = 0;
   paintResults();
@@ -347,7 +352,7 @@ function doSearch(q) {
 function paintResults() {
   const m = S.matches;
   S.r.res.innerHTML = m.length
-    ? `<div class="cnt">${m.length} MATCHES · 匹配档案已在阵列中浮起</div>` + m.slice(0, 8).map((x, k) => {
+    ? `<div class="cnt">${m.length} MATCHES · 匹配档案已在阵列中浮起</div>` + m.map((x, k) => {
       const sh = SHELVES.find((s) => s.k === x.shelf);
       return `<div class="it ${k === S.sel ? 'sel' : ''}" data-id="${x.id}"><span class="d" style="background:${sh.col}"></span><span class="id">${x.id}</span><span class="t">${esc(x.title)}</span></div>`;
     }).join('')
@@ -409,6 +414,7 @@ function finishClose() {
   S.open = null;
   S.det.classList.remove('on');
   history.replaceState(null, '', '#/archive');
+  if (S.pendingQuery) { S.r.q.value = S.pendingQuery; S.pendingQuery = null; doSearch(S.r.q.value); S.r.q.focus(); }
 }
 
 /* ---------- detail DOM ---------- */
@@ -449,13 +455,11 @@ function fillDetail(x) {
   r.dIdx.textContent = `${pad(j + 1)} / ${pad(sh.records.length)}`;
   r.prevId.textContent = sh.records[mod(j - 1, sh.records.length)].id;
   r.nextId.textContent = sh.records[mod(j + 1, sh.records.length)].id;
-  const dot = (c) => `<span style="color:${c}">■</span> `;
   r.grid.innerHTML = [
-    ['CATEGORY / 类别', `${sh.zh} · ${x.tags[0]}`], ['SOURCE / 来源', x.source],
-    ['LEVEL / 密级', dot(x.level.startsWith('L3') ? 'var(--red)' : 'var(--gold)') + x.level],
-    ['UPDATED / 更新', x.updated, 1], ['VOLUME / 体量', `${x.pages} PAGES · ${x.words} 字`, 1],
-    ['STATUS / 状态', dot(x.status.startsWith('已归档') ? 'var(--green)' : 'var(--gold)') + x.status],
-  ].map(([l, v, m]) => `<div><div class="lbl">${l}</div><div class="v ${m ? 'mono' : ''}">${v}</div></div>`).join('');
+    ['COMPONENT / 组件', x.component], ['RATING / 来源评级', ratingText(x)],
+    ['PUBLISHED / 来源首发', x.published || '未确认'], ['UPDATED / 来源更新', x.updated || '未确认'],
+    ['EVIDENCE / 证据', `${x.sources.length} 份来源 · ${x.origin}`], ['VERIFICATION / 核验边界', x.verification],
+  ].map(([l, v]) => `<div><div class="lbl">${l}</div><div class="v">${esc(v)}</div></div>`).join('');
   paintTab(); paintSave();
 }
 
@@ -465,25 +469,37 @@ function paintSave() {
   S.r.save.innerHTML = on ? '★ SAVED<span>已收藏 · 点击取消</span>' : '+ SAVE ARCHIVE<span>收藏档案</span>';
 }
 
+function sourceLinks(x, ids) {
+  return ids.map((id) => x.sources.find((s) => s.id === id)).filter(Boolean).map((s) =>
+    `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.id)} ↗</a>`).join(' · ');
+}
 function paintTab() {
   const x = S.open.rec, { r } = S;
   r.tabs.querySelectorAll('[data-tab]').forEach((d) => d.classList.toggle('on', +d.dataset.tab === S.tab));
-  const trackRow = (t, k, on) => `<div class="tr ${on ? 'on' : ''}" data-track="${k}"><span class="i">${pad(k + 1)}</span>${esc(t.t)}<span class="w">${wave(k + x.pages)}</span><span class="d">${t.dur}</span></div>`;
+  const trackRow = (t, k, on) => `<button class="tr ${on ? 'on' : ''}" data-track="${k}" aria-expanded="${S.tab === 1 && on}"><span class="i">${pad(k + 1)}</span>${esc(t.t)}<span class="d">${t.sources.length} SRC</span></button>`;
   let html = '';
   if (S.tab === 0) {
-    html = `<div class="abs">${esc(x.summary)}</div><div class="tags">${x.tags.map((g) => `<span class="chip"><span class="d"></span>${esc(g)}</span>`).join('')}</div>
+    html = `<div class="abs">${esc(x.summary)}</div>
+      <div class="fact"><b>受影响范围</b><p>${esc(x.affected)}</p><b>修复状态</b><p>${esc(x.fixed)}</p></div>
+      <div class="notice">${esc(x.verification)}${x.notes.length ? '<ul>' + x.notes.map((n) => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}</div>
+      <div class="fact">问题组：${esc(x.canonicalId)} · ${esc(x.origin)}${x.aliases.length ? '<br>关联编号：' + esc(x.aliases.join(' · ')) : ''}</div>
+      <div class="tags">${x.tags.map((g) => `<button class="chip" data-tag="${esc(g)}" title="检索此标签"><span class="d"></span>${esc(g)}</button>`).join('')}</div>
       <div style="margin-top:8px">${x.tracks.map((t, k) => trackRow(t, k, k === S.track)).join('')}</div>`;
   } else if (S.tab === 1) {
-    html = `<div style="margin-top:12px">${x.tracks.map((t, k) => trackRow(t, k, k === S.track) + (k === S.track ? `<div class="trb">${esc(t.body)}</div>` : '')).join('')}</div>`;
+    html = `<div style="margin-top:12px">${x.tracks.map((t, k) => trackRow(t, k, k === S.track) + (k === S.track ? `<div class="trb">${esc(t.body)}<div class="refs">参考证据：${sourceLinks(x, t.sources)}</div></div>` : '')).join('')}</div>`;
   } else if (S.tab === 2) {
-    html = `<div class="rel">${x.related.map((id) => {
-      const y = BY_ID.get(id), s2 = SHELVES.find((s) => s.k === y.shelf);
-      return `<div class="rc" data-rel="${id}"><span class="sp" style="background:${s2.col}"></span><span class="id">${id}</span>${esc(y.title)}<span class="go">${s2.en} · OPEN →</span></div>`;
-    }).join('')}</div>`;
+    html = `<div class="fact">${x.related.length} 份关联档案。相同问题的证据档案不重复计入问题组；机制相关条目保留独立编号。</div><div class="rel">${x.related.map((rel) => {
+      const y = BY_ID.get(rel.id), sh = SHELVES.find((s) => s.k === y.shelf);
+      return `<button class="rc" data-rel="${y.id}"><span class="id" style="color:${sh.col}">${esc(y.id)} →</span><strong>${esc(y.title)}</strong><span class="reason">${esc(rel.type)} · ${esc(rel.reason)}</span></button>`;
+    }).join('') || '<div class="fact">暂无已确认的关联档案。</div>'}</div>`;
   } else {
-    html = `<table class="log">${x.log.map((l) => `<tr><td class="m">${l.time}</td><td class="m" style="color:var(--ink-2)">${l.who}</td><td>${l.act}</td></tr>`).join('')}</table>`;
+    html = `<div class="fact">资料核验：${esc(x.verifiedAt.slice(0, 10))}。公开证据整理，未执行 PoC。<br>${esc(RATING_POLICY)}</div>
+      <div class="ratings">${x.ratings.map((a) => `<div class="evidence"><b>${esc(a.source)}</b><p>CVSS ${esc(a.version)} · ${esc(a.severity)} · ${a.score ?? '未提供分数'}</p><code>${esc(a.vector || '未提供向量')}</code></div>`).join('') || '<div class="notice">公开来源未提供 CVSS 评分，不推定风险分数。</div>'}</div>
+      <div class="fact"><b>来源时间线</b>${x.timeline.map((e) => `<p>${esc(e.time.slice(0, 10))} · ${esc(e.event)} · ${esc(e.source)}</p>`).join('') || '<p>未取得可确认的来源时间。</p>'}</div>
+      <div class="sources">${x.sources.map((a) => `<article class="evidence"><a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.label)} ↗</a><p>${esc(a.url)}</p><p>采集/核验：${esc(a.retrievedAt)}<br>方法：${esc(a.method)}</p><details><summary>本地证据位置与校验值</summary><p>knowledge-base/${esc(a.snapshot)}</p><code>SHA-256 ${esc(a.sha256)}</code></details></article>`).join('')}</div>`;
   }
   r.bodyIn.innerHTML = html;
+  r.body.scrollTop = 0;
 }
 
 /* ---------- per-frame painters ---------- */
@@ -508,7 +524,7 @@ function paintTip(t) {
   r.tipNm.textContent = decode(x.title, dp, hv.i + 3);
   const sh = shelfAt(hv.c);
   r.tipCat.textContent = sh.en; r.tipCat.style.color = sh.col;
-  r.tipMeta.textContent = `${x.pages} PAGES · UPD ${x.updated.slice(5, 10)}${S.ctx.store.saved.has(x.id) ? ' · ★' : ''}`;
+  r.tipMeta.textContent = `${ratingText(x)} · ${x.sources.length} SOURCES${S.ctx.store.saved.has(x.id) ? ' · ★' : ''}`;
 }
 
 function paintOverview(t, dim) {
@@ -517,7 +533,7 @@ function paintOverview(t, dim) {
   S.ovw.style.opacity = intro * (1 - dim);
   S.ovw.style.visibility = dim > 0.98 ? 'hidden' : '';
   const c = S.hover ? S.hover.c : Math.round(rack.cam.z / PITCH_Z);
-  const k = mod(c, 6);
+  const k = mod(c, SHELVES.length);
   if (k !== S.curShelf) {
     S.curShelf = k;
     const sh = SHELVES[k];
@@ -594,7 +610,7 @@ function drawFocus(t, E) {
     g.strokeStyle = 'rgba(227,162,58,.9)'; g.lineWidth = rr * 0.27; g.beginPath(); g.arc(FX + FW - FW * 0.125, FY + FH * 0.17, rr, 0, 7); g.stroke();
     g.strokeStyle = 'rgba(255,210,126,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(FX + FW - FW * 0.125, FY + FH * 0.17, rr * 1.35, 0, 7); g.stroke();
     g.restore();
-    drawDisc(g, dcx, dcy, r, spin, clr, `CHIRAL ATLAS · ARCHIVE ${rec.id} · ${rec.en} · ${rec.pages}P · `);
+    drawDisc(g, dcx, dcy, r, spin, clr, `CHIRAL ATLAS · ARCHIVE ${rec.id} · ${rec.en} · ${rec.severity} · `);
     const yc = FY + FH * clr;
     g.save(); g.beginPath(); g.rect(FX, yc, FW, FY + FH - yc); g.clip();
     g.fillStyle = 'rgba(120,160,175,.20)'; g.fillRect(FX, FY, FW, FH);
@@ -607,7 +623,7 @@ function drawFocus(t, E) {
     aff(O, U, V);
     g.fillStyle = 'rgba(233,241,244,.96)'; g.fillRect(10, 12, 74, 27);
     g.fillStyle = '#05080b'; g.font = '600 4px "Barlow Condensed"'; g.fillText('CHIRAL ATLAS · ARCHIVE', 14, 19);
-    g.font = '700 11.5px "Barlow Condensed"'; g.fillText(rec.id, 14, 33);
+    g.font = '700 11.5px "Barlow Condensed"'; g.fillText(rec.id, 14, 33, 64);
     g.fillStyle = sh.col; g.fillRect(70, 15, 10, 3);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.strokeStyle = `rgba(233,241,244,${clr})`; g.lineWidth = 1.2;
@@ -615,7 +631,7 @@ function drawFocus(t, E) {
     bk(FX - 14, FY - 14, 1, 1); bk(FX + FW + 14, FY - 14, -1, 1); bk(FX - 14, FY + FH + 14, 1, -1); bk(FX + FW + 14, FY + FH + 14, -1, -1);
     g.fillStyle = `rgba(160,190,200,${clr * 0.6})`;
     for (let k = 0; k <= 40; k++) g.fillRect(FX + (k * FW) / 40, FY + FH + 24, 1, k % 5 ? 3 : 7);
-    g.font = '10px "Share Tech Mono"'; g.fillText('210 × 175 MM · SMOKED POLYCARBONATE · CHIRAL CORE', FX, FY + FH + 44);
+    g.font = '10px "Share Tech Mono"'; g.fillText(`${rec.sources.length} PUBLIC SOURCES · VERIFIED ${VERIFIED_AT}`, FX, FY + FH + 44);
   }
 
   // DOM reveal (mask bars slide away, staggered)
@@ -629,7 +645,7 @@ function drawFocus(t, E) {
   });
   S.r.rule.style.transform = `scaleX(${ease.io(seg(D, base + 150, base + 900))})`;
   S.r.dT.textContent = decode(rec.en, seg(D, base + 100, base + 900), 5);
-  S.r.dNo.textContent = decode('NO.' + rec.id.slice(2), seg(D, base, base + 600), 2);
+  S.r.dNo.textContent = decode(rec.id, seg(D, base, base + 600), 2);
   if (D > base + 100 && D < base + 900) ctx.sfx.play('tick', { vol: 0.8 });
   S.r.back.style.opacity = ease.out(seg(D, 900, 1300));
   S.root.querySelectorAll('.tr.on .w i').forEach((el, j) => { el.style.height = 3 + Math.abs(Math.sin(t / 180 + j * 0.7)) * 11 + 'px'; });

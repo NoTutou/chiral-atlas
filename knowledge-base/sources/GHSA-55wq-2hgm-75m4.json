@@ -1,0 +1,115 @@
+{
+  "ghsa_id": "GHSA-55wq-2hgm-75m4",
+  "cve_id": null,
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-55wq-2hgm-75m4",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-55wq-2hgm-75m4",
+  "summary": "There is a stack-buffer overflow vulnerability in the mavlink_receiver.cpp,which can cause the program to refuse to execute",
+  "description": "### Summary\r\nDue to the lack of judgment on the size of serial_control_mavlink.count and serial_control_mavlink.data, we found a stack buffer overflow vulnerability in mavlink_receiver.cpp. This will cause the drone to refuse to execute during software simulation.\r\n\r\n### Details\r\n\r\n1. Send a MAVLINK message to the drone. It will enter In mavlink_receiver.cpp, parse according to the specific MAVLINK received.\r\n2. When the type of message sent is MAVLINK_MSG_ID_SERIAL_CONTROL, the handle_message_serial_control function is executed\r\nhttps://github.com/PX4/PX4-Autopilot/blob/main/src/modules/mavlink/mavlink_receiver.cpp#L1798-L1831\r\n3. https://github.com/PX4/PX4-Autopilot/blob/main/src/modules/mavlink/mavlink_receiver.cpp#L1821-L1824\r\nWhen serial_control_mavlink.count > sizeof(serial_control_mavlink.data), a stack overflow vulnerability is triggered. This causes the program to crash and cause a denial of service.\r\n\r\n### Error report\r\n=================================================================\r\n==28263==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7f1e57f6e4c4 at pc 0x7f1e5b7a8eed bp 0x7f1e57f6e420 sp 0x7f1e57f6dbc8\r\nREAD of size 216 at 0x7f1e57f6e4c4 thread T106 (mavlink_rcv_if0)\r\nAddressSanitizer:DEADLYSIGNAL\r\nAddressSanitizer: nested bug in the same thread, aborting.\r\n\r\nINFO [mavlink] Starting mavlink shell\r\n==34278== Thread 20 mavlink_rcv_if0:\r\n==34278== Syscall param write(buf) points to uninitialised byte(s)\r\n==34278== at 0x488B32F: __libc_write (write.c:26)\r\n==34278== by 0x488B32F: write (write.c:24)\r\n==34278== by 0x294A51: MavlinkReceiver::handle_message_serial_control(__mavlink_message*) (mavlink_receiver.cpp:1823)\r\n==34278== by 0x29C44A: MavlinkReceiver::handle_message(__mavlink_message*) (mavlink_receiver.cpp:240)\r\n==34278== by 0x29CA3E: MavlinkReceiver::run() (mavlink_receiver.cpp:3170)\r\n==34278== by 0x29E70C: MavlinkReceiver::start_trampoline(void*) (mavlink_receiver.cpp:3449)\r\n==34278== by 0x4880608: start_thread (pthread_create.c:477)\r\n==34278== by 0x4D0E352: clone (clone.S:95)\r\n==34278== Address 0x6adbf81 is on thread 20's stack\r\n==34278== in frame https://github.com/PX4/PX4-Autopilot/issues/1, created by MavlinkReceiver::handle_message_serial_control(__mavlink_message*) (mavlink_receiver.cpp:1799)\r\n==34278==\r\nINFO [mavlink] Stopping mavlink shell\r\n\r\n\r\n### PoC\r\n1、Use the following command to start px4\r\n`sudo make px4_sitl jmavsim PX4_ASAN=1`\r\n2、Use the python code and output.txt I provided to send the mavlink message to the px4 (Python code and output.txt are in the github repository)\r\n[https://github.com/zhangteng0526/px4_stack-over-flow](url)\r\n`python3.8 poc.py`\r\n\r\n### Impact\r\nIf we can create a MAVLINK message remotely and send it to PX4, a global buffer overflow vulnerability will be triggered, causing the drone to behave unexpectedly.\r\n",
+  "severity": "high",
+  "author": null,
+  "publisher": {
+    "login": "bkueng",
+    "id": 281593,
+    "node_id": "MDQ6VXNlcjI4MTU5Mw==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/281593?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/bkueng",
+    "html_url": "https://github.com/bkueng",
+    "followers_url": "https://api.github.com/users/bkueng/followers",
+    "following_url": "https://api.github.com/users/bkueng/following{/other_user}",
+    "gists_url": "https://api.github.com/users/bkueng/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/bkueng/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/bkueng/subscriptions",
+    "organizations_url": "https://api.github.com/users/bkueng/orgs",
+    "repos_url": "https://api.github.com/users/bkueng/repos",
+    "events_url": "https://api.github.com/users/bkueng/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/bkueng/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-55wq-2hgm-75m4",
+      "type": "GHSA"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2024-07-03T06:12:03Z",
+  "published_at": "2024-07-03T06:12:03Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "ubuntu",
+        "name": ""
+      },
+      "vulnerable_version_range": "<v.1.14.3",
+      "patched_versions": "",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H",
+      "score": 7.9
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-121",
+      "name": "Stack-based Buffer Overflow"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-121"
+  ],
+  "credits": [
+    {
+      "login": "zhangteng0526",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "zhangteng0526",
+        "id": 49060609,
+        "node_id": "MDQ6VXNlcjQ5MDYwNjA5",
+        "avatar_url": "https://avatars.githubusercontent.com/u/49060609?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/zhangteng0526",
+        "html_url": "https://github.com/zhangteng0526",
+        "followers_url": "https://api.github.com/users/zhangteng0526/followers",
+        "following_url": "https://api.github.com/users/zhangteng0526/following{/other_user}",
+        "gists_url": "https://api.github.com/users/zhangteng0526/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/zhangteng0526/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/zhangteng0526/subscriptions",
+        "organizations_url": "https://api.github.com/users/zhangteng0526/orgs",
+        "repos_url": "https://api.github.com/users/zhangteng0526/repos",
+        "events_url": "https://api.github.com/users/zhangteng0526/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/zhangteng0526/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 11,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:C/C:N/I:H/A:H",
+    "score": 7.9
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "kind": "manual web verification note, NOT GitHub API response",
+  "title": "mavlink receiver trajectory valid_points boundary fix",
+  "merged_at": "2021-10-06",
+  "merge_commit_sha": "0bdcd54",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/pull/18371",
+  "summary": "Merged; linked issue #18369. First fixed release not verified."
+}

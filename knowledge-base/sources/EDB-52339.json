@@ -1,0 +1,10 @@
+{
+  "kind": "manual web verification note, NOT original page",
+  "cve": "CVE-2025-5640",
+  "published": "2025-06-26",
+  "codeDate": "2025-06-21",
+  "author": "Mohammed Idrees Banyamer",
+  "environment": "Ubuntu 20.04 LTS + PX4 SITL (jMAVSim), PX4 1.12.3",
+  "summary": "公开文献声称畸形轨迹消息可经 MAVLink UDP 触发 DoS；未执行或复现。",
+  "limitations": "Direct snapshot download returned HTTP 403; metadata verified using web open. Hash covers this note only."
+}

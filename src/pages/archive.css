@@ -207,3 +207,53 @@
   .pg-archive .cats{top:calc(var(--hud-h) + 100px);right:180px}
   .pg-archive .nav{bottom:calc(var(--foot-h) + 12px)}.pg-archive .touch-help{right:180px;font-size:10px}
 }
+
+/* Source-backed vulnerability records: long identifiers and readable evidence. */
+.pg-archive .res .it{display:grid;grid-template-columns:6px minmax(0,1fr);gap:3px 9px;height:auto;min-height:54px;padding:9px 12px}
+.pg-archive .res .it .id{width:auto;grid-column:2;font-size:11px;overflow-wrap:anywhere}
+.pg-archive .res .it .d{grid-column:1;grid-row:1/3}
+.pg-archive .res .it .t{grid-column:2;min-width:0}
+.pg-archive .no{max-width:44vw}
+.pg-archive .no .n{font-size:clamp(22px,2.2vw,34px);letter-spacing:.5px;overflow-wrap:anywhere}
+.pg-archive .no .pn{flex-wrap:wrap}
+.pg-archive .no .pn span{height:auto;min-height:32px;padding:7px 9px;overflow-wrap:anywhere}
+.pg-archive .no .pn b{font-weight:400}
+.pg-archive .dp h2{flex-wrap:wrap;letter-spacing:1px;line-height:1.5;gap:4px 12px}
+.pg-archive .dp h2 small{white-space:normal}
+.pg-archive .dp .hd{gap:12px;overflow-wrap:anywhere}
+.pg-archive .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 14px}
+.pg-archive .grid .v{font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.pg-archive .tabsd{gap:16px;justify-content:space-between}
+.pg-archive .tabsd>div{white-space:nowrap;font-size:12px}
+.pg-archive .body{user-select:text;overflow-wrap:anywhere}
+.pg-archive .fact,.pg-archive .notice,.pg-archive .evidence{font-size:12px;line-height:1.85;color:var(--ink-2);margin:12px 0;padding:12px;border:1px solid var(--line-2);background:rgba(9,25,34,.5)}
+.pg-archive .fact b{font-weight:500;color:var(--ink)}
+.pg-archive .fact p,.pg-archive .evidence p{margin:5px 0}
+.pg-archive .notice{border-left:2px solid var(--gold);color:var(--gold-2)}
+.pg-archive .notice ul{padding-left:18px;margin:8px 0 0}
+.pg-archive .notice li+li{margin-top:7px}
+.pg-archive .evidence a,.pg-archive .refs a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+.pg-archive .evidence a:hover,.pg-archive .refs a:hover{color:var(--ink)}
+.pg-archive .evidence code{font-size:11px;font-family:var(--f-mono);overflow-wrap:anywhere;white-space:normal}
+.pg-archive .evidence summary{cursor:pointer;color:var(--ink)}
+.pg-archive .tr{width:100%;text-align:left;line-height:1.6;padding:9px 10px}
+.pg-archive .tr .d{width:auto;flex:none;margin-left:auto;font-size:10px}
+.pg-archive .trb{white-space:pre-wrap}
+.pg-archive .refs{margin-top:12px;font-size:10px;white-space:normal}
+.pg-archive .tags button{cursor:pointer;min-height:30px}
+.pg-archive .tags button:hover{border-color:var(--cyan);color:var(--cyan)}
+.pg-archive .rel .rc{display:flex;align-items:flex-start;flex-direction:column;gap:5px;height:auto;min-height:80px;padding:12px;text-align:left;width:100%;line-height:1.7}
+.pg-archive .rel .rc .id{width:auto;font-size:12px}
+.pg-archive .rel .rc strong{font-weight:400}
+.pg-archive .rel .rc .reason{font-size:11px;color:var(--ink-2)}
+.pg-archive button:focus-visible,.pg-archive a:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media (max-width:1100px){
+  .pg-archive .no{max-width:none;min-width:0}
+  .pg-archive .no .n{font-size:clamp(17px,3.5vw,28px);line-height:1.2}
+  .pg-archive .no .pn span{font-size:9px;max-width:100%;padding:6px;min-height:38px}
+  .pg-archive .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pg-archive .tabsd{gap:6px}
+  .pg-archive .tabsd>div{font-size:11px}
+  .pg-archive .tr{min-height:44px}
+  .pg-archive .fact,.pg-archive .notice,.pg-archive .evidence{font-size:13px}
+}

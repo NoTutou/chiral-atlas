@@ -1,13 +1,17 @@
+import { BY_ID } from '../data/archive.js';
 /* tiny shared state + event bus (no backend: persisted to localStorage) */
 const L = {
   get: (k, d) => { try { return JSON.parse(localStorage.getItem('ca.' + k)) ?? d; } catch { return d; } },
   set: (k, v) => { try { localStorage.setItem('ca.' + k, JSON.stringify(v)); } catch { /* private mode */ } },
 };
 const ev = new Map();
+const priorSaved = L.get('saved', []);
+const validSaved = (Array.isArray(priorSaved) ? priorSaved : []).filter((id) => BY_ID.has(id));
+L.set('saved', validSaved);
 
 export const store = {
   /** archive ids the user saved */
-  saved: new Set(L.get('saved', ['C-001', 'B-003', 'D-002'])),
+  saved: new Set(validSaved),
   /**
    * cargo queued for the inference page. item shape:
    * { id, name, kind: 'doc'|'code'|'patch'|'text'|'record', size (bytes), text, lang?, from? }
@@ -19,6 +23,7 @@ export const store = {
   emit(name, data) { ev.get(name)?.forEach((f) => f(data)); },
 
   toggleSave(id) {
+    if (!BY_ID.has(id)) return false;
     this.saved.has(id) ? this.saved.delete(id) : this.saved.add(id);
     L.set('saved', [...this.saved]);
     this.emit('saved', id);

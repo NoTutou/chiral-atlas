@@ -1,5 +1,6 @@
 """Responsive layout and touch flows. Build first; optionally pass a dev-server URL."""
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -29,14 +30,14 @@ def within_width(page, selector):
 
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(channel="chrome")
+    browser = p.chromium.launch(executable_path=os.environ.get("CHROME_BIN") or None)
     sizes = [] if '--flows-only' in sys.argv else [(320, 568), (390, 844), (430, 932), (844, 390), (768, 1024), (1024, 768), (1440, 900)]
     for width, height in sizes:
         context = browser.new_context(viewport={"width": width, "height": height}, has_touch=True, is_mobile=width <= 1100)
         context.add_init_script("sessionStorage.setItem('ca.booted','1')")
         page = context.new_page()
         page.on("pageerror", lambda e: errors.append(str(e)))
-        for route in ["", "archive", "archive/E-001", "inference", "reserved"]:
+        for route in ["", "archive", "archive/CVE-2026-32709", "inference", "reserved"]:
             load(page, route)
             within_width(page, ".page")
             if width <= 1100:
@@ -49,12 +50,13 @@ with sync_playwright() as p:
                 expect(page.locator('.tab-home')).to_be_hidden()
                 assert page.locator('.hud').bounding_box()['height'] == 64
                 assert page.locator('.foot').bounding_box()['height'] == 38
-                assert page.locator('.tabs').bounding_box()['y'] == 0
+                # Flex centering against a 1px HUD border can yield a half-pixel offset.
+                assert abs(page.locator('.tabs').bounding_box()['y']) <= 1
                 assert page.locator('.sfx').evaluate("e => getComputedStyle(e).letterSpacing") == '1px'
             if route == "" and width <= 1100:
                 for facility in [".f2", ".f3", ".f1"]:
                     within_width(page, facility)
-            elif route == "archive/E-001":
+            elif route == "archive/CVE-2026-32709":
                 expect(page.locator('.det')).to_have_class('det on', timeout=20000)
                 page.wait_for_timeout(2000)
                 within_width(page, ".dp")
@@ -108,7 +110,7 @@ with sync_playwright() as p:
     assert page.locator('canvas.rack.grab').count() == 0
     print('touch pan / pinch / cancellation OK', flush=True)
 
-    page.locator('[data-r="q"]').fill('E-001')
+    page.locator('[data-r="q"]').fill('CVE-2026-32709')
     page.locator('.res .it').first.tap()
     expect(page.locator('.det')).to_have_class('det on', timeout=15000)
     page.wait_for_timeout(2500)
@@ -118,7 +120,7 @@ with sync_playwright() as p:
     expect(page.locator('[data-r="save"]')).to_have_class('btn done')
     with page.expect_download() as dl:
         page.locator('[data-r="export"]').tap()
-    assert dl.value.suggested_filename == 'E-001.md'
+    assert dl.value.suggested_filename == 'CVE-2026-32709.md'
     page.locator('[data-r="send"]').tap()
     expect(page).to_have_url(re.compile(r"#/inference$"), timeout=15000)
     page.wait_for_selector('#slots .card')

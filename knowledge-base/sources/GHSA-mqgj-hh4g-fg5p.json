@@ -1,0 +1,124 @@
+{
+  "ghsa_id": "GHSA-mqgj-hh4g-fg5p",
+  "cve_id": "CVE-2026-32706",
+  "url": "https://api.github.com/repos/PX4/PX4-Autopilot/security-advisories/GHSA-mqgj-hh4g-fg5p",
+  "html_url": "https://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-mqgj-hh4g-fg5p",
+  "summary": "Global buffer overflow in crsf_rc via oversized variable-length known packet",
+  "description": "### Summary\r\nThe `crsf_rc` parser accepts an oversized variable-length known packet and copies it into a fixed 64-byte global buffer without a bounds check. In deployments where `crsf_rc` is enabled on a CRSF serial port, an adjacent/raw-serial attacker can trigger memory corruption and crash PX4.\r\n\r\n### Details\r\nThe issue is in `src/drivers/rc/crsf_rc`.\r\n\r\n`crsf_rc` uses a fixed parser scratch buffer:\r\n- `process_buffer[64]` in `src/drivers/rc/crsf_rc/CrsfParser.cpp`\r\n\r\nIt also treats `CRSF_PACKET_TYPE_ELRS_STATUS` as a known variable-length packet:\r\n- `CRSF_PAYLOAD_SIZE_ELRS_STATUS = -1`\r\n\r\nIn the parser state machine, variable-length known packets do not pass through the same maximum-length rejection used for unknown packet types. The parser then copies `working_index + CRC_SIZE` bytes into `process_buffer` through `QueueBuffer_PeekBuffer()`, which performs an unchecked `memcpy` into the destination buffer.\r\n\r\nThis allows an oversized known packet to overflow `process_buffer` before CRC validation completes.\r\n\r\nRelevant code locations:\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:56`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:67`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:138`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:399`\r\n- `src/drivers/rc/crsf_rc/CrsfParser.cpp:445`\r\n- `src/drivers/rc/crsf_rc/QueueBuffer.cpp:153`\r\n\r\n### PoC\r\nAn integrated Docker-based reproduction environment is included under `security-lab/crsf_rc`.\r\n\r\nSteps:\r\n```bash\r\ncd security-lab/crsf_rc\r\n./run.sh\r\n```\r\n\r\nWhat the lab does:\r\n- builds a real PX4 SITL binary with ASAN\r\n- starts a real PX4 daemon\r\n- starts the real `crsf_rc` module against a PTY-backed serial device\r\n- injects a crafted oversized `ELRS_STATUS` frame through the PTY master\r\n- extracts the in-container logs and validates the resulting ASAN crash\r\n\r\nExpected evidence in `logs/px4_crsf_rc_integration.log`:\r\n- `AddressSanitizer`\r\n- `global-buffer-overflow`\r\n- `QueueBuffer.cpp:153`\r\n- `CrsfParser.cpp:445`\r\n\r\nConfirmed result:\r\n- `logs/crsf_rc_result.env` contains `triggered=true`\r\n\r\nTest-environment note:\r\n- The integrated reproduction uses a POSIX PTY as a stand-in for the CRSF UART path.\r\n- A small `LD_PRELOAD` baud shim is used only because the host PTY environment cannot open the requested `420000` baud setting directly.\r\n- In practical terms, this reproduces the software-equivalent of an attacker being physically connected to the drone's CRSF UART path and injecting raw serial bytes into the real `crsf_rc` driver.\r\n- The vulnerable PX4 parser logic is unchanged. The shim only adapts the PTY baud setup used for the lab.\r\n\r\n### Impact\r\n- Vulnerability type: global/static buffer overflow\r\n- Primary impact: denial of service through PX4 process crash\r\n- Secondary impact: memory corruption and undefined behavior\r\n\r\nAttack surface:\r\n- This is not an internet-routable network issue.\r\n- The realistic attacker model is an adjacent/raw-serial attacker that can inject bytes on the CRSF UART path, such as:\r\n  - a malicious CRSF/ExpressLRS receiver\r\n  - a UART man-in-the-middle device between receiver and flight controller\r\n  - a compromised external peripheral on the same serial path\r\n- This report does not claim a pure RF-only unauthenticated remote exploit against standard CRSF equipment.\r\n\r\n### Attachment\r\n[security-lab_crsf_rc_20260312_204136.zip](https://github.com/user-attachments/files/25933835/security-lab_crsf_rc_20260312_204136.zip)",
+  "severity": "high",
+  "author": null,
+  "publisher": {
+    "login": "mrpollo",
+    "id": 317648,
+    "node_id": "MDQ6VXNlcjMxNzY0OA==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/317648?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mrpollo",
+    "html_url": "https://github.com/mrpollo",
+    "followers_url": "https://api.github.com/users/mrpollo/followers",
+    "following_url": "https://api.github.com/users/mrpollo/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mrpollo/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mrpollo/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mrpollo/subscriptions",
+    "organizations_url": "https://api.github.com/users/mrpollo/orgs",
+    "repos_url": "https://api.github.com/users/mrpollo/repos",
+    "events_url": "https://api.github.com/users/mrpollo/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mrpollo/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "identifiers": [
+    {
+      "value": "GHSA-mqgj-hh4g-fg5p",
+      "type": "GHSA"
+    },
+    {
+      "value": "CVE-2026-32706",
+      "type": "CVE"
+    }
+  ],
+  "state": "published",
+  "created_at": null,
+  "updated_at": "2026-04-07T03:06:08Z",
+  "published_at": "2026-03-13T19:56:16Z",
+  "closed_at": null,
+  "withdrawn_at": null,
+  "submission": null,
+  "vulnerabilities": [
+    {
+      "package": {
+        "ecosystem": "other",
+        "name": "PX4/PX4-Autopilot"
+      },
+      "vulnerable_version_range": "< 1.17.0-rc2",
+      "patched_versions": "1.17.0-rc2",
+      "vulnerable_functions": []
+    }
+  ],
+  "cvss_severities": {
+    "cvss_v3": {
+      "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+      "score": 7.1
+    },
+    "cvss_v4": {
+      "vector_string": null,
+      "score": null
+    }
+  },
+  "cwes": [
+    {
+      "cwe_id": "CWE-120",
+      "name": "Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')"
+    },
+    {
+      "cwe_id": "CWE-787",
+      "name": "Out-of-bounds Write"
+    }
+  ],
+  "cwe_ids": [
+    "CWE-120",
+    "CWE-787"
+  ],
+  "credits": [
+    {
+      "login": "kmm2003",
+      "type": "reporter"
+    }
+  ],
+  "credits_detailed": [
+    {
+      "user": {
+        "login": "kmm2003",
+        "id": 69188747,
+        "node_id": "MDQ6VXNlcjY5MTg4NzQ3",
+        "avatar_url": "https://avatars.githubusercontent.com/u/69188747?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/kmm2003",
+        "html_url": "https://github.com/kmm2003",
+        "followers_url": "https://api.github.com/users/kmm2003/followers",
+        "following_url": "https://api.github.com/users/kmm2003/following{/other_user}",
+        "gists_url": "https://api.github.com/users/kmm2003/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/kmm2003/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/kmm2003/subscriptions",
+        "organizations_url": "https://api.github.com/users/kmm2003/orgs",
+        "repos_url": "https://api.github.com/users/kmm2003/repos",
+        "events_url": "https://api.github.com/users/kmm2003/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/kmm2003/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "type": "reporter",
+      "state": "accepted"
+    }
+  ],
+  "collaborating_users": null,
+  "collaborating_teams": null,
+  "private_fork": null,
+  "comments": 2,
+  "cvss": {
+    "vector_string": "CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H",
+    "score": 7.1
+  }
+}
