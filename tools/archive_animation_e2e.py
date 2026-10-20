@@ -1,5 +1,6 @@
 """Exercise real archive rendering with a deterministic rAF clock. Build first."""
 import argparse
+import base64
 import json
 import math
 import os
@@ -15,6 +16,23 @@ args = parser.parse_args()
 SHOTS = ROOT / 'shots' / 'archive-animation'
 SHOTS.mkdir(parents=True, exist_ok=True)
 
+
+def module_url(source):
+    return 'data:text/javascript;base64,' + base64.b64encode(source.encode()).decode()
+
+
+# Load the real rack module in an isolated canvas to check its physics without
+# adding debug exports to the shipped page or depending on pixel colours.
+data_module = (ROOT / 'src/data/archive.js').read_text().replace(
+    "import catalog from '../../knowledge-base/catalog.json';",
+    'const catalog = ' + (ROOT / 'knowledge-base/catalog.json').read_text() + ';')
+rack_module = (ROOT / 'src/pages/archive-rack.js').read_text()
+for path, source in [('../core/util.js', (ROOT / 'src/core/util.js').read_text()),
+                     ('../data/archive.js', data_module),
+                     ('./archive-gl.js', (ROOT / 'src/pages/archive-gl.js').read_text())]:
+    rack_module = rack_module.replace("'" + path + "'", "'" + module_url(source) + "'")
+RACK_MODULE = module_url(rack_module)
+
 # Observe the canvas and DOM without adding production debug hooks. Each advance
 # renders every frame, including frames from interrupted/long-idle transitions.
 INIT = """
@@ -22,6 +40,17 @@ sessionStorage.setItem('ca.booted', '1');
 let now = performance.now(), serial = 0, queue = new Map(), face = null, spin = null;
 window.requestAnimationFrame = fn => { queue.set(++serial, fn); return serial; };
 window.cancelAnimationFrame = id => queue.delete(id);
+window.__oscillators = [];
+const AC = window.AudioContext || window.webkitAudioContext;
+if (AC) {
+  const create = AC.prototype.createOscillator;
+  AC.prototype.createOscillator = function(...args) {
+    const osc = create.apply(this, args), stop = osc.stop;
+    const item = {osc, stopped:false}; window.__oscillators.push(item);
+    osc.stop = function(...args) { item.stopped = true; return stop.apply(this, args); };
+    return osc;
+  };
+}
 const getContext = HTMLCanvasElement.prototype.getContext;
 HTMLCanvasElement.prototype.getContext = function(type, ...args) {
   const ctx = getContext.call(this, type, ...args);
@@ -80,6 +109,62 @@ def shot(page, name):
     page.screenshot(path=str(SHOTS / f'{name}.png'))
 
 
+def assert_hold_and_return_wave(page):
+    page.evaluate('''async module => {
+      const {createRack} = await import(module), canvases = [];
+      const make = () => {
+        const c = document.createElement('canvas');
+        c.style.cssText = 'position:fixed;width:800px;height:600px;opacity:0;pointer-events:none';
+        document.body.append(c); canvases.push(c); return createRack(c);
+      };
+      const a = make(), b = make(), flat = make(), check = (ok, msg) => { if (!ok) throw Error(msg); };
+      const off = {inside:false};
+      for (const rack of [a,b]) {
+        const [x,y] = rack.P(0,0,0); rack.hover = {c:0,i:0};
+        for (let t=0;t<=2000;t+=16) rack.update(t,16,{inside:true,x,y});
+        check(rack.liftAt(0,0,2000)>30, 'hover never raised the source');
+        rack.hover = null; rack.holdAt(0,0);
+      }
+      const crest = c => a.liftAt(c,0,2000)-flat.liftAt(c,0,2000);
+      for (const side of [-1,1]) {
+        check(crest(side)>5 && crest(side)<crest(0)*0.45,
+          'neighbouring column should have a smaller visible hover crest');
+        check(crest(side*2)>0 && crest(side*2)<crest(side),
+          'hover crest should diminish with column distance');
+      }
+      for (let t=2000;t<=12000;t+=50) a.update(t,50,off);
+      for (let c=-2;c<=2;c++) for (let i=-12;i<=12;i++) {
+        check(Math.abs(a.liftAt(c,i,12000)-b.liftAt(c,i,12000))<1e-8,
+          'opening changed the original raised shape');
+      }
+      a.returnRipple(0,0,12000);
+      const wave = (c,i,t) => a.liftAt(c,i,t)-b.liftAt(c,i,t);
+      check(wave(0,3,12436)>30, 'wave did not reach a near slot');
+      check(Math.abs(wave(0,12,12436))<1e-8, 'far slot moved before the front arrived');
+      check(wave(0,12,12845)>20, 'wave did not travel outward');
+      check(Math.abs(wave(0,12,12845)-wave(0,-12,12845))<1e-8, 'wave was not bidirectional');
+      const peakTime = (c,i) => 12000 + 1000*(Math.hypot(i, c*252/15*0.55)/22+0.3);
+      const near = wave(1,0,peakTime(1,0)), far = wave(2,0,peakTime(2,0));
+      check(near>5 && near<10 && far>0.5 && far<near,
+        'return wave should weaken across columns');
+      for (const c of [-1,1]) {
+        check(Math.abs(wave(c,0,12300))<1e-8, 'neighbour column moved before the front arrived');
+        check(Math.abs(wave(c,0,peakTime(1,0))-near)<1e-8, 'column spread was not symmetric');
+        for (const i of [-6,6]) {
+          check(wave(c,i,peakTime(c,i))>4, 'return wave failed to spread diagonally');
+        }
+      }
+      check(Math.abs(wave(0,0,12300))<1e-8, 'landed case bounced instead of settling');
+      for (let c=-3;c<=3;c++) for (let i=-20;i<=20;i++) {
+        check(Math.abs(wave(c,i,15000))<1e-8, 'wave failed to decay');
+      }
+      a.held = null;
+      for (let t=12016;t<=20000;t+=16) a.update(t,16,off);
+      check(Math.abs(a.liftAt(0,0,20000))<6, 'source did not flatten after release');
+      canvases.forEach(c => c.remove());
+    }''', RACK_MODULE)
+
+
 def assert_close(page, dwell=0, mobile_scroll=False, label='close'):
     if dwell:
         advance(page, dwell, 50)
@@ -110,6 +195,8 @@ def assert_close(page, dwell=0, mobile_scroll=False, label='close'):
     for face in faces:
         assert all(math.isfinite(v) for v in face.values()), face
     shot(page, label + '-landed')
+    advance(page, 3500, 50)
+    shot(page, label + '-settled')
 
 
 with sync_playwright() as p:
@@ -143,6 +230,9 @@ with sync_playwright() as p:
         advance(page, 1400, 50)
         assert page.locator('.det').evaluate('e => +e.style.opacity') == 1
         assert page.locator('.dp .blk').evaluate_all('els => els.every(e => !e.inert)')
+        assert page.evaluate('''() => __oscillators.some(x => x.stopped) &&
+          !__oscillators.some(x => !x.stopped && x.osc.frequency.value < 300)'''), \
+            'interaction audio missing or a continuous low-frequency oscillator remains'
         shot(page, label + '-opened')
         assert_close(page, dwell=2000 if label == 'webgl' else 10000, mobile_scroll=width < 1100, label=label + '-idle')
 
@@ -175,6 +265,12 @@ with sync_playwright() as p:
         print(json.dumps({'mode': label, 'result': 'PASS', 'frame_js_median_ms': round(median(costs), 2),
                           'frame_js_p95_ms': round(costs[int(len(costs)*.95)], 2)}, ensure_ascii=False), flush=True)
         context.close()
+    # Physics and propagation checks use independent canvases and the source
+    # module, while the transition cases above exercise the production build.
+    model = browser.new_page()
+    model.goto((ROOT / 'dist/index.html').as_uri() + '?2d#/archive')
+    assert_hold_and_return_wave(model)
+    model.close()
     assert not errors, errors
     browser.close()
 print('Archive animation checks passed.', flush=True)

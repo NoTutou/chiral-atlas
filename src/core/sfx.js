@@ -33,7 +33,6 @@ function init() {
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
   const nd = noiseBuf.getChannelData(0);
   for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-  startAmbient();
 }
 const unlock = () => { init(); if (ctx && ctx.state !== 'running') ctx.resume(); };
 ['pointerdown', 'keydown', 'touchstart'].forEach((e) => addEventListener(e, unlock, { passive: true }));
@@ -145,21 +144,6 @@ function makeLoop(name) {
   }
   return { set() {} };
 }
-let amb = null;
-function startAmbient() {
-  // very quiet drifting pad (DS-like distant drone)
-  const g = ctx.createGain(); g.gain.value = 0.0001;
-  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
-  [110, 164.8, 220.4].forEach((f, i) => {
-    const o = ctx.createOscillator(); o.type = i === 1 ? 'triangle' : 'sine'; o.frequency.value = f;
-    const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.05 + i * 0.03; lg.gain.value = 1.5;
-    lfo.connect(lg).connect(o.detune); lfo.start(); o.connect(lp); o.start();
-  });
-  lp.connect(g); out(g, { rev: 0.9 });
-  g.gain.setTargetAtTime(0.022, ctx.currentTime, 3);
-  amb = g;
-}
-
 export const sfx = {
   play(name, o = {}) {
     if (muted || !ctx || ctx.state !== 'running' || !R[name]) return;

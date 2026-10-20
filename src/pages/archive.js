@@ -395,6 +395,8 @@ function openCell(cell, t) {
   S.open = { cell, rec: cell.rec, t0: t, domT0: t, tc: null, E: 0, domE: 0, spin: 0,
     lift0: rack.caseLiftAt(cell.c, cell.i, t), hot0: S.hot.get(rack.KEY(cell.c, cell.i)) || 0, fired: new Set() };
   rack.exclude = rack.KEY(cell.c, cell.i);
+  rack.holdAt(cell.c, cell.i);
+  S.over = false; S.hover = null; rack.hover = null;
   rack.ripple(cell.x, cell.z, t);
   S.tab = 0; S.track = 0;
   S.det.scrollTop = 0;
@@ -416,6 +418,7 @@ function swapTo(cell) {
   S.open.cell = cell; S.open.rec = cell.rec;
   S.open.domT0 = ctx.clock.t - 850; S.open.domE = 850; S.open.fired = new Set(['open', 'disc']);
   rack.exclude = rack.KEY(cell.c, cell.i);
+  rack.holdAt(cell.c, cell.i);
   rack.cam.x = cell.x; rack.cam.z = cell.z; S.unfreeze = true;
   S.open.lift0 = rack.caseLiftAt(cell.c, cell.i, ctx.clock.t);
   S.tab = 0; S.track = 0;
@@ -436,6 +439,9 @@ function closeOpen() {
   S.ctx.sfx.play('close');
 }
 function finishClose() {
+  const { c, i } = S.open.cell;
+  S.rack.held = null;
+  S.rack.returnRipple(c, i, S.ctx.clock.t);
   S.rack.exclude = null;
   S.open = null;
   S.det.classList.remove('on', 'closing'); S.det.inert = false;
@@ -603,8 +609,9 @@ function drawFocus(t, E) {
   const FY = S.L.FY - (innerWidth <= 1100 ? S.det.scrollTop : 0);
   const closing = o.tc !== null;
   const lifted = ease.out(seg(E, 0, 380));
-  // At the handoff, match the rack's current spring/breathing position.
-  const restLift = closing ? lerp(rack.caseLiftAt(cs.c, cs.i, t), o.lift0, lifted) : o.lift0;
+  // Return to the raised place; the held spring also keeps its neighbours up.
+  const heldLift = rack.caseLiftAt(cs.c, cs.i, t);
+  const restLift = closing ? heldLift : lerp(o.lift0, heldLift, lifted);
   const lift = restLift + 130 * lifted;
   const m = ease.io(seg(E, 280, 1050));
   const vis = lerp(clamp(lift - rack.caseLiftAt(cs.c, cs.i - 1, t) + GAPV, 0, HY), HY, m);

@@ -32,7 +32,7 @@ export function createRack(canvas) {
   let introT0 = -1e9;
   let grads;
   const R = {
-    cam, hover: null, exclude: null, filter: -1, hits: null, saved: null, dim: 0, frozen: false, energy: 0,
+    cam, hover: null, held: null, exclude: null, filter: -1, hits: null, saved: null, dim: 0, frozen: false, energy: 0,
     get S() { return S; }, get W() { return W; }, get H() { return H; },
   };
 
@@ -73,11 +73,23 @@ export function createRack(canvas) {
 
   /* ---------- per-cell lift ---------- */
   const breath = (c, i, t) => 3.2 * Math.sin((t / 8000) * 6.283 + i * 0.33 + c * 1.1) + 2.2 * Math.sin((t / 13000) * 6.283 + i * 0.21 - c * 0.7);
-  function rippleAt(x, z, t) {
+  function rippleAt(c, i, t) {
     let v = 0;
     for (const rp of ripples) {
       const age = (t - rp.t0) / 1000;
       if (age < 0 || age > 3) continue;
+      if (rp.column !== undefined) {
+        const dc = Math.abs(c - rp.column), di = Math.abs(i - rp.slot);
+        // The landed case settles while a softer front travels into nearby
+        // columns. Compress shelf spacing slightly so that spread stays visible.
+        if (dc === 0 && di === 0) continue;
+        const d = Math.hypot(di, dc * PITCH_Z / PITCH_X * 0.55), local = age - d / 22;
+        if (local < 0 || local > 0.6) continue;
+        const across = dc === 0 ? 1 : 0.34 * Math.exp(-((dc * PITCH_Z) ** 2) / (2 * (PITCH_Z * 1.3) ** 2));
+        v += 42 * across * Math.sin(Math.PI * local / 0.6) ** 2 * Math.exp(-d / 22) * (1 - ease.io(seg(age, 2.2, 3)));
+        continue;
+      }
+      const x = i * PITCH_X, z = c * PITCH_Z;
       const d = Math.hypot((x - rp.x) / PITCH_X, ((z - rp.z) / PITCH_X) * 0.35);
       const front = age * 16;
       v += 34 * Math.cos((d - front) * 0.9) * Math.exp(-((d - front) ** 2) / 18) * Math.exp(-age * 1.3);
@@ -90,8 +102,7 @@ export function createRack(canvas) {
   }
   function liftAt(c, i, t) {
     const st = state.get(KEY(c, i));
-    const x = i * PITCH_X, z = c * PITCH_Z;
-    let l = (st ? st.h : 0) + breath(c, i, t) + (ripples.length ? rippleAt(x, z, t) : 0);
+    let l = (st ? st.h : 0) + breath(c, i, t) + (ripples.length ? rippleAt(c, i, t) : 0);
     if (R.hits && R.hits.has(recordAt(c, i).id)) l += 18 + 4 * Math.sin(t / 300 + i);
     return l;
   }
@@ -140,18 +151,25 @@ export function createRack(canvas) {
       }
     }
     S = base * cam.zoom;
-    if (R.frozen) return;
+    while (ripples.length && t - ripples[0].t0 > 3000) ripples.shift();
+    // The lifted shape under the cursor belongs to the selected place. Keep
+    // that exact spring pose while its case is out, then release it on landing.
+    if (R.frozen || R.held) { R.energy = 0; return; }
 
     // physics (only cells that move or are near the cursor)
     const [mx, mz] = M.inside ? ground(M.x, M.y) : [1e9, 1e9];
     const { c0, c1, i0, i1 } = range();
     const hv = R.hover;
+    const hoverColumn = hv ? hv.c : Math.round(mz / PITCH_Z);
     const steps = Math.max(1, Math.round(dt / 8)), h = dt / 1000 / steps;
     let energy = 0;
     for (let s = 0; s < steps; s++) {
       for (let c = c0; c <= c1; c++) {
         const zc = c * PITCH_Z, dz = zc - mz;
-        const inCol = Math.abs(dz) < LZ / 2 + 20 ? 1 : 0.22 * Math.exp((-dz * dz) / (2 * 260 * 260));
+        // A clear crest in the hovered column, with smaller distance-weighted
+        // crests across neighbouring columns; the return pulse uses the same
+        // cross-column falloff with a travelling front.
+        const inCol = c === hoverColumn ? 1 : 0.34 * Math.exp((-dz * dz) / (2 * (PITCH_Z * 1.3) ** 2));
         for (let i = i0; i <= i1; i++) {
           const k = KEY(c, i);
           let st = state.get(k);
@@ -175,7 +193,6 @@ export function createRack(canvas) {
     // drop state that scrolled out of range
     if (state.size > 4000) for (const [k] of state) { const c = Math.round(k / 4194304), i = k - c * 4194304; if (c < c0 - 2 || c > c1 + 2 || i < i0 - 4 || i > i1 + 4) state.delete(k); }
     R.energy = energy;
-    while (ripples.length && t - ripples[0].t0 > 3000) ripples.shift();
   };
 
   /* ---------- picking: last-drawn (front-most) visible face polygon under the cursor ---------- */
@@ -473,6 +490,24 @@ export function createRack(canvas) {
   /* ---------- camera helpers ---------- */
   R.intro = (t) => { introT0 = t; };
   R.ripple = (x, z, t) => ripples.push({ x, z, t0: t });
+  R.returnRipple = (c, i, t) => ripples.push({ column: c, slot: i, t0: t });
+  R.holdAt = (c, i) => {
+    if (R.held) {
+      const offset = KEY(c - R.held.c, i - R.held.i);
+      const moved = [...state].map(([k, st]) => [k + offset, st]);
+      state.clear();
+      for (const [k, st] of moved) state.set(k, st);
+    }
+    // Deep links and keyboard navigation may open without a preceding hover.
+    if ((state.get(KEY(c, i))?.h || 0) < 12) {
+      for (let j = -10; j <= 10; j++) {
+        const k = KEY(c, i + j), st = state.get(k);
+        state.set(k, { h: Math.max(st?.h || 0, 70 * Math.exp(-((j * PITCH_X) ** 2) / (2 * 40 * 40))), v: 0 });
+      }
+    }
+    for (const st of state.values()) st.v = 0;
+    R.held = { c, i };
+  };
   R.stop = () => { fly = null; cam.vx = cam.vz = 0; cam.zoomT = cam.zoom; };
   R.pan = (dxs, dys) => {
     // move the camera so the ground follows the pointer
